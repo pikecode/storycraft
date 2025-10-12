@@ -1220,6 +1220,7 @@ interface SortableStoryboardItemProps {
   onStartEditTime: (itemId: string, timeRange: string) => void;
   onSaveTimeEdit: (itemId: string) => void;
   onCancelTimeEdit: () => void;
+  onDeleteItem: (itemId: string) => void;
   TimeRangeInput: React.ComponentType<any>;
 }
 
@@ -1238,6 +1239,7 @@ function SortableStoryboardItem({
   onStartEditTime,
   onSaveTimeEdit,
   onCancelTimeEdit,
+  onDeleteItem,
   TimeRangeInput,
 }: SortableStoryboardItemProps) {
   const {
@@ -1290,7 +1292,7 @@ function SortableStoryboardItem({
           <button
             className="p-1 hover:bg-gray-100 rounded"
             onClick={() => {
-              toast.success('删除功能待实现');
+              onDeleteItem(item.id.toString());
             }}
           >
             <Icon icon="ri:delete-bin-line" className="w-4 h-4 text-gray-400 hover:text-red-500" />
@@ -1400,6 +1402,7 @@ interface StoryboardListProps {
   onSaveTimeEdit: (itemId: string) => void;
   onCancelTimeEdit: () => void;
   onDragEnd: (event: DragEndEvent) => void;
+  onDeleteItem: (itemId: string) => void;
   TimeRangeInput: React.ComponentType<any>;
 }
 
@@ -1420,6 +1423,7 @@ function StoryboardList({
   onSaveTimeEdit,
   onCancelTimeEdit,
   onDragEnd,
+  onDeleteItem,
   TimeRangeInput,
 }: StoryboardListProps) {
   return (
@@ -1456,6 +1460,7 @@ function StoryboardList({
                 onStartEditTime={onStartEditTime}
                 onSaveTimeEdit={onSaveTimeEdit}
                 onCancelTimeEdit={onCancelTimeEdit}
+                onDeleteItem={onDeleteItem}
                 TimeRangeInput={TimeRangeInput}
               />
             ))
@@ -1801,8 +1806,13 @@ function ShortplayEntryPage() {
     const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
     const sceneId = currentSceneData?.sceneId;
 
+    console.log('LoadImageChatHistory - selectedScene:', selectedScene);
+    console.log('LoadImageChatHistory - scenesData:', scenesData);
+    console.log('LoadImageChatHistory - sceneId:', sceneId);
+
     if (!sceneId) {
       console.log('No scene selected, skipping image chat history load');
+      setIsLoadingImageHistory(false); // 确保loading状态被重置
       return;
     }
 
@@ -1824,14 +1834,24 @@ function ShortplayEntryPage() {
         })
       });
 
+      console.log('LoadImageChatHistory - response:', response);
+
       if (response.ok) {
         const result = await response.json();
+        console.log('LoadImageChatHistory - result:', result);
         if (result.code === 0 && result.data) {
           setImageChatHistory(result.data.records || result.data || []);
+        } else {
+          console.log('LoadImageChatHistory - API returned error:', result);
+          setImageChatHistory([]);
         }
+      } else {
+        console.error('LoadImageChatHistory - HTTP error:', response.status);
+        setImageChatHistory([]);
       }
     } catch (error) {
       console.error('加载图片聊天记录失败:', error);
+      setImageChatHistory([]);
     } finally {
       setIsLoadingImageHistory(false);
     }
@@ -1850,8 +1870,13 @@ function ShortplayEntryPage() {
     const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
     const sceneId = currentSceneData?.sceneId;
 
+    console.log('LoadStoryboardList - selectedScene:', selectedScene);
+    console.log('LoadStoryboardList - scenesData:', scenesData);
+    console.log('LoadStoryboardList - sceneId:', sceneId);
+
     if (!sceneId) {
       console.log('No scene selected, skipping storyboard list load');
+      setIsLoadingStoryboard(false); // 确保loading状态被重置
       return;
     }
 
@@ -1865,14 +1890,24 @@ function ShortplayEntryPage() {
         }
       });
 
+      console.log('LoadStoryboardList - response:', response);
+
       if (response.ok) {
         const result = await response.json();
+        console.log('LoadStoryboardList - result:', result);
         if (result.code === 0 && result.data) {
           setStoryboardItems(result.data || []);
+        } else {
+          console.log('LoadStoryboardList - API returned error:', result);
+          setStoryboardItems([]);
         }
+      } else {
+        console.error('LoadStoryboardList - HTTP error:', response.status);
+        setStoryboardItems([]);
       }
     } catch (error) {
       console.error('加载分镜板列表失败:', error);
+      setStoryboardItems([]);
     } finally {
       setIsLoadingStoryboard(false);
     }
@@ -1945,6 +1980,8 @@ function ShortplayEntryPage() {
 
   // 删除确认状态
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [deleteStoryboardId, setDeleteStoryboardId] = useState<string | null>(null);
+  const [removeUploadedImageId, setRemoveUploadedImageId] = useState<string | null>(null);
 
   // 视频数据状态 (使用与图片相同的数据结构)
   const [videoItems, setVideoItems] = useState([]);
@@ -2030,6 +2067,47 @@ function ShortplayEntryPage() {
     }
   };
 
+  // 显示删除分镜板确认对话框
+  const handleShowDeleteStoryboardConfirm = (itemId: string) => {
+    setDeleteStoryboardId(itemId);
+  };
+
+  // 删除分镜板
+  const handleDeleteStoryboard = async (itemId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${STORYAI_API_BASE}/storyboard/${itemId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-Prompt-Manager-Token': token || '',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`删除失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.code === 0) {
+        toast.success('分镜板删除成功！');
+        // 刷新分镜板列表
+        await loadStoryboardList();
+      } else {
+        throw new Error(result.message || '删除分镜板失败');
+      }
+    } catch (error) {
+      console.error('删除分镜板失败:', error);
+      toast.error('删除失败：' + (error as Error).message);
+    }
+  };
+
+  // 确认删除分镜板
+  const handleConfirmDeleteStoryboard = async () => {
+    if (deleteStoryboardId === null) return;
+    await handleDeleteStoryboard(deleteStoryboardId);
+    setDeleteStoryboardId(null);
+  };
+
   // 分镜板拖拽处理
   const handleStoryboardDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -2044,7 +2122,7 @@ function ShortplayEntryPage() {
         const newItems = arrayMove(oldItems, oldIndex, newIndex);
         setStoryboardItems(newItems);
 
-        // 这里可以调用API更新分镜板排序
+        // 调用API更新分镜板排序
         try {
           const token = localStorage.getItem('token');
           const movedItem = oldItems[oldIndex];
@@ -2052,9 +2130,28 @@ function ShortplayEntryPage() {
           // 计算新的storyboardOrder：使用新位置的索引+1作为storyboardOrder
           const newStoryboardOrder = newIndex + 1;
 
-          // 可以在这里添加API调用来更新排序
-          console.log(`移动分镜板 ${movedItem.id} 到位置 ${newStoryboardOrder}`);
-          toast.success('分镜板排序已更新！');
+          const response = await fetch(`${STORYAI_API_BASE}/storyboard/update`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Prompt-Manager-Token': token || '',
+            },
+            body: JSON.stringify({
+              id: parseInt(movedItem.id),
+              storyboardOrder: newStoryboardOrder
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`更新排序失败: ${response.status}`);
+          }
+
+          const result = await response.json();
+          if (result.code === 0) {
+            toast.success('分镜板排序已更新！');
+          } else {
+            throw new Error(result.message || '更新排序失败');
+          }
         } catch (error) {
           console.error('更新分镜板排序失败:', error);
           // API调用失败时，恢复原来的排序
@@ -2536,6 +2633,66 @@ function ShortplayEntryPage() {
     setEditingStartSeconds(timeData.startSeconds);
     setEditingEndMinutes(timeData.endMinutes);
     setEditingEndSeconds(timeData.endSeconds);
+  };
+
+  // 更新分镜板时间
+  const updateStoryboardTime = async (itemId: string, startTimeMs: number, endTimeMs: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${STORYAI_API_BASE}/storyboard/update`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Prompt-Manager-Token': token || '',
+        },
+        body: JSON.stringify({
+          id: parseInt(itemId),
+          startTime: startTimeMs,
+          endTime: endTimeMs
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`更新时间失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.code === 0) {
+        toast.success('时间更新成功！');
+        // 刷新分镜板列表
+        await loadStoryboardList();
+      } else {
+        throw new Error(result.message || '更新时间失败');
+      }
+    } catch (error) {
+      console.error('更新分镜板时间失败:', error);
+      toast.error('时间更新失败：' + (error as Error).message);
+    }
+  };
+
+  // 分镜板时间编辑保存
+  const saveStoryboardTimeEdit = async (itemId: string) => {
+    // 验证输入是否有效
+    if (!editingStartMinutes || !editingStartSeconds || !editingEndMinutes || !editingEndSeconds) return;
+
+    // 将时间转换为毫秒时间戳
+    const startMinutes = parseInt(editingStartMinutes);
+    const startSeconds = parseInt(editingStartSeconds);
+    const endMinutes = parseInt(editingEndMinutes);
+    const endSeconds = parseInt(editingEndSeconds);
+
+    const startTimeMs = (startMinutes * 60 + startSeconds) * 1000;
+    const endTimeMs = (endMinutes * 60 + endSeconds) * 1000;
+
+    // 调用API更新时间
+    await updateStoryboardTime(itemId, startTimeMs, endTimeMs);
+
+    // 清理编辑状态
+    setEditingTimeId(null);
+    setEditingStartMinutes('');
+    setEditingStartSeconds('');
+    setEditingEndMinutes('');
+    setEditingEndSeconds('');
   };
 
   const saveTimeEdit = (itemId: string, isImage: boolean = true) => {
@@ -3101,8 +3258,13 @@ function ShortplayEntryPage() {
     const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
     const sceneId = currentSceneData?.sceneId;
 
+    console.log('LoadVideoChatHistory - selectedScene:', selectedScene);
+    console.log('LoadVideoChatHistory - scenesData:', scenesData);
+    console.log('LoadVideoChatHistory - sceneId:', sceneId);
+
     if (!sceneId) {
       console.log('No scene selected, skipping video chat history load');
+      setIsLoadingVideoHistory(false); // 确保loading状态被重置
       return;
     }
 
@@ -3124,14 +3286,24 @@ function ShortplayEntryPage() {
         })
       });
 
+      console.log('LoadVideoChatHistory - response:', response);
+
       if (response.ok) {
         const result = await response.json();
+        console.log('LoadVideoChatHistory - result:', result);
         if (result.code === 0 && result.data) {
           setVideoChatHistory(result.data.records || result.data || []);
+        } else {
+          console.log('LoadVideoChatHistory - API returned error:', result);
+          setVideoChatHistory([]);
         }
+      } else {
+        console.error('LoadVideoChatHistory - HTTP error:', response.status);
+        setVideoChatHistory([]);
       }
     } catch (error) {
       console.error('加载视频聊天记录失败:', error);
+      setVideoChatHistory([]);
     } finally {
       setIsLoadingVideoHistory(false);
     }
@@ -3450,6 +3622,7 @@ function ShortplayEntryPage() {
       loadImageChatHistory();
       loadStoryboardList();
     } else if (activeTab === 'video') {
+      loadVideoChatHistory();
       loadStoryboardList();
     }
   }, [activeTab, audioType, selectedScene]);
@@ -4311,6 +4484,7 @@ function ShortplayEntryPage() {
                   loadImageChatHistory();
                   loadStoryboardList();
                 } else if (activeTab === 'video') {
+                  loadVideoChatHistory();
                   loadStoryboardList();
                 }
               }
@@ -4424,9 +4598,10 @@ function ShortplayEntryPage() {
                 onEditingEndMinutesChange={setEditingEndMinutes}
                 onEditingEndSecondsChange={setEditingEndSeconds}
                 onStartEditTime={startEditTime}
-                onSaveTimeEdit={(itemId) => saveTimeEdit(itemId, true)}
+                onSaveTimeEdit={saveStoryboardTimeEdit}
                 onCancelTimeEdit={cancelTimeEdit}
                 onDragEnd={handleStoryboardDragEnd}
+                onDeleteItem={handleShowDeleteStoryboardConfirm}
                 TimeRangeInput={TimeRangeInput}
               />
             )}
@@ -4446,9 +4621,10 @@ function ShortplayEntryPage() {
                 onEditingEndMinutesChange={setEditingEndMinutes}
                 onEditingEndSecondsChange={setEditingEndSeconds}
                 onStartEditTime={startEditTime}
-                onSaveTimeEdit={(itemId) => saveTimeEdit(itemId, true)}
+                onSaveTimeEdit={saveStoryboardTimeEdit}
                 onCancelTimeEdit={cancelTimeEdit}
                 onDragEnd={handleStoryboardDragEnd}
+                onDeleteItem={handleShowDeleteStoryboardConfirm}
                 TimeRangeInput={TimeRangeInput}
               />
             )}
@@ -4654,7 +4830,7 @@ function ShortplayEntryPage() {
         </>
       </div>
 
-      {/* 删除确认对话框 */}
+      {/* 删除确认对话框 - 场次内容 */}
       {deleteConfirmId !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
@@ -4676,6 +4852,37 @@ function ShortplayEntryPage() {
               </button>
               <button
                 onClick={handleConfirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              >
+                删除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 删除确认对话框 - 分镜板 */}
+      {deleteStoryboardId !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Icon icon="ri:delete-bin-line" className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">删除确认</h3>
+                <p className="text-sm text-gray-500">确定要删除这个分镜板吗？删除后无法恢复。</p>
+              </div>
+            </div>
+            <div className="flex space-x-3 justify-end">
+              <button
+                onClick={() => setDeleteStoryboardId(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleConfirmDeleteStoryboard}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 删除
