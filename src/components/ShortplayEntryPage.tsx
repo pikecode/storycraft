@@ -1961,15 +1961,12 @@ function ShortplayEntryPage() {
     setIsGeneratingPreview(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${STORYAI_API_BASE}/multimedia/video/preview`, {
+      const response = await fetch(`${STORYAI_API_BASE}/multimedia/video/preview?sceneId=${sceneId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Prompt-Manager-Token': token || '',
-        },
-        body: JSON.stringify({
-          sceneId: sceneId
-        })
+        }
       });
 
       if (!response.ok) {
