@@ -3159,7 +3159,7 @@ function ShortplayEntryPage() {
         },
         body: JSON.stringify({
           sceneId: sceneId,
-          type: 2,
+          type: 3,
           content: bgm.prompt || bgm.name || '音效',
           orderNum: orderNum,
           fileId: bgm.attachmentId,
