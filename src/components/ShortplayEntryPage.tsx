@@ -1382,6 +1382,94 @@ function SortableStoryboardItem({
   );
 }
 
+// 通用分镜板列表组件
+interface StoryboardListProps {
+  storyboardItems: any[];
+  isLoadingStoryboard: boolean;
+  editingTimeId: string | null;
+  editingStartMinutes: string;
+  editingStartSeconds: string;
+  editingEndMinutes: string;
+  editingEndSeconds: string;
+  sensors: any;
+  onEditingStartMinutesChange: (value: string) => void;
+  onEditingStartSecondsChange: (value: string) => void;
+  onEditingEndMinutesChange: (value: string) => void;
+  onEditingEndSecondsChange: (value: string) => void;
+  onStartEditTime: (itemId: string, timeRange: string) => void;
+  onSaveTimeEdit: (itemId: string) => void;
+  onCancelTimeEdit: () => void;
+  onDragEnd: (event: DragEndEvent) => void;
+  TimeRangeInput: React.ComponentType<any>;
+}
+
+function StoryboardList({
+  storyboardItems,
+  isLoadingStoryboard,
+  editingTimeId,
+  editingStartMinutes,
+  editingStartSeconds,
+  editingEndMinutes,
+  editingEndSeconds,
+  sensors,
+  onEditingStartMinutesChange,
+  onEditingStartSecondsChange,
+  onEditingEndMinutesChange,
+  onEditingEndSecondsChange,
+  onStartEditTime,
+  onSaveTimeEdit,
+  onCancelTimeEdit,
+  onDragEnd,
+  TimeRangeInput,
+}: StoryboardListProps) {
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={onDragEnd}
+    >
+      <SortableContext
+        items={storyboardItems.map(item => item.id.toString())}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="space-y-3">
+          {isLoadingStoryboard ? (
+            <div className="flex items-center justify-center p-4 text-gray-500">
+              <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
+              加载中...
+            </div>
+          ) : storyboardItems.length > 0 ? (
+            storyboardItems.map((item, index) => (
+              <SortableStoryboardItem
+                key={item.id}
+                item={item}
+                index={index}
+                editingTimeId={editingTimeId}
+                editingStartMinutes={editingStartMinutes}
+                editingStartSeconds={editingStartSeconds}
+                editingEndMinutes={editingEndMinutes}
+                editingEndSeconds={editingEndSeconds}
+                onEditingStartMinutesChange={onEditingStartMinutesChange}
+                onEditingStartSecondsChange={onEditingStartSecondsChange}
+                onEditingEndMinutesChange={onEditingEndMinutesChange}
+                onEditingEndSecondsChange={onEditingEndSecondsChange}
+                onStartEditTime={onStartEditTime}
+                onSaveTimeEdit={onSaveTimeEdit}
+                onCancelTimeEdit={onCancelTimeEdit}
+                TimeRangeInput={TimeRangeInput}
+              />
+            ))
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              暂无分镜板数据
+            </div>
+          )}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
 // 可排序的视频项组件
 interface SortableVideoItemProps {
   item: VideoItem;
@@ -1634,7 +1722,9 @@ function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onS
             </div>
           )}
         </div>
-        <Icon icon="ri:add-circle-line" className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600" onClick={onAddClick} />
+        {onAddClick && (
+          <Icon icon="ri:add-circle-line" className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600" onClick={onAddClick} />
+        )}
       </div>
 
       {/* 点击其他地方关闭下拉框和编辑框 */}
@@ -3649,46 +3739,9 @@ function ShortplayEntryPage() {
                         {generatedContent}
                       </div>
                     ) : (
-                      <>
-                        {/* 默认示例内容 */}
-                        <div className="space-y-3">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                              <span className="text-xs text-white font-medium">G</span>
-                            </div>
-                            <span className="text-sm font-medium text-gray-800">画面：1  时长：00:00'-00:05'</span>
-                          </div>
-
-                          <div className="space-y-2 text-sm text-gray-700 pl-8">
-                            <div className="break-words"><span className="font-medium">• 景别：</span>特写 → 全景</div>
-                            <div className="break-words"><span className="font-medium">• 运镜：</span>镜头从上往下摇</div>
-                            <div className="break-words">
-                              <span className="font-medium">• 画面：</span>
-                              <div className="ml-4 space-y-1 mt-1 text-gray-600">
-                                <div className="break-words">○ 从餐车顶部一个褪色的黄红招牌【特写】开始，招牌上"外粥·24小时"的字样残缺不全，闪烁着不稳定的红光。</div>
-                                <div className="break-words">○ 镜头【下摇】，红光在逐渐暗淡的路面上洒下了一片微弱的光晕。雨丝在灯光下清晰可见。</div>
-                                <div className="break-words">○ 镜头最终定格在餐车旁的金属桌椅，几张惆怅的桌椅在外面，虽然、格雷独自一人坐在餐桌角落的位置。</div>
-                                <div className="break-words">○ 音效：环境雨声，远处城市交通噪音，霓虹灯"滋滋"的电流声。</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 画面2 */}
-                        <div className="space-y-3">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium text-gray-800">画面：2  时长：00:05'-00:10'</span>
-                          </div>
-
-                          <div className="space-y-2 text-sm text-gray-700 pl-8">
-                            <div className="break-words"><span className="font-medium">• 景别：</span>中近景</div>
-                            <div className="break-words"><span className="font-medium">• 运镜：</span>固定</div>
-                            <div className="break-words">
-                              <span className="font-medium">• 画面：</span>虽然，格雷。深灰色连帽衫的视线垂得很低，只露出尖细的下颌线。他指间握着皱巴巴的纸巾，缓慢地擦去嘴角边的汁液。面前的是早已被泪水打湿的热粥。他的动作缓慢且理。
-                            </div>
-                          </div>
-                        </div>
-                      </>
+                      <div className="text-center text-gray-500 py-8">
+                        暂无剧本内容
+                      </div>
                     )}
                   </div>
                 )}
@@ -4357,97 +4410,47 @@ function ShortplayEntryPage() {
             )}
 
             {activeTab === 'image' && (
-              <DndContext
+              <StoryboardList
+                storyboardItems={storyboardItems}
+                isLoadingStoryboard={isLoadingStoryboard}
+                editingTimeId={editingTimeId}
+                editingStartMinutes={editingStartMinutes}
+                editingStartSeconds={editingStartSeconds}
+                editingEndMinutes={editingEndMinutes}
+                editingEndSeconds={editingEndSeconds}
                 sensors={sensors}
-                collisionDetection={closestCenter}
+                onEditingStartMinutesChange={setEditingStartMinutes}
+                onEditingStartSecondsChange={setEditingStartSeconds}
+                onEditingEndMinutesChange={setEditingEndMinutes}
+                onEditingEndSecondsChange={setEditingEndSeconds}
+                onStartEditTime={startEditTime}
+                onSaveTimeEdit={(itemId) => saveTimeEdit(itemId, true)}
+                onCancelTimeEdit={cancelTimeEdit}
                 onDragEnd={handleStoryboardDragEnd}
-              >
-                <SortableContext
-                  items={storyboardItems.map(item => item.id.toString())}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-3">
-                    {isLoadingStoryboard ? (
-                      <div className="flex items-center justify-center p-4 text-gray-500">
-                        <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
-                        加载中...
-                      </div>
-                    ) : storyboardItems.length > 0 ? (
-                      storyboardItems.map((item, index) => (
-                        <SortableStoryboardItem
-                          key={item.id}
-                          item={item}
-                          index={index}
-                          editingTimeId={editingTimeId}
-                          editingStartMinutes={editingStartMinutes}
-                          editingStartSeconds={editingStartSeconds}
-                          editingEndMinutes={editingEndMinutes}
-                          editingEndSeconds={editingEndSeconds}
-                          onEditingStartMinutesChange={setEditingStartMinutes}
-                          onEditingStartSecondsChange={setEditingStartSeconds}
-                          onEditingEndMinutesChange={setEditingEndMinutes}
-                          onEditingEndSecondsChange={setEditingEndSeconds}
-                          onStartEditTime={startEditTime}
-                          onSaveTimeEdit={(itemId) => saveTimeEdit(itemId, true)}
-                          onCancelTimeEdit={cancelTimeEdit}
-                          TimeRangeInput={TimeRangeInput}
-                        />
-                      ))
-                    ) : (
-                      <div className="text-center text-gray-500 py-8">
-                        暂无分镜板数据
-                      </div>
-                    )}
-                  </div>
-                </SortableContext>
-              </DndContext>
+                TimeRangeInput={TimeRangeInput}
+              />
             )}
 
             {activeTab === 'video' && (
-              <DndContext
+              <StoryboardList
+                storyboardItems={storyboardItems}
+                isLoadingStoryboard={isLoadingStoryboard}
+                editingTimeId={editingTimeId}
+                editingStartMinutes={editingStartMinutes}
+                editingStartSeconds={editingStartSeconds}
+                editingEndMinutes={editingEndMinutes}
+                editingEndSeconds={editingEndSeconds}
                 sensors={sensors}
-                collisionDetection={closestCenter}
+                onEditingStartMinutesChange={setEditingStartMinutes}
+                onEditingStartSecondsChange={setEditingStartSeconds}
+                onEditingEndMinutesChange={setEditingEndMinutes}
+                onEditingEndSecondsChange={setEditingEndSeconds}
+                onStartEditTime={startEditTime}
+                onSaveTimeEdit={(itemId) => saveTimeEdit(itemId, true)}
+                onCancelTimeEdit={cancelTimeEdit}
                 onDragEnd={handleStoryboardDragEnd}
-              >
-                <SortableContext
-                  items={storyboardItems.map(item => item.id.toString())}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-3">
-                    {isLoadingStoryboard ? (
-                      <div className="flex items-center justify-center p-4 text-gray-500">
-                        <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
-                        加载中...
-                      </div>
-                    ) : storyboardItems.length > 0 ? (
-                      storyboardItems.map((item, index) => (
-                        <SortableStoryboardItem
-                          key={item.id}
-                          item={item}
-                          index={index}
-                          editingTimeId={editingTimeId}
-                          editingStartMinutes={editingStartMinutes}
-                          editingStartSeconds={editingStartSeconds}
-                          editingEndMinutes={editingEndMinutes}
-                          editingEndSeconds={editingEndSeconds}
-                          onEditingStartMinutesChange={setEditingStartMinutes}
-                          onEditingStartSecondsChange={setEditingStartSeconds}
-                          onEditingEndMinutesChange={setEditingEndMinutes}
-                          onEditingEndSecondsChange={setEditingEndSeconds}
-                          onStartEditTime={startEditTime}
-                          onSaveTimeEdit={(itemId) => saveTimeEdit(itemId, true)}
-                          onCancelTimeEdit={cancelTimeEdit}
-                          TimeRangeInput={TimeRangeInput}
-                        />
-                      ))
-                    ) : (
-                      <div className="text-center text-gray-500 py-8">
-                        暂无分镜板数据
-                      </div>
-                    )}
-                  </div>
-                </SortableContext>
-              </DndContext>
+                TimeRangeInput={TimeRangeInput}
+              />
             )}
           </div>
         </div>
