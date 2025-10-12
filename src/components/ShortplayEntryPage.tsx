@@ -453,6 +453,10 @@ interface BottomInputAreaProps {
   onResolutionChange?: (res: string) => void;
   singleGenerate?: boolean;
   onSingleGenerateChange?: (single: boolean) => void;
+  onFileUpload?: (file: File) => Promise<any>;
+  onMultipleFileUpload?: (files: File[]) => Promise<any>;
+  isUploading?: boolean;
+  uploadProgress?: { current: number; total: number };
 }
 
 function BottomInputArea({
@@ -479,7 +483,11 @@ function BottomInputArea({
   resolution = "1080p",
   onResolutionChange,
   singleGenerate = false,
-  onSingleGenerateChange
+  onSingleGenerateChange,
+  onFileUpload,
+  onMultipleFileUpload,
+  isUploading = false,
+  uploadProgress = { current: 0, total: 0 }
 }: BottomInputAreaProps) {
   const { t } = useI18n();
 
@@ -779,17 +787,52 @@ function BottomInputArea({
               placeholder={finalPlaceholder}
               disabled={isGenerating}
             />
-            <label className="absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200">
-              <Icon icon="ri:image-line" className="w-4 h-4 text-gray-400" />
+            <label className={`absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 ${
+              activeTab === 'video' ? '' : 'hidden'
+            } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`} title={isUploading && uploadProgress.total > 0 ? `上传进度: ${uploadProgress.current}/${uploadProgress.total}` : '上传图片'}>
+              {isUploading ? (
+                <div className="relative w-4 h-4">
+                  <Icon icon="ri:loader-4-line" className="w-4 h-4 text-gray-400 animate-spin" />
+                  {uploadProgress.total > 1 && (
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center" style={{ fontSize: '6px' }}>
+                      {uploadProgress.current}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Icon icon="ri:image-line" className="w-4 h-4 text-gray-400" />
+              )}
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    // Handle image upload here
-                    console.log('Image uploaded:', file);
+                disabled={isUploading}
+                onChange={async (e) => {
+                  console.log('文件选择事件触发');
+                  const files = Array.from(e.target.files || []);
+                  console.log('选择的文件:', files);
+                  console.log('当前上传状态:', isUploading);
+                  console.log('onMultipleFileUpload 函数:', onMultipleFileUpload);
+
+                  if (files.length > 0 && !isUploading) {
+                    console.log('开始上传文件:', files.map(f => f.name));
+
+                    // 使用批量上传处理
+                    if (onMultipleFileUpload) {
+                      console.log('调用批量上传函数');
+                      await onMultipleFileUpload(files);
+                    } else {
+                      console.log('批量上传函数不存在');
+                    }
+
+                    // 重置input的value，允许重复选择相同文件
+                    e.target.value = '';
+                  } else {
+                    console.log('跳过上传，原因:', {
+                      filesLength: files.length,
+                      isUploading
+                    });
                   }
                 }}
               />
@@ -2810,6 +2853,351 @@ function ShortplayEntryPage() {
     }
   };
 
+  // 文件上传状态
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+
+  // 批量文件上传状态
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
+
+  // 上传成功的图片文件列表
+  const [uploadedImages, setUploadedImages] = useState<Array<{fileId: string; fileUrl: string; fileName: string}>>([]);
+
+  // 处理文件上传
+  const handleFileUpload = async (file: File) => {
+    console.log('handleFileUpload 被调用，文件:', file);
+    if (!file || isUploading) return;
+
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) {
+        toast.error('用户信息不存在，请重新登录');
+        return;
+      }
+
+      const user = JSON.parse(userStr);
+      const userId = user.userId;
+      if (!userId) {
+        toast.error('用户ID不存在，请重新登录');
+        return;
+      }
+
+      console.log('准备上传文件:', { fileName: file.name, userId });
+
+      // 构建URL参数
+      const fileName = encodeURIComponent(file.name);
+      const uploadUrl = `${STORYAI_API_BASE}/file/upload?userId=${userId}&fileName=${fileName}`;
+
+      console.log('上传URL:', uploadUrl);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          'X-Prompt-Manager-Token': token || '',
+        },
+        body: formData
+      });
+
+      console.log('上传响应状态:', response.status);
+
+      if (!response.ok) {
+        throw new Error(`上传失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('文件上传结果:', result);
+
+      if (result.code === 0) {
+        // 这里可以处理上传成功后的逻辑，比如保存文件信息
+        return result.data;
+      } else {
+        throw new Error(result.message || '文件上传失败');
+      }
+    } catch (error) {
+      console.error('文件上传失败:', error);
+      throw error; // 重新抛出错误，让批量上传处理
+    }
+  };
+
+  // 批量文件上传处理
+  const handleMultipleFileUpload = async (files: File[]) => {
+    console.log('handleMultipleFileUpload 被调用，参数:', files);
+    console.log('当前上传状态:', isUploading);
+
+    if (!files.length || isUploading) {
+      console.log('提前返回，原因:', { filesLength: files.length, isUploading });
+      return;
+    }
+
+    console.log('开始设置上传状态');
+    setIsUploading(true);
+    setUploadProgress({ current: 0, total: files.length });
+
+    const results: Array<{ file: File; success: boolean; data?: any; error?: string }> = [];
+    const successfulUploads: Array<{fileId: string; fileUrl: string; fileName: string}> = [];
+
+    try {
+      console.log('显示开始上传toast');
+      toast(`开始上传 ${files.length} 个文件`, { icon: '📤' });
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        console.log(`开始上传第 ${i + 1} 个文件:`, file.name);
+        setUploadProgress({ current: i + 1, total: files.length });
+
+        try {
+          const data = await handleFileUpload(file);
+          results.push({ file, success: true, data });
+
+          // 记录上传成功的文件信息
+          if (data && data.fileId && data.fileUrl) {
+            successfulUploads.push({
+              fileId: data.fileId,
+              fileUrl: data.fileUrl,
+              fileName: data.fileName || file.name
+            });
+          }
+
+          toast.success(`${file.name} 上传成功 (${i + 1}/${files.length})`);
+          console.log(`文件 ${file.name} 上传成功`, data);
+        } catch (error) {
+          const errorMessage = (error as Error).message;
+          results.push({ file, success: false, error: errorMessage });
+          toast.error(`${file.name} 上传失败: ${errorMessage}`);
+          console.log(`文件 ${file.name} 上传失败:`, errorMessage);
+        }
+      }
+
+      // 更新上传成功的图片列表
+      if (successfulUploads.length > 0) {
+        setUploadedImages(prev => [...prev, ...successfulUploads]);
+        console.log('更新上传图片列表:', successfulUploads);
+      }
+
+      // 统计结果
+      const successCount = results.filter(r => r.success).length;
+      const failCount = results.filter(r => !r.success).length;
+      console.log('上传结果统计:', { successCount, failCount });
+
+      if (successCount > 0 && failCount === 0) {
+        toast.success(`所有文件上传成功！(${successCount}个)`);
+      } else if (successCount > 0 && failCount > 0) {
+        toast(`部分文件上传成功：${successCount}个成功，${failCount}个失败`, {
+          icon: '⚠️',
+          duration: 4000
+        });
+      } else {
+        toast.error(`所有文件上传失败！(${failCount}个)`);
+      }
+
+      return results;
+    } finally {
+      console.log('重置上传状态');
+      setIsUploading(false);
+      setUploadProgress({ current: 0, total: 0 });
+    }
+  };
+
+  // 视频聊天记录数据状态
+  const [videoChatHistory, setVideoChatHistory] = useState<any[]>([]);
+  const [isLoadingVideoHistory, setIsLoadingVideoHistory] = useState<boolean>(false);
+
+  // 加载视频聊天记录
+  const loadVideoChatHistory = async () => {
+    // 获取当前选中场次的sceneId
+    const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
+    const sceneId = currentSceneData?.sceneId;
+
+    if (!sceneId) {
+      console.log('No scene selected, skipping video chat history load');
+      return;
+    }
+
+    setIsLoadingVideoHistory(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${STORYAI_API_BASE}/chat-history/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Prompt-Manager-Token': token || '',
+        },
+        body: JSON.stringify({
+          sceneId: sceneId.toString(),
+          chatScene: "VIDEO",
+          type: "AI_ANSWER",
+          pageNum: 1,
+          pageSize: 24
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.code === 0 && result.data) {
+          setVideoChatHistory(result.data.records || result.data || []);
+        }
+      }
+    } catch (error) {
+      console.error('加载视频聊天记录失败:', error);
+    } finally {
+      setIsLoadingVideoHistory(false);
+    }
+  };
+
+  // 视频生成状态
+  const [isVideoGenerating, setIsVideoGenerating] = useState<boolean>(false);
+  const [videoGenerationFileId, setVideoGenerationFileId] = useState<string | null>(null);
+
+  // 视频生成API调用
+  const handleVideoGenerate = async () => {
+    if (!userInput.trim()) {
+      toast.error('请输入生成内容');
+      return;
+    }
+
+    // 获取当前选中场次的sceneId
+    const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
+    const sceneId = currentSceneData?.sceneId;
+
+    if (!sceneId) {
+      toast.error('请先选择场次');
+      return;
+    }
+
+    setIsGenerating(true); // 使用统一的生成状态
+    setIsVideoGenerating(true);
+    setGenerationStatus('正在生成视频...');
+
+    try {
+      const token = localStorage.getItem('token');
+
+      // 构建请求参数
+      const requestBody = {
+        sceneId: sceneId.toString(),
+        llmName: "", // 固定为空字符串
+        userMessage: userInput.trim(),
+        useImageGeneration: uploadedImages.length > 0,
+        images: uploadedImages.map(img => img.fileId) // 使用fileId而不是fileUrl
+      };
+
+      console.log('视频生成请求参数:', requestBody);
+
+      const response = await fetch(`${STORYAI_API_BASE}/ai/video/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Prompt-Manager-Token': token || '',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        throw new Error(`视频生成请求失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('视频生成响应:', result);
+
+      if (result.code === 0 && result.data) {
+        const fileId = result.data.toString();
+        setVideoGenerationFileId(fileId);
+
+        toast.success('视频生成任务已开始！');
+        setGenerationStatus('视频生成中，请稍候...');
+
+        // 开始轮询进度
+        await pollVideoProgress(fileId);
+      } else {
+        throw new Error(result.message || '视频生成失败');
+      }
+    } catch (error) {
+      console.error('视频生成失败:', error);
+      toast.error('视频生成失败：' + (error as Error).message);
+      setGenerationStatus('');
+      setIsGenerating(false);
+      setIsVideoGenerating(false);
+    }
+  };
+
+  // 轮询视频生成进度
+  const pollVideoProgress = async (fileId: string) => {
+    const maxPolls = 60; // 最多轮询60次 (5分钟)
+    let pollCount = 0;
+
+    const poll = async () => {
+      try {
+        pollCount++;
+        console.log(`轮询视频进度，第 ${pollCount} 次`, fileId);
+
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${STORYAI_API_BASE}/ai/video/progress`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Prompt-Manager-Token': token || '',
+          },
+          body: JSON.stringify({ fileId: parseInt(fileId) })
+        });
+
+        if (!response.ok) {
+          throw new Error(`进度查询失败: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('视频进度响应:', result);
+
+        if (result.code === 0 && result.data) {
+          const { status, playUrl, errorMessage } = result.data;
+
+          if (status === 'COMPLETED') {
+            setGenerationStatus('视频生成完成！');
+            toast.success('视频生成成功！');
+
+            if (playUrl) {
+              console.log('视频播放地址:', playUrl);
+              // 这里可以添加显示视频的逻辑
+            }
+
+            // 视频生成完成后刷新视频聊天记录列表
+            await loadVideoChatHistory();
+
+            setIsGenerating(false);
+            setIsVideoGenerating(false);
+            setVideoGenerationFileId(null);
+            setUserInput(''); // 清空输入
+            return;
+          } else if (status === 'FAILED' || errorMessage) {
+            throw new Error(errorMessage || '视频生成失败');
+          } else {
+            // 继续轮询
+            setGenerationStatus(`视频生成中... (${pollCount}/${maxPolls})`);
+
+            if (pollCount < maxPolls) {
+              setTimeout(poll, 5000); // 5秒后继续轮询
+            } else {
+              throw new Error('视频生成超时');
+            }
+          }
+        } else {
+          throw new Error(result.message || '进度查询失败');
+        }
+      } catch (error) {
+        console.error('轮询进度失败:', error);
+        toast.error('视频生成失败：' + (error as Error).message);
+        setIsGenerating(false);
+        setIsVideoGenerating(false);
+        setVideoGenerationFileId(null);
+        setGenerationStatus('');
+      }
+    };
+
+    // 开始第一次轮询
+    setTimeout(poll, 2000); // 2秒后开始轮询
+  };
+
   // 音效生成API调用
   const handleBgmGenerate = async () => {
     if (!userInput.trim()) {
@@ -2971,6 +3359,8 @@ function ShortplayEntryPage() {
     } else if (activeTab === 'image') {
       loadImageChatHistory();
       loadStoryboardList();
+    } else if (activeTab === 'video') {
+      loadStoryboardList();
     }
   }, [activeTab, audioType, selectedScene]);
 
@@ -3044,6 +3434,13 @@ function ShortplayEntryPage() {
     }
   };
   const handleGenerate = async () => {
+    if (activeTab === 'video') {
+      // 视频生成
+      await handleVideoGenerate();
+      return;
+    }
+
+    // 原有的剧本生成逻辑
     if (!userInput.trim()) {
       toast.error(t('shortplayEntry.input.description'));
       return;
@@ -3681,26 +4078,115 @@ function ShortplayEntryPage() {
 
                 {activeTab === 'video' && (
                   <div className="space-y-4">
-                    {/* 分镜选择区域 */}
+                    {/* 视频聊天记录内容区域 */}
                     <div className="space-y-3">
-                      <div className="relative w-24">
-                        <select className="w-full h-9 pl-3 pr-8 text-sm rounded-lg bg-white focus:outline-none appearance-none">
-                          <option value="shot1">分镜1</option>
-                          <option value="shot2">分镜2</option>
-                          <option value="shot3">分镜3</option>
-                          <option value="shot4">分镜4</option>
-                        </select>
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
+                      {isLoadingVideoHistory ? (
+                        <div className="flex items-center justify-center p-4 text-gray-500">
+                          <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
+                          加载中...
                         </div>
-                      </div>
-                    </div>
+                      ) : videoChatHistory.length > 0 ? (
+                        (() => {
+                          // 将所有records的files合并成一个数组
+                          const allFiles: any[] = [];
+                          videoChatHistory.forEach((item, itemIndex) => {
+                            if (item.files && item.files.length > 0) {
+                              item.files.forEach((file: any) => {
+                                if (file.fileType === 'VIDEO' && file.downloadUrl) {
+                                  allFiles.push({
+                                    ...file,
+                                    recordIndex: itemIndex,
+                                    recordContent: item.content || item.message || '视频内容',
+                                    createTime: item.createTime
+                                  });
+                                }
+                              });
+                            }
+                          });
 
-                    {/* 视频功能内容区域 */}
-                    <div className="flex items-center justify-center h-full text-gray-500">
-                      <span>视频功能开发中...</span>
+                          return (
+                            <div className="space-y-3">
+                              {allFiles.map((file, index) => (
+                                <div key={`file-${file.fileId || index}`} className="bg-white rounded-lg border border-gray-200 p-3">
+                                  <div className="flex items-start space-x-3">
+                                    {/* 序号 */}
+                                    <div className="text-sm font-medium text-blue-600 min-w-[20px]">
+                                      {index + 1}
+                                    </div>
+
+                                    {/* 视频缩略图 */}
+                                    <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                                      <div className="w-full h-full bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                                        onClick={() => {
+                                          window.open(file.downloadUrl, '_blank');
+                                        }}
+                                      >
+                                        <Icon icon="ri:play-circle-line" className="w-8 h-8 text-white" />
+                                      </div>
+                                    </div>
+
+                                    {/* 内容信息 */}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-sm text-gray-800 mb-1">
+                                        {file.recordContent}
+                                      </div>
+                                      <div className="text-xs text-gray-500 mb-1">
+                                        文件名: {file.fileName}
+                                      </div>
+                                      <div className="text-xs text-gray-400">
+                                        来源记录: #{file.recordIndex + 1}
+                                        {file.createTime && (
+                                          <span className="ml-2">
+                                            {new Date(file.createTime).toLocaleString()}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* 操作按钮 */}
+                                    <div className="flex items-center space-x-2">
+                                      <button
+                                        onClick={() => window.open(file.downloadUrl, '_blank')}
+                                        className="p-1 hover:bg-gray-100 rounded"
+                                        title="播放视频"
+                                      >
+                                        <Icon icon="ri:play-line" className="w-4 h-4 text-gray-400 hover:text-blue-500" />
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          const link = document.createElement('a');
+                                          link.href = file.downloadUrl;
+                                          link.download = file.fileName || '视频';
+                                          document.body.appendChild(link);
+                                          link.click();
+                                          document.body.removeChild(link);
+                                        }}
+                                        className="p-1 hover:bg-gray-100 rounded"
+                                        title="下载视频"
+                                      >
+                                        <Icon icon="ri:download-line" className="w-4 h-4 text-gray-400 hover:text-green-500" />
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          handleCreateStoryboard(file.fileId, file.fileName);
+                                        }}
+                                        className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                                        title="应用此视频"
+                                      >
+                                        应用
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <div className="text-center text-gray-500 py-8">
+                          暂无视频记录
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -3735,6 +4221,10 @@ function ShortplayEntryPage() {
                 onResolutionChange={setResolution}
                 singleGenerate={singleGenerate}
                 onSingleGenerateChange={setSingleGenerate}
+                onFileUpload={handleFileUpload}
+                onMultipleFileUpload={handleMultipleFileUpload}
+                isUploading={isUploading}
+                uploadProgress={uploadProgress}
               />
             </div>
           </div>
@@ -3752,10 +4242,11 @@ function ShortplayEntryPage() {
               activeTab === 'script' ? selectedScene :
               activeTab === 'audio' ? selectedScene :
               activeTab === 'image' ? selectedScene :
+              activeTab === 'video' ? selectedScene :
               undefined
             }
             subtitleOptions={
-              activeTab === 'script' || activeTab === 'audio' || activeTab === 'image' ? sceneOptions : undefined
+              activeTab === 'script' || activeTab === 'audio' || activeTab === 'image' || activeTab === 'video' ? sceneOptions : undefined
             }
             onSubtitleChange={(value) => {
               // 处理从下拉列表选择场次的情况
@@ -3765,6 +4256,8 @@ function ShortplayEntryPage() {
                 loadSceneContent(selectedSceneData.sceneId);
                 if (activeTab === 'image') {
                   loadImageChatHistory();
+                  loadStoryboardList();
+                } else if (activeTab === 'video') {
                   loadStoryboardList();
                 }
               }
@@ -3914,33 +4407,44 @@ function ShortplayEntryPage() {
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
-                onDragEnd={handleVideoDragEnd}
+                onDragEnd={handleStoryboardDragEnd}
               >
                 <SortableContext
-                  items={videoItems.map(item => item.id)}
+                  items={storyboardItems.map(item => item.id.toString())}
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="space-y-3">
-                    {videoItems.map((item, index) => (
-                      <SortableVideoItem
-                        key={item.id}
-                        item={item}
-                        index={index}
-                        editingTimeId={editingTimeId}
-                        editingStartMinutes={editingStartMinutes}
-                        editingStartSeconds={editingStartSeconds}
-                        editingEndMinutes={editingEndMinutes}
-                        editingEndSeconds={editingEndSeconds}
-                        onEditingStartMinutesChange={setEditingStartMinutes}
-                        onEditingStartSecondsChange={setEditingStartSeconds}
-                        onEditingEndMinutesChange={setEditingEndMinutes}
-                        onEditingEndSecondsChange={setEditingEndSeconds}
-                        onStartEditTime={startEditTime}
-                        onSaveTimeEdit={(itemId) => saveTimeEdit(itemId, false)}
-                        onCancelTimeEdit={cancelTimeEdit}
-                        parseTimeRange={parseTimeRange}
-                      />
-                    ))}
+                    {isLoadingStoryboard ? (
+                      <div className="flex items-center justify-center p-4 text-gray-500">
+                        <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
+                        加载中...
+                      </div>
+                    ) : storyboardItems.length > 0 ? (
+                      storyboardItems.map((item, index) => (
+                        <SortableStoryboardItem
+                          key={item.id}
+                          item={item}
+                          index={index}
+                          editingTimeId={editingTimeId}
+                          editingStartMinutes={editingStartMinutes}
+                          editingStartSeconds={editingStartSeconds}
+                          editingEndMinutes={editingEndMinutes}
+                          editingEndSeconds={editingEndSeconds}
+                          onEditingStartMinutesChange={setEditingStartMinutes}
+                          onEditingStartSecondsChange={setEditingStartSeconds}
+                          onEditingEndMinutesChange={setEditingEndMinutes}
+                          onEditingEndSecondsChange={setEditingEndSeconds}
+                          onStartEditTime={startEditTime}
+                          onSaveTimeEdit={(itemId) => saveTimeEdit(itemId, true)}
+                          onCancelTimeEdit={cancelTimeEdit}
+                          TimeRangeInput={TimeRangeInput}
+                        />
+                      ))
+                    ) : (
+                      <div className="text-center text-gray-500 py-8">
+                        暂无分镜板数据
+                      </div>
+                    )}
                   </div>
                 </SortableContext>
               </DndContext>
