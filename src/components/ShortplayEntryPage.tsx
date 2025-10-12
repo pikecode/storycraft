@@ -105,7 +105,7 @@ function SortableAudioItem({ item, audioType, configuredVoices, onVoiceSelect }:
         </div>
         <div className="flex items-center space-x-2">
           <span className="text-sm font-medium text-gray-800">{item.speaker}</span>
-          {item.type === 'voice' && audioType === 'voice' && (
+          {item.type === 'voice' && (
             <div className="relative">
               <select
                 className="text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:border-blue-500"
@@ -1818,6 +1818,10 @@ function ShortplayEntryPage() {
   // 音频类型选择状态（音色/音效）
   const [audioType, setAudioType] = useState<'voice' | 'sound'>('voice');
 
+  // 音频内容数据状态
+  const [audioContent, setAudioContent] = useState<any[]>([]); // 存储音频tab的内容数据
+  const [isLoadingAudioContent, setIsLoadingAudioContent] = useState(false);
+
   // 音效数据状态
   const [bgmList, setBgmList] = useState<any[]>([]);
   const [isLoadingBgm, setIsLoadingBgm] = useState(false);
@@ -2065,6 +2069,9 @@ function ShortplayEntryPage() {
   const [videoItems, setVideoItems] = useState([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoSrc = "/32767410413-1-192.mp4"; // 视频文件路径
+
+  // 用于跟踪上一次的audioType值
+  const prevAudioTypeRef = useRef<'voice' | 'sound'>(audioType);
 
   // 进度条拖拽状态
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -3117,6 +3124,63 @@ function ShortplayEntryPage() {
     }
   };
 
+  // 应用音效到场次
+  const handleApplyBgm = async (bgm: any) => {
+    // 获取当前选中场次的sceneId
+    const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
+    const sceneId = currentSceneData?.sceneId;
+
+    if (!sceneId) {
+      toast.error('请先选择场次');
+      return;
+    }
+
+    if (!bgm.attachmentId) {
+      toast.error('音效文件缺少attachmentId');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+
+      // 计算下一个排序号（当前音频内容列表长度 + 1）
+      const orderNum = audioContent.length + 1;
+
+      const response = await fetch(`${STORYAI_API_BASE}/scene/content`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Prompt-Manager-Token': token || '',
+        },
+        body: JSON.stringify({
+          sceneId: sceneId,
+          type: 2,
+          content: bgm.prompt || bgm.name || '音效',
+          orderNum: orderNum,
+          fileId: bgm.attachmentId,
+          startTime: 0,
+          endTime: 5000
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.code === 0) {
+        toast.success('音效应用成功！');
+        // 刷新音频内容列表
+        await loadAudioContent(sceneId);
+      } else {
+        throw new Error(result.message || '应用音效失败');
+      }
+    } catch (error) {
+      console.error('应用音效失败:', error);
+      toast.error('应用音效失败：' + (error as Error).message);
+    }
+  };
+
   // 图片生成API调用
   const handleImageGenerate = async () => {
     if (!userInput.trim()) {
@@ -3628,6 +3692,37 @@ function ShortplayEntryPage() {
     }
   };
 
+  // 加载音频内容（音频Tab专用）
+  const loadAudioContent = async (sceneId: number) => {
+    setIsLoadingAudioContent(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${STORYAI_API_BASE}/scene/content?sceneId=${sceneId}`, {
+        method: 'GET',
+        headers: {
+          'X-Prompt-Manager-Token': token || '',
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.code === 0 && result.data) {
+          console.log('音频内容:', result.data);
+          setAudioContent(result.data);
+        } else {
+          setAudioContent([]);
+        }
+      } else {
+        setAudioContent([]);
+      }
+    } catch (error) {
+      console.error('加载音频内容失败:', error);
+      setAudioContent([]);
+    } finally {
+      setIsLoadingAudioContent(false);
+    }
+  };
+
   // 用户数据加载状态
   const [isLoadingUserData, setIsLoadingUserData] = useState<boolean>(false);
 
@@ -3688,9 +3783,16 @@ function ShortplayEntryPage() {
     loadUserData();
   }, []);
 
-  // 音频tab切换时加载数据
+  // Tab切换时加载数据
   React.useEffect(() => {
     if (activeTab === 'audio') {
+      // 加载音频内容列表（仅在切换Tab或场次时）
+      const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
+      if (currentSceneData?.sceneId) {
+        loadAudioContent(currentSceneData.sceneId);
+      }
+
+      // 首次进入音频Tab时也加载资源
       if (audioType === 'voice') {
         loadAllVoices();
       } else {
@@ -3703,7 +3805,21 @@ function ShortplayEntryPage() {
       loadVideoChatHistory();
       loadStoryboardList();
     }
-  }, [activeTab, audioType, selectedScene]);
+  }, [activeTab, selectedScene]);
+
+  // 音色/音效切换时只加载左侧资源（不重新加载中间列表）
+  React.useEffect(() => {
+    // 只有当audioType真正改变且在音频Tab中时才执行
+    if (activeTab === 'audio' && prevAudioTypeRef.current !== audioType) {
+      if (audioType === 'voice') {
+        loadAllVoices();
+      } else {
+        loadBgmList();
+      }
+      // 更新ref
+      prevAudioTypeRef.current = audioType;
+    }
+  }, [audioType, activeTab]);
 
   // 音频生成API调用
   const handleAudioGenerate = async () => {
@@ -4226,7 +4342,7 @@ function ShortplayEntryPage() {
                                       <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
                                     </div>
                                     <div className="flex-1">
-                                      <div className="text-sm font-medium text-gray-800">{bgm.name || bgm.title || '音效文件'}</div>
+                                      <div className="text-sm font-medium text-gray-800">{bgm.prompt || bgm.name || bgm.title || '音效文件'}</div>
                                       {bgm.description && (
                                         <div className="text-xs text-gray-500">{bgm.description}</div>
                                       )}
@@ -4235,13 +4351,21 @@ function ShortplayEntryPage() {
                                       <button
                                         className="px-3 py-1 text-xs border border-green-500 text-green-500 rounded hover:bg-green-50"
                                         onClick={() => {
-                                          if (bgm.audioUrl || bgm.url) {
-                                            const audio = new Audio(bgm.audioUrl || bgm.url);
+                                          if (bgm.audioUrl) {
+                                            const audio = new Audio(bgm.audioUrl);
                                             audio.play();
+                                          } else {
+                                            toast.error('音效文件缺少播放地址');
                                           }
                                         }}
                                       >
                                         播放
+                                      </button>
+                                      <button
+                                        className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+                                        onClick={() => handleApplyBgm(bgm)}
+                                      >
+                                        应用
                                       </button>
                                     </div>
                                   </div>
@@ -4655,26 +4779,37 @@ function ShortplayEntryPage() {
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={sceneContent.map(item => item.id.toString())}
+                  items={audioContent.map(item => item.id.toString())}
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="space-y-4">
-                    {sceneContent.map((item) => (
-                      <SortableAudioItem
-                        key={item.id}
-                        item={{
-                          id: item.id.toString(),
-                          type: item.type === 1 ? 'voice' : 'sound',
-                          speaker: item.roleName || (item.type === 1 ? '对话' : '音效'),
-                          content: item.content,
-                          timeRange: `${formatMillisecondsToTime(item.startTime || 0)}-${formatMillisecondsToTime(item.endTime || 0)}`,
-                          icon: item.type === 1 ? 'ri:user-voice-line' : 'ri:music-2-line'
-                        }}
-                        audioType={audioType}
-                        configuredVoices={configuredVoices}
-                        onVoiceSelect={handleVoiceSelect}
-                      />
-                    ))}
+                    {isLoadingAudioContent ? (
+                      <div className="flex items-center justify-center p-4 text-gray-500">
+                        <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
+                        加载中...
+                      </div>
+                    ) : audioContent.length > 0 ? (
+                      audioContent.map((item) => (
+                        <SortableAudioItem
+                          key={item.id}
+                          item={{
+                            id: item.id.toString(),
+                            type: item.type === 1 ? 'voice' : 'sound',
+                            speaker: item.type === 1 ? (item.roleName || '角色对话') : item.type === 3 ? '音效' : '画面描述',
+                            content: item.content,
+                            timeRange: `${formatMillisecondsToTime(item.startTime || 0)}-${formatMillisecondsToTime(item.endTime || 0)}`,
+                            icon: item.type === 1 ? 'ri:user-voice-line' : item.type === 3 ? 'ri:music-2-line' : 'ri:camera-line'
+                          }}
+                          audioType={audioType}
+                          configuredVoices={configuredVoices}
+                          onVoiceSelect={handleVoiceSelect}
+                        />
+                      ))
+                    ) : (
+                      <div className="text-center text-gray-500 py-8">
+                        暂无音频内容
+                      </div>
+                    )}
                   </div>
                 </SortableContext>
               </DndContext>
