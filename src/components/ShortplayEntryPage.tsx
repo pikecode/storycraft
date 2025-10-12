@@ -2526,10 +2526,6 @@ function ShortplayEntryPage() {
   const handleSaveSceneItem = async () => {
     if (editingSceneItemId === null) return;
 
-    // 构建时间字符串
-    const startTime = `${editingSceneStartMinutes.padStart(2, '0')}:${editingSceneStartSeconds.padStart(2, '0')}`;
-    const endTime = `${editingSceneEndMinutes.padStart(2, '0')}:${editingSceneEndSeconds.padStart(2, '0')}`;
-
     // 验证时间逻辑
     const startSeconds = parseInt(editingSceneStartMinutes) * 60 + parseInt(editingSceneStartSeconds);
     const endSeconds = parseInt(editingSceneEndMinutes) * 60 + parseInt(editingSceneEndSeconds);
@@ -2543,6 +2539,10 @@ function ShortplayEntryPage() {
       toast.error('请输入内容');
       return;
     }
+
+    // 将时间转换为毫秒格式
+    const startTimeMs = startSeconds * 1000;
+    const endTimeMs = endSeconds * 1000;
 
     try {
       const token = localStorage.getItem('token');
@@ -2563,8 +2563,8 @@ function ShortplayEntryPage() {
       let requestBody: any = {
         type: editingSceneType,
         content: editingSceneContent,
-        startTime: startTime, // 保持原有的MM:SS格式
-        endTime: endTime
+        startTime: startTimeMs,
+        endTime: endTimeMs
       };
 
       // 新增时添加sceneId，编辑时添加id
@@ -2602,8 +2602,8 @@ function ShortplayEntryPage() {
                       type: editingSceneType,
                       content: editingSceneContent,
                       roleName: editingSceneType === 1 ? editingSceneRoleName : undefined,
-                      startTime: startTime,
-                      endTime: endTime,
+                      startTime: startTimeMs,
+                      endTime: endTimeMs,
                     }
                   : item
               )
@@ -2618,8 +2618,8 @@ function ShortplayEntryPage() {
                       type: editingSceneType,
                       content: editingSceneContent,
                       roleName: editingSceneType === 1 ? editingSceneRoleName : undefined,
-                      startTime: startTime,
-                      endTime: endTime,
+                      startTime: startTimeMs,
+                      endTime: endTimeMs,
                     }
                   : item
               )
