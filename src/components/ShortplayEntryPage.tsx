@@ -28,6 +28,14 @@ const STORYAI_API_BASE = '/episode-api/storyai';
 
 const { Option } = Select;
 
+// 时间格式化工具函数：毫秒转 mm:ss
+const formatMillisecondsToTime = (milliseconds: number): string => {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+};
+
 // 可排序的音频项组件
 interface AudioItem {
   id: string;
@@ -1276,7 +1284,7 @@ function SortableStoryboardItem({
       {/* 序号和操作按钮列 */}
       <div className="flex flex-col justify-between items-center h-full min-w-[20px]">
         <div className="text-lg font-medium text-blue-600">
-          {item.storyboardOrder || index + 1}
+          {index + 1}
         </div>
         <div className="flex flex-col items-center space-y-1">
           <div
@@ -1300,20 +1308,33 @@ function SortableStoryboardItem({
         </div>
       </div>
 
-      {/* 图片缩略图 */}
+      {/* 图片/视频缩略图 */}
       <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
         {item.fileUrl ? (
-          <img
-            src={item.fileUrl}
-            alt={item.fileName || '分镜图片'}
-            className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-            onClick={() => {
-              window.open(item.fileUrl, '_blank');
-            }}
-          />
+          // 判断是否为视频文件 (.mp4, .webm, .mov, .avi)
+          /\.(mp4|webm|mov|avi)$/i.test(item.fileUrl) || /\.(mp4|webm|mov|avi)$/i.test(item.fileName || '') ? (
+            <video
+              src={item.fileUrl}
+              className="w-full h-full object-cover cursor-pointer"
+              controls
+              onClick={(e) => e.stopPropagation()}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : (
+            <img
+              src={item.fileUrl}
+              alt={item.fileName || '分镜图片'}
+              className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+              onClick={() => {
+                window.open(item.fileUrl, '_blank');
+              }}
+            />
+          )
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-purple-200 via-pink-200 to-blue-200 flex items-center justify-center">
             <Icon icon="ri:image-line" className="w-8 h-8 text-white" />
@@ -1325,7 +1346,7 @@ function SortableStoryboardItem({
       <div className="flex-1 min-w-0 flex space-x-4">
         {/* 左侧：描述 */}
         <div className="flex-1 text-sm text-gray-800 leading-relaxed">
-          分镜板 #{item.storyboardOrder || index + 1}
+          分镜板 #{index + 1}
           {item.description && (
             <div className="text-xs text-gray-600 mt-1">{item.description}</div>
           )}
@@ -1366,11 +1387,15 @@ function SortableStoryboardItem({
               </div>
             ) : (
               <div className="flex items-center space-x-1 text-xs text-gray-400">
-                <span>00:00</span>
+                <span>{formatMillisecondsToTime(item.startTime || 0)}</span>
                 <span>-</span>
-                <span>00:05</span>
+                <span>{formatMillisecondsToTime(item.endTime || 0)}</span>
                 <button
-                  onClick={() => onStartEditTime(item.id, "00:00'-00:05'")}
+                  onClick={() => {
+                    const startTime = formatMillisecondsToTime(item.startTime || 0);
+                    const endTime = formatMillisecondsToTime(item.endTime || 0);
+                    onStartEditTime(item.id, `${startTime}-${endTime}`);
+                  }}
                   className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
                 >
                   <Icon icon="ri:edit-line" className="w-3 h-3" />
@@ -1896,7 +1921,11 @@ function ShortplayEntryPage() {
         const result = await response.json();
         console.log('LoadStoryboardList - result:', result);
         if (result.code === 0 && result.data) {
-          setStoryboardItems(result.data || []);
+          // 按 storyboardOrder 排序后设置数据
+          const sortedData = (result.data || []).sort((a: any, b: any) =>
+            (a.storyboardOrder || 0) - (b.storyboardOrder || 0)
+          );
+          setStoryboardItems(sortedData);
         } else {
           console.log('LoadStoryboardList - API returned error:', result);
           setStoryboardItems([]);
@@ -2605,8 +2634,8 @@ function ShortplayEntryPage() {
 
   // 时间解析和格式化函数
   const parseTimeRange = (timeRange: string) => {
-    // 从 "00:00'-00:05'" 格式中提取开始和结束时间
-    const match = timeRange.match(/(\d{2}):(\d{2})'-(\d{2}):(\d{2})'/);
+    // 支持两种格式: "00:00'-00:05'" 和 "00:00-00:05"
+    const match = timeRange.match(/(\d{2}):(\d{2})'?-'?(\d{2}):(\d{2})'?/);
     if (match) {
       return {
         startMinutes: match[1],
