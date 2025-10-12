@@ -404,7 +404,7 @@ function SortableScriptItem({
                   {item.type === 0 ? '画面' : '对话'}
                 </span>
                 <span className="text-sm text-gray-500">
-                  {item.startTime} - {item.endTime}
+                  {formatMillisecondsToTime(item.startTime || 0)} - {formatMillisecondsToTime(item.endTime || 0)}
                 </span>
                 {item.roleName && (
                   <span className="text-sm text-purple-600 font-medium">
@@ -3885,9 +3885,18 @@ function ShortplayEntryPage() {
               // 继续轮询
               setGenerationStatus('正在生成剧本内容...');
               setTimeout(pollForResult, 3000); // 3秒后重试
+            } else if (status === 'FAILED') {
+              // 生成失败
+              setIsGenerating(false);
+              setGenerationStatus('');
+              toast.error('剧本生成失败，请重试');
+              console.error('剧本生成失败，状态为 FAILED');
             } else {
               // 其他状态，可能是失败
-              throw new Error(`生成状态异常: ${status}`);
+              setIsGenerating(false);
+              setGenerationStatus('');
+              toast.error(`生成状态异常: ${status}`);
+              console.error(`生成状态异常: ${status}`);
             }
           } else {
             throw new Error(detailResult.message || '获取生成状态失败');
@@ -4658,7 +4667,7 @@ function ShortplayEntryPage() {
                           type: item.type === 1 ? 'voice' : 'sound',
                           speaker: item.roleName || (item.type === 1 ? '对话' : '音效'),
                           content: item.content,
-                          timeRange: `${item.startTime}-${item.endTime}`,
+                          timeRange: `${formatMillisecondsToTime(item.startTime || 0)}-${formatMillisecondsToTime(item.endTime || 0)}`,
                           icon: item.type === 1 ? 'ri:user-voice-line' : 'ri:music-2-line'
                         }}
                         audioType={audioType}
