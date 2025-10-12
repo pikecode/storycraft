@@ -4799,11 +4799,11 @@ function ShortplayEntryPage() {
                           key={item.id}
                           item={{
                             id: item.id.toString(),
-                            type: item.type === 1 ? 'voice' : 'sound',
-                            speaker: item.type === 1 ? (item.roleName || '角色对话') : item.type === 3 ? '音效' : '画面描述',
+                            type: item.type === 2 ? 'voice' : 'sound',
+                            speaker: item.type === 1 ? '场景描述' : item.type === 2 ? (item.roleName || '对话') : '音效',
                             content: item.content,
                             timeRange: `${formatMillisecondsToTime(item.startTime || 0)}-${formatMillisecondsToTime(item.endTime || 0)}`,
-                            icon: item.type === 1 ? 'ri:user-voice-line' : item.type === 3 ? 'ri:music-2-line' : 'ri:camera-line'
+                            icon: item.type === 1 ? 'ri:camera-line' : item.type === 2 ? 'ri:user-voice-line' : 'ri:music-2-line'
                           }}
                           audioType={audioType}
                           configuredVoices={configuredVoices}
