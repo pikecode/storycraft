@@ -1787,6 +1787,7 @@ function ShortplayEntryPage() {
   const [isGenerating, setIsGenerating] = useState<boolean>(false); // 生成状态
   const [generatedContent, setGeneratedContent] = useState<string>(''); // 生成的内容
   const [generationStatus, setGenerationStatus] = useState<string>(''); // 生成状态文本
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState<boolean>(false); // 预览生成状态
 
   // 底部输入区域的额外状态
   const [voiceType, setVoiceType] = useState<string>('male');
@@ -1939,6 +1940,54 @@ function ShortplayEntryPage() {
       setStoryboardItems([]);
     } finally {
       setIsLoadingStoryboard(false);
+    }
+  };
+
+  // 视频预览
+  const handleVideoPreview = async () => {
+    // 获取当前选中场次的sceneId
+    const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
+    const sceneId = currentSceneData?.sceneId;
+
+    if (!sceneId) {
+      toast.error('请先选择场次');
+      return;
+    }
+
+    setIsGeneratingPreview(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${STORYAI_API_BASE}/multimedia/video/preview`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Prompt-Manager-Token': token || '',
+        },
+        body: JSON.stringify({
+          sceneId: sceneId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.code === 0) {
+        toast.success('视频预览生成成功！');
+        // 可以在这里处理返回的预览视频URL
+        if (result.data?.videoUrl) {
+          // 打开预览视频
+          window.open(result.data.videoUrl, '_blank');
+        }
+      } else {
+        throw new Error(result.message || '视频预览生成失败');
+      }
+    } catch (error) {
+      console.error('视频预览失败:', error);
+      toast.error('视频预览失败：' + (error as Error).message);
+    } finally {
+      setIsGeneratingPreview(false);
     }
   };
 
@@ -4369,15 +4418,25 @@ function ShortplayEntryPage() {
                                       {index + 1}
                                     </div>
 
-                                    {/* 视频缩略图 */}
+                                    {/* 视频缩略图/播放器 */}
                                     <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                                      <div className="w-full h-full bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-                                        onClick={() => {
-                                          window.open(file.downloadUrl, '_blank');
+                                      <video
+                                        src={file.downloadUrl}
+                                        className="w-full h-full object-cover cursor-pointer"
+                                        controls
+                                        onClick={(e) => e.stopPropagation()}
+                                        onError={(e) => {
+                                          // 如果视频加载失败，显示播放图标
+                                          e.currentTarget.style.display = 'none';
+                                          const parent = e.currentTarget.parentElement;
+                                          if (parent) {
+                                            parent.innerHTML = `<div class="w-full h-full bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
+                                              <svg class="w-8 h-8 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                            </div>`;
+                                            parent.onclick = () => window.open(file.downloadUrl, '_blank');
+                                          }
                                         }}
-                                      >
-                                        <Icon icon="ri:play-circle-line" className="w-8 h-8 text-white" />
-                                      </div>
+                                      />
                                     </div>
 
                                     {/* 内容信息 */}
@@ -4666,9 +4725,16 @@ function ShortplayEntryPage() {
           <div className="p-3 border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Icon icon="ri:circle-fill" className="w-2 h-2 text-blue-500" />
-                <span className="text-sm font-medium text-gray-800">分镜4</span>
-                <Icon icon="ri:arrow-down-s-line" className="w-4 h-4 text-gray-400" />
+                <Button
+                  size="small"
+                  type="primary"
+                  className="text-xs"
+                  onClick={handleVideoPreview}
+                  loading={isGeneratingPreview}
+                >
+                  <Icon icon="ri:play-circle-line" className="w-3 h-3 mr-1" />
+                  预览
+                </Button>
               </div>
               <div className="flex items-center space-x-2">
                 <Button size="small" type="text" className="text-xs text-blue-500 border border-blue-200 rounded">
