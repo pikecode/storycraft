@@ -2507,15 +2507,20 @@ function ShortplayEntryPage() {
     setEditingSceneType(item.type || 0); // 默认为画面
     setEditingSceneRoleName(item.roleName || ''); // 角色名称
 
+    // 将毫秒格式转换为 mm:ss 格式
+    const startTimeMs = item.startTime || 0;
+    const endTimeMs = item.endTime || 0;
+
+    const startTimeStr = formatMillisecondsToTime(startTimeMs);
+    const endTimeStr = formatMillisecondsToTime(endTimeMs);
+
     // 解析开始时间
-    const startTime = item.startTime || '00:00';
-    const [startMin, startSec] = startTime.split(':');
+    const [startMin, startSec] = startTimeStr.split(':');
     setEditingSceneStartMinutes(startMin || '00');
     setEditingSceneStartSeconds(startSec || '00');
 
     // 解析结束时间
-    const endTime = item.endTime || '00:00';
-    const [endMin, endSec] = endTime.split(':');
+    const [endMin, endSec] = endTimeStr.split(':');
     setEditingSceneEndMinutes(endMin || '00');
     setEditingSceneEndSeconds(endSec || '00');
   };
