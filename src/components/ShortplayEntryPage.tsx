@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Icon } from '@iconify/react';
-import { Button, Select } from 'antd';
+import { Button, Select, Segmented } from 'antd';
 import toast from 'react-hot-toast';
 import { useI18n } from '../contexts/I18nContext';
 import {
@@ -4111,48 +4111,20 @@ function ShortplayEntryPage() {
                 <span className="text-base font-medium text-gray-900">一键创作</span>
               </div>
 
-              {/* Tab切换按钮组 */}
-              <div className="flex items-center bg-gray-100 border h-9 w-full max-w-[268px] min-w-[180px] rounded-full border-blue-500">
-                <button
-                  className={`flex-1 h-full text-sm font-medium transition-all flex items-center justify-center rounded-full truncate px-2 ${
-                    activeTab === 'script'
-                      ? 'bg-blue-500 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                  onClick={() => setActiveTab('script')}
-                >
-                  <span className="truncate">剧本</span>
-                </button>
-                <button
-                  className={`flex-1 h-full text-sm font-medium transition-all flex items-center justify-center rounded-full truncate px-2 ${
-                    activeTab === 'audio'
-                      ? 'bg-blue-500 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                  onClick={() => setActiveTab('audio')}
-                >
-                  <span className="truncate">音频</span>
-                </button>
-                <button
-                  className={`flex-1 h-full text-sm font-medium transition-all flex items-center justify-center rounded-full truncate px-2 ${
-                    activeTab === 'image'
-                      ? 'bg-blue-500 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                  onClick={() => setActiveTab('image')}
-                >
-                  <span className="truncate">图片</span>
-                </button>
-                <button
-                  className={`flex-1 h-full text-sm font-medium transition-all flex items-center justify-center rounded-full truncate px-2 ${
-                    activeTab === 'video'
-                      ? 'bg-blue-500 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                  onClick={() => setActiveTab('video')}
-                >
-                  <span className="truncate">视频</span>
-                </button>
+              {/* Ant Design Segmented组件 - 带边框和高度 */}
+              <div style={{ border: '1px solid #3E83F6', borderRadius: 8, padding: 8, height: 58, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Segmented
+                  value={activeTab}
+                  onChange={(value) => setActiveTab(value as 'script' | 'audio' | 'image' | 'video')}
+                  options={[
+                    { label: '剧本', value: 'script' },
+                    { label: '音频', value: 'audio' },
+                    { label: '图片', value: 'image' },
+                    { label: '视频', value: 'video' }
+                  ]}
+                  style={{ width: '100%' }}
+                  className="[&_.ant-segmented-item-selected]:!bg-[#3E83F6] [&_.ant-segmented-thumb]:!bg-[#3E83F6]"
+                />
               </div>
             </div>
           </div>
