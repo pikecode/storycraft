@@ -11,6 +11,14 @@ export function SortableAudioItem({
   configuredVoices,
   onVoiceSelect,
   onPlayAudio,
+  editingItemId,
+  editingContent,
+  editingRoleName,
+  onEditingContentChange,
+  onEditingRoleNameChange,
+  onStartEditContent,
+  onSaveContentEdit,
+  onCancelContentEdit,
   editingTimeId,
   editingStartMinutes,
   editingStartSeconds,
@@ -55,12 +63,75 @@ export function SortableAudioItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white rounded-lg border border-gray-200 px-3 py-2 cursor-move transition-all ${
+      className={`bg-white rounded-lg border border-gray-200 px-3 py-2 transition-all ${
         isDragging ? 'shadow-lg z-10' : ''
       }`}
       {...attributes}
     >
-      <div className="flex items-center space-x-3">
+      {editingItemId?.toString() === item.id ? (
+        // 编辑模式
+        <div className="space-y-2">
+          {/* 音色选择和时间在一行 */}
+          <div className="flex items-center space-x-2">
+            {audioType === 'voice' ? (
+              <select
+                className="text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:border-blue-500"
+                value={editingRoleName || ''}
+                onChange={(e) => onEditingRoleNameChange?.(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <option value="">选择音色</option>
+                {configuredVoices.map((voice) => (
+                  <option key={voice.voiceId} value={voice.voiceId}>
+                    {voice.voiceName}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div></div>
+            )}
+            <TimeRangeInput
+              startMinutes={editingStartMinutes || '00'}
+              startSeconds={editingStartSeconds || '00'}
+              endMinutes={editingEndMinutes || '00'}
+              endSeconds={editingEndSeconds || '05'}
+              onStartMinutesChange={onEditingStartMinutesChange}
+              onStartSecondsChange={onEditingStartSecondsChange}
+              onEndMinutesChange={onEditingEndMinutesChange}
+              onEndSecondsChange={onEditingEndSecondsChange}
+            />
+          </div>
+
+          {/* 台词编辑 */}
+          <textarea
+            value={editingContent || ''}
+            onChange={(e) => onEditingContentChange?.(e.target.value)}
+            className="w-full p-1.5 text-sm border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={2}
+            placeholder="输入台词..."
+          />
+
+          {/* 统一的保存/取消按钮 */}
+          <div className="flex items-center justify-end space-x-2">
+            <button
+              onClick={() => onSaveContentEdit?.(item.id)}
+              className="text-green-600 hover:text-green-800 p-1 border-0 bg-transparent outline-none cursor-pointer"
+            >
+              <Icon icon="ri:check-line" className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onCancelContentEdit}
+              className="text-red-600 hover:text-red-800 p-1 border-0 bg-transparent outline-none cursor-pointer"
+            >
+              <Icon icon="ri:close-line" className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      ) : (
+        // 显示模式
+        <div className="flex items-center space-x-3 cursor-move"
+          onDoubleClick={() => onStartEditContent?.(item.id, item.content, item.speaker)}
+        >
         <div className="flex items-center space-x-2">
           <div {...listeners}>
             <Icon icon="ri:drag-move-line" className="w-4 h-4 text-gray-400 cursor-grab" />
@@ -146,6 +217,7 @@ export function SortableAudioItem({
           <Icon icon="ri:delete-bin-line" className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500" />
         </div>
       </div>
+      )}
     </div>
   );
 }

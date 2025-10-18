@@ -65,11 +65,7 @@ export function StoryboardList({
                 onPreview={onPreview}
               />
             ))
-          ) : (
-            <div className="text-center text-gray-500 py-8">
-              暂无分镜板数据
-            </div>
-          )}
+          ) : null}
         </div>
       </SortableContext>
     </DndContext>

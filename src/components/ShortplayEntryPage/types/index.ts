@@ -15,6 +15,28 @@ export interface SortableAudioItemProps {
   configuredVoices: any[];
   onVoiceSelect?: (itemId: string, voiceId: string) => void;
   onPlayAudio?: (itemId: string) => void;
+  // 内容编辑相关
+  editingItemId?: string | number | null;
+  editingContent?: string;
+  editingRoleName?: string;
+  onEditingContentChange?: (content: string) => void;
+  onEditingRoleNameChange?: (name: string) => void;
+  onStartEditContent?: (itemId: string, content: string, roleName?: string) => void;
+  onSaveContentEdit?: (itemId: string) => void;
+  onCancelContentEdit?: () => void;
+  // 时间编辑相关
+  editingTimeId?: string | number | null;
+  editingStartMinutes?: string;
+  editingStartSeconds?: string;
+  editingEndMinutes?: string;
+  editingEndSeconds?: string;
+  onEditingStartMinutesChange?: (value: string) => void;
+  onEditingStartSecondsChange?: (value: string) => void;
+  onEditingEndMinutesChange?: (value: string) => void;
+  onEditingEndSecondsChange?: (value: string) => void;
+  onStartEditTime?: (itemId: string, timeRange: string) => void;
+  onSaveTimeEdit?: (itemId: string) => void;
+  onCancelTimeEdit?: () => void;
 }
 
 // 剧本相关类型

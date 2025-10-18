@@ -421,20 +421,18 @@ function ShortplayEntryPage() {
         // 调用API更新排序
         try {
           const token = localStorage.getItem('token');
-          const movedItem = oldItems[oldIndex];
 
-          // 计算新的orderNum：使用新位置的索引+1作为orderNum
-          const newOrderNum = newIndex + 1;
+          // 获取排序后的所有id数组
+          const ids = newItems.map((item) => item.id);
 
-          const response = await fetch(`${STORYAI_API_BASE}/scene/content`, {
-            method: 'PUT',
+          const response = await fetch(`${STORYAI_API_BASE}/scene/content/reorder`, {
+            method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'X-Prompt-Manager-Token': token || '',
             },
             body: JSON.stringify({
-              id: movedItem.id,
-              orderNum: newOrderNum
+              ids: ids
             })
           });
 
@@ -989,6 +987,12 @@ function ShortplayEntryPage() {
 
   // 开始新增场次内容项 - 先显示类型选择
   const handleStartAddNewItem = () => {
+    // 音频tab只能新增角色台词
+    if (activeTab === 'audio') {
+      handleCreateNewItem(2);
+      return;
+    }
+
     // 定位最后一个新增按钮的位置以放置类型选择弹窗
     const addButtons = document.querySelectorAll('[data-section-add-button="true"]');
     if (addButtons.length > 0) {
@@ -1009,12 +1013,16 @@ function ShortplayEntryPage() {
       type: type, // 按照选择的类型
       content: '',
       roleName: type === 2 ? '' : undefined, // 对话类型时有角色名
-      startTime: '00:00',
-      endTime: '00:05',
+      startTime: 0, // 毫秒
+      endTime: 5000, // 毫秒
     };
 
-    // 添加到内容列表（插入到第一行）
-    setSceneContent((items) => [newItem, ...items]);
+    // 根据当前tab选择不同的内容列表
+    if (activeTab === 'audio') {
+      setAudioContent((items) => [newItem, ...items]);
+    } else {
+      setSceneContent((items) => [newItem, ...items]);
+    }
 
     // 立即进入编辑状态
     setEditingSceneItemId(newItem.id);
@@ -1534,7 +1542,7 @@ function ShortplayEntryPage() {
           'X-Prompt-Manager-Token': token || '',
         },
         body: JSON.stringify({
-          userId: userId.toString()
+          seriesId: seriesId
         })
       });
 
@@ -2161,8 +2169,9 @@ function ShortplayEntryPage() {
           'X-Prompt-Manager-Token': token || '',
         },
         body: JSON.stringify({
-          userId: parseInt(userId),
-          style: style, // 使用图片tab的style参数
+          seriesId: seriesId,
+          userId: userId,
+          style: style,
           userInput: userInput.trim()
         })
       });
@@ -2651,11 +2660,7 @@ function ShortplayEntryPage() {
                       <div className="text-sm text-gray-700 whitespace-pre-wrap">
                         {generatedContent}
                       </div>
-                    ) : (
-                      <div className="text-center text-gray-500 py-8">
-                        暂无剧本内容
-                      </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
 
@@ -2862,11 +2867,6 @@ function ShortplayEntryPage() {
                               </div>
                             ))
                           )}
-                          {!isLoadingBgm && bgmList.length === 0 && (
-                            <div className="text-center text-gray-500 py-4">
-                              暂无音效文件
-                            </div>
-                          )}
                         </>
                       )}
                     </div>
@@ -2958,11 +2958,7 @@ function ShortplayEntryPage() {
                             </div>
                           ))}
                         </div>
-                      ) : (
-                        <div className="text-center text-gray-500 py-8">
-                          暂无图片记录
-                        </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 )}
@@ -3058,11 +3054,7 @@ function ShortplayEntryPage() {
                             </div>
                           ))}
                         </div>
-                      ) : (
-                        <div className="text-center text-gray-500 py-8">
-                          暂无视频记录
-                        </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 )}
@@ -3105,8 +3097,6 @@ function ShortplayEntryPage() {
                   isGenerating={isGenerating}
                   onGenerate={audioType === 'voice' ? handleAudioGenerate : handleBgmGenerate}
                   generationStatus={generationStatus}
-                  voiceType={voiceType}
-                  onVoiceTypeChange={setVoiceType}
                 />
               ) : (
                 <BottomInputArea
@@ -3276,6 +3266,123 @@ function ShortplayEntryPage() {
                           configuredVoices={configuredVoices}
                           onVoiceSelect={handleVoiceSelect}
                           onPlayAudio={handlePlayAudio}
+                          editingItemId={editingSceneItemId}
+                          editingContent={editingSceneContent}
+                          editingRoleName={editingSceneRoleName}
+                          onEditingContentChange={setEditingSceneContent}
+                          onEditingRoleNameChange={setEditingSceneRoleName}
+                          onStartEditContent={(itemId, content, roleName) => {
+                            setEditingSceneItemId(itemId);
+                            setEditingSceneContent(content);
+                            setEditingSceneRoleName(roleName || '');
+                            setEditingSceneStartMinutes(editingSceneStartMinutes || '00');
+                            setEditingSceneStartSeconds(editingSceneStartSeconds || '00');
+                            setEditingSceneEndMinutes(editingSceneEndMinutes || '00');
+                            setEditingSceneEndSeconds(editingSceneEndSeconds || '05');
+                          }}
+                          onSaveContentEdit={async (itemId) => {
+                            try {
+                              const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
+                              const sceneId = currentSceneData?.sceneId;
+
+                              if (!sceneId) {
+                                toast.error('场景不存在');
+                                return;
+                              }
+
+                              const numItemId = typeof itemId === 'string' ? parseInt(itemId) : itemId;
+                              const item = audioContent.find((c: any) => c.id === numItemId);
+                              if (!item) return;
+
+                              const startTime = (parseInt(editingSceneStartMinutes || '0') * 60 + parseInt(editingSceneStartSeconds || '0')) * 1000;
+                              const endTime = (parseInt(editingSceneEndMinutes || '0') * 60 + parseInt(editingSceneEndSeconds || '0')) * 1000;
+                              const orderNum = audioContent.findIndex((c: any) => c.id === numItemId) + 1;
+
+                              const token = localStorage.getItem('token');
+                              const response = await fetch(`${STORYAI_API_BASE}/scene/content`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'X-Prompt-Manager-Token': token || '',
+                                },
+                                body: JSON.stringify({
+                                  sceneId: sceneId,
+                                  type: item.type,
+                                  content: editingSceneContent,
+                                  orderNum: orderNum,
+                                  fileId: item.fileId || itemId.toString(),
+                                  startTime: startTime,
+                                  endTime: endTime
+                                })
+                              });
+
+                              if (!response.ok) {
+                                throw new Error(`请求失败: ${response.status}`);
+                              }
+
+                              const result = await response.json();
+                              if (result.code !== 0) {
+                                throw new Error(result.message || '保存失败');
+                              }
+
+                              const updatedContent = audioContent.map((c: any) =>
+                                c.id === numItemId
+                                  ? {
+                                      ...c,
+                                      content: editingSceneContent,
+                                      roleName: editingSceneRoleName,
+                                      startTime: startTime,
+                                      endTime: endTime
+                                    }
+                                  : c
+                              );
+                              setAudioContent(updatedContent);
+
+                              // 如果有音色选择，调用绑定接口
+                              if (editingSceneRoleName && audioType === 'voice') {
+                                try {
+                                  const bindingResponse = await fetch(`${STORYAI_API_BASE}/ai/voice/batch-bind`, {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'X-Prompt-Manager-Token': token || '',
+                                    },
+                                    body: JSON.stringify({
+                                      bindings: [
+                                        {
+                                          voiceId: editingSceneRoleName,
+                                          subtitleId: numItemId
+                                        }
+                                      ]
+                                    })
+                                  });
+
+                                  if (!bindingResponse.ok) {
+                                    console.error('音色绑定请求失败');
+                                  }
+
+                                  const bindingResult = await bindingResponse.json();
+                                  if (bindingResult.code !== 0) {
+                                    console.error('音色绑定失败:', bindingResult.message);
+                                  }
+                                } catch (bindError) {
+                                  console.error('音色绑定出错:', bindError);
+                                }
+                              }
+
+                              setEditingSceneItemId(null);
+                              setEditingSceneContent('');
+                              setEditingSceneRoleName('');
+                            } catch (error) {
+                              console.error('保存失败:', error);
+                              toast.error('保存失败：' + (error as Error).message);
+                            }
+                          }}
+                          onCancelContentEdit={() => {
+                            setEditingSceneItemId(null);
+                            setEditingSceneContent('');
+                            setEditingSceneRoleName('');
+                          }}
                           editingTimeId={bgmEditingTimeId}
                           editingStartMinutes={bgmEditingStartMinutes}
                           editingStartSeconds={bgmEditingStartSeconds}
@@ -3290,11 +3397,7 @@ function ShortplayEntryPage() {
                           onCancelTimeEdit={handleBgmCancelTimeEdit}
                         />
                       ))
-                    ) : (
-                      <div className="text-center text-gray-500 py-8">
-                        暂无音频内容
-                      </div>
-                    )}
+                    ) : null}
                   </div>
                 </SortableContext>
               </DndContext>

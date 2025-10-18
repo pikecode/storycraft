@@ -48,8 +48,6 @@ interface AudioBottomPanelProps {
   isGenerating: boolean;
   onGenerate: () => void;
   generationStatus?: string;
-  voiceType?: string;
-  onVoiceTypeChange?: (type: string) => void;
 }
 
 export function AudioBottomPanel({
@@ -74,8 +72,6 @@ export function AudioBottomPanel({
   isGenerating,
   onGenerate,
   generationStatus,
-  voiceType = 'male',
-  onVoiceTypeChange,
 }: AudioBottomPanelProps) {
   const { t } = useI18n();
   const finalPlaceholder = '简单描述你想要的音乐风格';
@@ -86,15 +82,17 @@ export function AudioBottomPanel({
       <div className="p-4">
         <div className="mb-3">
           <div className="flex space-x-3">
-            <div className="relative w-32">
+            <div className="relative w-24">
               <select
                 value={selectedModel}
                 onChange={(e) => onModelChange(e.target.value)}
                 className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
               >
-                <option value="gemini-2.5pro">Gemini2.5pro</option>
-                <option value="deepseek-r1">DeepSeek-R1</option>
-                <option value="gpt-4">GPT-4</option>
+                {audioType === 'voice' ? (
+                  <option value="minimaxi">minimaxi</option>
+                ) : (
+                  <option value="video">video</option>
+                )}
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -103,21 +101,6 @@ export function AudioBottomPanel({
               </div>
             </div>
 
-            <div className="relative w-20">
-              <select
-                value={voiceType}
-                onChange={(e) => onVoiceTypeChange?.(e.target.value)}
-                className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-              >
-                <option value="male">{t('shortplayEntry.audio.male')}</option>
-                <option value="female">{t('shortplayEntry.audio.female')}</option>
-              </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            </div>
           </div>
         </div>
 
