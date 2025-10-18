@@ -274,6 +274,7 @@ interface SortableScriptItemProps {
 
 function SortableScriptItem({
   item,
+  index = 0,
   editingSceneItemId,
   editingSceneType,
   editingSceneContent,
@@ -322,15 +323,18 @@ function SortableScriptItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`p-3 bg-white border border-gray-200 rounded-lg transition-all ${
+      className={`p-3 transition-all ${
         isDragging ? 'shadow-lg z-10' : ''
       }`}
     >
       {editingSceneItemId === item.id ? (
         // 编辑模式
-        <div className="space-y-3">
-          {/* 拖拽手柄和类型选择 */}
-          <div className="flex items-center space-x-2">
+        <div className="flex items-start space-x-3">
+          {/* 左侧操作区 - 竖直排列 */}
+          <div className="flex flex-col items-center justify-start pt-0.5">
+            {/* 序号 */}
+            <span className="text-xs text-gray-500 font-medium leading-tight">{index + 1}</span>
+            {/* 拖拽手柄 */}
             <div
               {...listeners}
               className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
@@ -338,100 +342,63 @@ function SortableScriptItem({
             >
               <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
             </div>
-            <select
-              value={editingSceneType}
-              onChange={(e) => onEditingSceneTypeChange(parseInt(e.target.value))}
-              className="px-2 py-1 text-xs rounded border border-gray-300"
-            >
-              <option value={1}>画面脚本</option>
-              <option value={2}>对话</option>
-              <option value={3}>音效</option>
-            </select>
-            <TimeRangeInput
-              startMinutes={editingSceneStartMinutes}
-              startSeconds={editingSceneStartSeconds}
-              endMinutes={editingSceneEndMinutes}
-              endSeconds={editingSceneEndSeconds}
-              onStartMinutesChange={onEditingSceneStartMinutesChange}
-              onStartSecondsChange={onEditingSceneStartSecondsChange}
-              onEndMinutesChange={onEditingSceneEndMinutesChange}
-              onEndSecondsChange={onEditingSceneEndSecondsChange}
-            />
           </div>
 
-          {/* 编辑内容输入 */}
-          <textarea
-            value={editingSceneContent}
-            onChange={(e) => onEditingSceneContentChange(e.target.value)}
-            className="w-full p-2 text-sm border border-gray-300 rounded resize-none"
-            rows={3}
-            placeholder="输入内容..."
-          />
+          {/* 编辑内容区 */}
+          <div className="flex-1 space-y-2">
+            {/* 编辑内容输入 */}
+            <textarea
+              value={editingSceneContent}
+              onChange={(e) => onEditingSceneContentChange(e.target.value)}
+              className="w-full p-2 text-sm border border-gray-300 rounded resize-none"
+              rows={3}
+              placeholder="输入内容..."
+            />
 
-          {/* 编辑操作按钮 */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={onSaveSceneItem}
-              className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              保存
-            </button>
-            <button
-              onClick={onCancelEditSceneItem}
-              className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
-            >
-              取消
-            </button>
+            {/* 编辑操作按钮 */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={onSaveSceneItem}
+                className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                保存
+              </button>
+              <button
+                onClick={onCancelEditSceneItem}
+                className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                取消
+              </button>
+            </div>
           </div>
         </div>
       ) : (
         // 显示模式
         <div className="flex items-start space-x-3">
-          {/* 拖拽手柄 */}
-          <div
-            {...listeners}
-            className="cursor-grab active:cursor-grabbing mt-1 p-1 hover:bg-gray-100 rounded"
-            title="拖拽排序"
-          >
-            <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
+          {/* 左侧操作区 - 竖直排列 */}
+          <div className="flex flex-col items-center justify-start pt-0.5">
+            {/* 序号 */}
+            <span className="text-xs text-gray-500 font-medium leading-tight">{index + 1}</span>
+            {/* 拖拽手柄 */}
+            <div
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
+              title="拖拽排序"
+            >
+              <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
+            </div>
+            {/* 删除按钮 */}
+            <Icon
+              icon="ri:delete-bin-line"
+              className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
+              onClick={() => onShowDeleteConfirm(item.id)}
+              title="删除"
+            />
           </div>
 
           {/* 内容区域 */}
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <span className={`px-2 py-1 text-xs rounded ${
-                  item.type === 1
-                    ? 'bg-blue-100'
-                    : item.type === 2
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-orange-100 text-orange-800'
-                }`} style={item.type === 1 ? { color: '#3E83F6' } : {}}>
-                  {item.type === 1 ? '画面脚本' : item.type === 2 ? '对话' : '音效'}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {formatMillisecondsToTime(item.startTime || 0)} - {formatMillisecondsToTime(item.endTime || 0)}
-                </span>
-                {item.roleName && (
-                  <span className="text-sm text-purple-600 font-medium">
-                    {item.roleName}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center space-x-1">
-                <Icon
-                  icon="ri:edit-line"
-                  className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
-                  onClick={() => onEditSceneItem(item)}
-                />
-                <Icon
-                  icon="ri:delete-bin-line"
-                  className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
-                  onClick={() => onShowDeleteConfirm(item.id)}
-                />
-              </div>
-            </div>
-            <div className="text-sm" style={{ color: item.type === 1 ? '#3E83F6' : '#1F2937' }}>
+          <div className="flex-1 cursor-pointer border border-gray-200 rounded p-2 min-h-[58px]" onDoubleClick={() => onEditSceneItem(item)}>
+            <div className="text-sm line-clamp-2" style={{ color: item.type === 1 ? '#3E83F6' : '#1F2937' }}>
               {item.content}
             </div>
           </div>
@@ -1590,9 +1557,10 @@ interface SectionHeaderProps {
   onSubtitleEdit?: (value: string) => Promise<boolean>; // 新增：专门处理编辑的回调
   onOptionsChange?: (options: string[]) => void;
   onAddClick?: () => void;
+  onApplyClick?: () => void;
 }
 
-function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onSubtitleEdit, onOptionsChange, onAddClick }: SectionHeaderProps) {
+function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onSubtitleEdit, onOptionsChange, onAddClick, onApplyClick }: SectionHeaderProps) {
   const { t } = useI18n();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -1674,6 +1642,9 @@ function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onS
       setEditingOptionValue('');
     }
   };
+
+  const actionButtonClass =
+    "flex items-center space-x-1 px-[6px] py-1 text-sm font-medium text-gray-700 border border-blue-400 rounded hover:border-blue-500 hover:text-blue-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200";
 
   return (
     <div className="p-4 bg-white border-b border-gray-100">
@@ -1758,8 +1729,26 @@ function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onS
             </div>
           )}
         </div>
-        {onAddClick && (
-          <Icon icon="ri:add-circle-line" className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600" onClick={onAddClick} />
+        {(onAddClick || onApplyClick) && (
+          <div className="flex items-center space-x-2">
+            {onAddClick && (
+              <button
+                type="button"
+                data-section-add-button="true"
+                onClick={onAddClick}
+                className={actionButtonClass}
+              >
+                <Icon icon="ri:add-circle-line" className="w-4 h-4" />
+                <span>新增</span>
+              </button>
+            )}
+            {onApplyClick && (
+              <button type="button" onClick={onApplyClick} className={actionButtonClass}>
+                <Icon icon="ri:check-line" className="w-4 h-4" />
+                <span>应用</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -1808,6 +1797,8 @@ function ShortplayEntryPage() {
   const [sceneOptions, setSceneOptions] = useState<string[]>([]);
   const [scenesData, setScenesData] = useState<any[]>([]); // 存储完整的场次数据
   const [sceneContent, setSceneContent] = useState<any[]>([]); // 存储当前场次的内容数据
+  const [showTypeSelector, setShowTypeSelector] = useState(false); // 显示类型选择弹窗
+  const [popoverPosition, setPopoverPosition] = useState<{ top: number; left: number } | null>(null);
 
   // 剧本卡片数据状态
   const [scriptCards, setScriptCards] = useState<ScriptCardProps[]>([]);
@@ -2669,30 +2660,47 @@ function ShortplayEntryPage() {
     setEditingSceneEndSeconds('');
   };
 
-  // 开始新增场次内容项 - 直接在内容区添加空白项
+  // 开始新增场次内容项 - 先显示类型选择
   const handleStartAddNewItem = () => {
-    // 创建一个新的空白项目，直接进入编辑状态
+    // 定位最后一个新增按钮的位置以放置类型选择弹窗
+    const addButtons = document.querySelectorAll('[data-section-add-button="true"]');
+    if (addButtons.length > 0) {
+      const lastButton = addButtons[addButtons.length - 1] as HTMLElement;
+      const rect = lastButton.getBoundingClientRect();
+      setPopoverPosition({
+        top: rect.bottom + 8, // 按钮下方一点位置
+        left: rect.left + rect.width / 2 - 60, // 让宽度为120px的弹窗相对按钮居中
+      });
+    }
+    setShowTypeSelector(true);
+  };
+
+  // 创建新项 - 按照选择的类型
+  const handleCreateNewItem = (type: number) => {
     const newItem = {
       id: Date.now(), // 临时ID
-      type: 1, // 默认为画面脚本
+      type: type, // 按照选择的类型
       content: '',
-      roleName: '',
+      roleName: type === 2 ? '' : undefined, // 对话类型时有角色名
       startTime: '00:00',
       endTime: '00:05',
     };
 
-    // 添加到内容列表
-    setSceneContent((items) => [...items, newItem]);
+    // 添加到内容列表（插入到第一行）
+    setSceneContent((items) => [newItem, ...items]);
 
     // 立即进入编辑状态
     setEditingSceneItemId(newItem.id);
     setEditingSceneContent('');
-    setEditingSceneType(0); // 默认为画面
-    setEditingSceneRoleName(''); // 角色名为空
+    setEditingSceneType(type);
+    setEditingSceneRoleName(type === 2 ? '' : '');
     setEditingSceneStartMinutes('00');
     setEditingSceneStartSeconds('00');
     setEditingSceneEndMinutes('00');
     setEditingSceneEndSeconds('05');
+
+    // 关闭类型选择器
+    setShowTypeSelector(false);
   };
 
   // 时间解析和格式化函数
@@ -4108,7 +4116,7 @@ function ShortplayEntryPage() {
                     <path d="M34.8333 15.3109C34.7333 15.0213 34.5515 14.767 34.3098 14.5787C34.0681 14.3904 33.7769 14.2762 33.4717 14.2501L24.4625 12.9359L20.425 4.75011C20.2954 4.48241 20.0929 4.25665 19.8409 4.09868C19.5889 3.94072 19.2974 3.85693 19 3.85693C18.7026 3.85693 18.4111 3.94072 18.1591 4.09868C17.9071 4.25665 17.7047 4.48241 17.575 4.75011L13.5375 12.9201L4.52834 14.2501C4.2353 14.2918 3.9598 14.4147 3.73311 14.605C3.50642 14.7953 3.33761 15.0454 3.24584 15.3268C3.16183 15.6018 3.1543 15.8944 3.22403 16.1734C3.29377 16.4523 3.43815 16.707 3.64167 16.9101L10.1808 23.2434L8.59751 32.2368C8.54098 32.5336 8.57058 32.8404 8.6828 33.121C8.79503 33.4015 8.98519 33.6441 9.23084 33.8201C9.47027 33.9913 9.75266 34.0923 10.0463 34.1119C10.34 34.1315 10.6333 34.0688 10.8933 33.9309L19 29.7034L27.075 33.9468C27.2972 34.0721 27.5482 34.1376 27.8033 34.1368C28.1387 34.138 28.4658 34.0326 28.7375 33.8359C28.9832 33.66 29.1733 33.4174 29.2855 33.1368C29.3978 32.8563 29.4274 32.5494 29.3708 32.2526L27.7875 23.2593L34.3267 16.9259C34.5553 16.7323 34.7242 16.4777 34.8139 16.1918C34.9036 15.9059 34.9103 15.6005 34.8333 15.3109ZM25.0958 21.6443C24.9102 21.8239 24.7712 22.0462 24.6912 22.2918C24.6112 22.5374 24.5924 22.7989 24.6367 23.0534L25.7767 29.6876L19.8233 26.5209C19.5943 26.399 19.3387 26.3352 19.0792 26.3352C18.8196 26.3352 18.5641 26.399 18.335 26.5209L12.3817 29.6876L13.5217 23.0534C13.5659 22.7989 13.5472 22.5374 13.4671 22.2918C13.3871 22.0462 13.2482 21.8239 13.0625 21.6443L8.31251 16.8943L14.9783 15.9284C15.2348 15.8928 15.4787 15.7947 15.6885 15.6429C15.8983 15.4911 16.0676 15.2901 16.1817 15.0576L19 9.02511L21.9767 15.0734C22.0907 15.3059 22.2601 15.5069 22.4699 15.6587C22.6797 15.8105 22.9235 15.9086 23.18 15.9443L29.8458 16.9101L25.0958 21.6443Z" fill="white"/>
                   </g>
                 </svg>
-                <span className="text-base font-medium text-gray-900">一键创作</span>
+                <span className="text-base font-medium text-gray-900">AI创作</span>
               </div>
 
               {/* Ant Design Segmented组件 - 带边框和高度 */}
@@ -4743,6 +4751,7 @@ function ShortplayEntryPage() {
             onAddClick={
               activeTab === 'script' || activeTab === 'audio' ? handleStartAddNewItem : undefined
             }
+            onApplyClick={() => {}}
           />
 
           {/* 剧本内容区域 */}
@@ -4758,9 +4767,10 @@ function ShortplayEntryPage() {
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="space-y-2">
-                    {sceneContent.map((item) => (
+                    {sceneContent.map((item, index) => (
                       <SortableScriptItem
                         key={item.id}
+                        index={index}
                         item={item}
                         editingSceneItemId={editingSceneItemId}
                         editingSceneType={editingSceneType}
@@ -5148,6 +5158,41 @@ function ShortplayEntryPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 类型选择 Popover */}
+      {showTypeSelector && popoverPosition && (
+        <>
+          {/* 背景遮罩 - 点击关闭 */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setShowTypeSelector(false)}
+          />
+          {/* Popover 弹窗 */}
+          <div
+            className="fixed bg-white rounded-md shadow-lg overflow-hidden z-50"
+            style={{
+              top: `${popoverPosition.top}px`,
+              left: `${popoverPosition.left}px`,
+              width: '120px',
+            }}
+          >
+            <div className="divide-y divide-gray-100">
+              <button
+                onClick={() => handleCreateNewItem(1)}
+                className="w-full px-4 py-3 text-left text-gray-800 hover:bg-gray-100 transition-colors text-sm"
+              >
+                画面脚本
+              </button>
+              <button
+                onClick={() => handleCreateNewItem(2)}
+                className="w-full px-4 py-3 text-left text-gray-800 hover:bg-gray-100 transition-colors text-sm"
+              >
+                角色台词
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
