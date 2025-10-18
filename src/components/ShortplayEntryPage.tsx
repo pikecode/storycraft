@@ -356,7 +356,7 @@ function SortableScriptItem({
             />
 
             {/* 编辑操作按钮 */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-end space-x-2">
               <button
                 onClick={onSaveSceneItem}
                 className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -1644,7 +1644,7 @@ function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onS
   };
 
   const actionButtonClass =
-    "flex items-center space-x-1 px-[6px] py-1 text-sm font-medium text-gray-700 border border-blue-400 rounded hover:border-blue-500 hover:text-blue-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200";
+    "flex items-center space-x-1 px-1 py-0.5 text-sm font-medium text-gray-700 border border-blue-400 rounded hover:border-blue-500 hover:text-blue-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200";
 
   return (
     <div className="p-4 bg-white border-b border-gray-100">
@@ -5081,7 +5081,7 @@ function ShortplayEntryPage() {
                           {/* 底部操作栏 */}
                           <div className="absolute bottom-0 left-0 right-0 h-8 bg-black/60 flex items-center justify-around backdrop-blur-sm">
                             <div className="text-center">
-                              <div className="text-white text-sm">续梦</div>
+                              <div className="text-white text-sm">叙梦</div>
                             </div>
                             <div className="text-center">
                               <div className="text-white text-sm">我的</div>
