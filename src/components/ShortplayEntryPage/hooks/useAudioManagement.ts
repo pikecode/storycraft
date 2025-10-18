@@ -267,7 +267,7 @@ export const useAudioManagement = () => {
             toast.error('音频播放失败');
           });
         } else {
-          toast.error('音频生成中');
+          toast.error('音色生成中');
         }
       } else {
         throw new Error(result.message || '获取音频失败');

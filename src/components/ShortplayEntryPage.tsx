@@ -1512,7 +1512,7 @@ function ShortplayEntryPage() {
             toast.error('音频播放失败');
           });
         } else {
-          toast.error('音频生成中');
+          toast.error('音色生成中');
         }
       } else {
         throw new Error(result.message || '获取音频失败');
@@ -2366,7 +2366,7 @@ function ShortplayEntryPage() {
     }
   }, [audioType, activeTab]);
 
-  // 音频生成API调用
+  // 音色生成API调用
   const handleAudioGenerate = async () => {
     if (!userInput.trim()) {
       toast.error(t('shortplayEntry.input.description'));
@@ -2374,7 +2374,7 @@ function ShortplayEntryPage() {
     }
 
     setIsGenerating(true);
-    setGenerationStatus('正在生成音频...');
+    setGenerationStatus('正在生成音色...');
 
     try {
       // 从localStorage获取user信息
@@ -2414,7 +2414,7 @@ function ShortplayEntryPage() {
       }
 
       const result = await response.json();
-      console.log('音频生成结果:', result);
+      console.log('音色生成结果:', result);
 
       if (result.code === 0) {
         // 生成成功，刷新音频列表
@@ -2424,11 +2424,11 @@ function ShortplayEntryPage() {
         // 刷新音频列表（可用音色列表）
         await loadAllVoices();
       } else {
-        throw new Error(result.message || '音频生成失败');
+        throw new Error(result.message || '音色生成失败');
       }
     } catch (error) {
-      console.error('音频生成失败:', error);
-      toast.error('音频生成失败：' + (error as Error).message);
+      console.error('音色生成失败:', error);
+      toast.error('音色生成失败：' + (error as Error).message);
     } finally {
       setIsGenerating(false);
       setGenerationStatus('');

@@ -314,7 +314,7 @@ export const useScriptGeneration = () => {
   };
 
   /**
-   * 音频生成
+   * 音色生成
    */
   const handleAudioGenerate = async (userInput: string, t: any, loadAllVoices: () => Promise<void>) => {
     if (!userInput.trim()) {
@@ -323,7 +323,7 @@ export const useScriptGeneration = () => {
     }
 
     setIsGenerating(true);
-    setGenerationStatus('正在生成音频...');
+    setGenerationStatus('正在生成音色...');
 
     try {
       const userStr = localStorage.getItem('user');
@@ -361,7 +361,7 @@ export const useScriptGeneration = () => {
       }
 
       const result = await response.json();
-      console.log('音频生成结果:', result);
+      console.log('音色生成结果:', result);
 
       if (result.code === 0) {
         // 生成成功，刷新音频列表
@@ -370,14 +370,14 @@ export const useScriptGeneration = () => {
         // 刷新音频列表（可用音色列表）
         await loadAllVoices();
 
-        toast.success('音频生成完成！');
+        toast.success('音色生成完成！');
         return ''; // 清空输入
       } else {
-        throw new Error(result.message || '音频生成失败');
+        throw new Error(result.message || '音色生成失败');
       }
     } catch (error) {
-      console.error('音频生成失败:', error);
-      toast.error('音频生成失败：' + (error as Error).message);
+      console.error('音色生成失败:', error);
+      toast.error('音色生成失败：' + (error as Error).message);
       return userInput;
     } finally {
       setIsGenerating(false);
