@@ -49,7 +49,7 @@ const { Option } = Select;
 function ShortplayEntryPage() {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<string>('script');
-  const [selectedModel, setSelectedModel] = useState<string>('deepseek-r1');
+  const [selectedModel, setSelectedModel] = useState<string>('gemini');
   const [progress, setProgress] = useState<number>(75); // 进度百分比
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [hasVideo, setHasVideo] = useState<boolean>(true); // 默认有视频
@@ -2419,7 +2419,7 @@ function ShortplayEntryPage() {
         body: JSON.stringify({
           userId: userId,
           userInput: userInput.trim(),
-          provider: ""
+          provider: selectedModel
         })
       });
 

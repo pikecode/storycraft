@@ -49,9 +49,8 @@ export function BottomInputArea({
                 onChange={(e) => onModelChange(e.target.value)}
                 className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
               >
-                <option value="gemini-2.5pro">Gemini2.5pro</option>
-                <option value="deepseek-r1">DeepSeek-R1</option>
-                <option value="gpt-4">GPT-4</option>
+                <option value="gemini">Gemini2.5pro</option>
+                <option value="deepseek">DeepSeek-R1</option>
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -30,7 +30,7 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/episode-api': {
-        target: 'http://8.136.8.24:8321',
+        target: 'http://18.181.192.140',//8.136.8.24:8321
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/episode-api/, ''),
       },
