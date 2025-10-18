@@ -2866,7 +2866,12 @@ function ShortplayEntryPage() {
                       ) : imageChatHistory.length > 0 ? (
                         <div className="space-y-4">
                           {imageChatHistory.map((message, messageIndex) => (
-                            <div key={`message-${messageIndex}`} className={`flex ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'}`}>
+                            <div key={`message-${messageIndex}`} className={`flex ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'} gap-2`}>
+                              {message.type === 'USER_QUESTION' ? null : (
+                                <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                  <Icon icon="ri:user-3-line" className="w-3 h-3 text-black" />
+                                </div>
+                              )}
                               <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'bg-blue-100 rounded-2xl rounded-tr-none' : 'bg-gray-100 rounded-2xl rounded-tl-none'} p-3`}>
                                 {message.type === 'USER_QUESTION' ? (
                                   // 用户问题 - 显示content
@@ -2955,7 +2960,12 @@ function ShortplayEntryPage() {
                       ) : videoChatHistory.length > 0 ? (
                         <div className="space-y-4">
                           {videoChatHistory.map((message, messageIndex) => (
-                            <div key={`message-${messageIndex}`} className={`flex ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'}`}>
+                            <div key={`message-${messageIndex}`} className={`flex ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'} gap-2`}>
+                              {message.type === 'USER_QUESTION' ? null : (
+                                <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                  <Icon icon="ri:user-3-line" className="w-3 h-3 text-black" />
+                                </div>
+                              )}
                               <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'bg-blue-100 rounded-2xl rounded-tr-none' : 'bg-gray-100 rounded-2xl rounded-tl-none'} p-3`}>
                                 {message.type === 'USER_QUESTION' ? (
                                   // 用户问题 - 显示content
