@@ -2868,11 +2868,11 @@ function ShortplayEntryPage() {
                           {imageChatHistory.map((message, messageIndex) => (
                             <div key={`message-${messageIndex}`} className={`flex items-start ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'} gap-2`}>
                               {message.type === 'USER_QUESTION' ? null : (
-                                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 mt-1">
+                                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
                                   <Icon icon="ri:user-fill" className="w-3.5 h-3.5 text-gray-600" />
                                 </div>
                               )}
-                              <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none'} p-3`}>
+                              <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none'}`}>
                                 {message.type === 'USER_QUESTION' ? (
                                   // 用户问题 - 显示content
                                   <div className="text-sm text-gray-800">
@@ -2962,11 +2962,11 @@ function ShortplayEntryPage() {
                           {videoChatHistory.map((message, messageIndex) => (
                             <div key={`message-${messageIndex}`} className={`flex items-start ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'} gap-2`}>
                               {message.type === 'USER_QUESTION' ? null : (
-                                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 mt-1">
+                                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
                                   <Icon icon="ri:user-fill" className="w-3.5 h-3.5 text-gray-600" />
                                 </div>
                               )}
-                              <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none'} p-3`}>
+                              <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none'}`}>
                                 {message.type === 'USER_QUESTION' ? (
                                   // 用户问题 - 显示content
                                   <div className="text-sm text-gray-800">
