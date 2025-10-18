@@ -23,6 +23,7 @@ export function SortableStoryboardItem({
   onCancelTimeEdit,
   onDeleteItem,
   TimeRangeInput: TimeRangeInputComponent,
+  onPreview,
 }: SortableStoryboardItemProps) {
   const {
     attributes,
@@ -57,7 +58,7 @@ export function SortableStoryboardItem({
     >
       {/* 序号和操作按钮列 */}
       <div className="flex flex-col justify-between items-center h-full min-w-[20px]">
-        <div className="text-lg font-medium text-blue-600">
+        <div className="text-lg font-medium text-black">
           {index + 1}
         </div>
         <div className="flex flex-col items-center space-y-1">
@@ -83,7 +84,7 @@ export function SortableStoryboardItem({
       </div>
 
       {/* 图片/视频缩略图 */}
-      <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
+      <div className="w-12 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden relative group" style={{ aspectRatio: '9 / 16' }}>
         {item.fileUrl ? (
           // 判断是否为视频文件 (.mp4, .webm, .mov, .avi)
           /\.(mp4|webm|mov|avi)$/i.test(item.fileUrl) || /\.(mp4|webm|mov|avi)$/i.test(item.fileName || '') ? (
@@ -114,6 +115,13 @@ export function SortableStoryboardItem({
             <Icon icon="ri:image-line" className="w-8 h-8 text-white" />
           </div>
         )}
+        {/* 查看按钮 */}
+        <button
+          onClick={() => onPreview?.(item.fileUrl, item.fileName)}
+          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+        >
+          <Icon icon="ri:eye-line" className="w-5 h-5 text-white" />
+        </button>
       </div>
 
       {/* 内容区域 */}

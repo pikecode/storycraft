@@ -200,6 +200,7 @@ export interface SortableStoryboardItemProps {
   onCancelTimeEdit: () => void;
   onDeleteItem: (itemId: string) => void;
   TimeRangeInput: React.ComponentType<any>;
+  onPreview?: (fileUrl: string, fileName?: string) => void;
 }
 
 export interface StoryboardListProps {
@@ -221,6 +222,7 @@ export interface StoryboardListProps {
   onDragEnd: (event: any) => void;
   onDeleteItem: (itemId: string) => void;
   TimeRangeInput: React.ComponentType<any>;
+  onPreview?: (fileUrl: string, fileName?: string) => void;
 }
 
 // 通用组件类型

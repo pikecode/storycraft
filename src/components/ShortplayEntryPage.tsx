@@ -2857,7 +2857,7 @@ function ShortplayEntryPage() {
                 {activeTab === 'image' && (
                   <div className="space-y-4">
                     {/* 图片聊天记录内容区域 */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 pt-5">
                       {isLoadingImageHistory ? (
                         <div className="flex items-center justify-center p-4 text-gray-500">
                           <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
@@ -2951,7 +2951,7 @@ function ShortplayEntryPage() {
                 {activeTab === 'video' && (
                   <div className="space-y-4">
                     {/* 视频聊天记录内容区域 */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 pt-5">
                       {isLoadingVideoHistory ? (
                         <div className="flex items-center justify-center p-4 text-gray-500">
                           <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
@@ -3300,6 +3300,14 @@ function ShortplayEntryPage() {
                 onDragEnd={handleStoryboardDragEnd}
                 onDeleteItem={handleShowDeleteStoryboardConfirm}
                 TimeRangeInput={TimeRangeInput}
+                onPreview={(fileUrl, fileName) => {
+                  setPreviewUrl(fileUrl);
+                  setPreviewFileName(fileName);
+                  // 判断是否为视频文件
+                  const isVideo = /\.(mp4|webm|mov|avi)$/i.test(fileUrl) || /\.(mp4|webm|mov|avi)$/i.test(fileName || '');
+                  setPreviewType(isVideo ? 'video' : 'image');
+                  setPreviewModalVisible(true);
+                }}
               />
             )}
 
@@ -3323,6 +3331,14 @@ function ShortplayEntryPage() {
                 onDragEnd={handleStoryboardDragEnd}
                 onDeleteItem={handleShowDeleteStoryboardConfirm}
                 TimeRangeInput={TimeRangeInput}
+                onPreview={(fileUrl, fileName) => {
+                  setPreviewUrl(fileUrl);
+                  setPreviewFileName(fileName);
+                  // 判断是否为视频文件
+                  const isVideo = /\.(mp4|webm|mov|avi)$/i.test(fileUrl) || /\.(mp4|webm|mov|avi)$/i.test(fileName || '');
+                  setPreviewType(isVideo ? 'video' : 'image');
+                  setPreviewModalVisible(true);
+                }}
               />
             )}
           </div>
@@ -3605,7 +3621,6 @@ function ShortplayEntryPage() {
         width={450}
         centered
         bodyStyle={{ padding: 0 }}
-        modalStyle={{ boxShadow: 'none' }}
         closeIcon={null}
       >
         <div className="flex flex-col items-center justify-center">
