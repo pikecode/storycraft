@@ -97,6 +97,25 @@ function ShortplayEntryPage() {
   const [bgmList, setBgmList] = useState<any[]>([]);
   const [isLoadingBgm, setIsLoadingBgm] = useState(false);
 
+  // 音效时间编辑状态
+  const [bgmEditingTimeId, setBgmEditingTimeId] = useState<string | null>(null);
+  const [bgmEditingStartMinutes, setBgmEditingStartMinutes] = useState<string>('');
+  const [bgmEditingStartSeconds, setBgmEditingStartSeconds] = useState<string>('');
+  const [bgmEditingEndMinutes, setBgmEditingEndMinutes] = useState<string>('');
+  const [bgmEditingEndSeconds, setBgmEditingEndSeconds] = useState<string>('');
+
+  // 音效库列表时间编辑状态
+  const [bgmLibraryEditingId, setBgmLibraryEditingId] = useState<string | null>(null);
+  const [bgmLibraryStartMinutes, setBgmLibraryStartMinutes] = useState<string>('00');
+  const [bgmLibraryStartSeconds, setBgmLibraryStartSeconds] = useState<string>('00');
+  const [bgmLibraryEndMinutes, setBgmLibraryEndMinutes] = useState<string>('05');
+  const [bgmLibraryEndSeconds, setBgmLibraryEndSeconds] = useState<string>('00');
+  const [bgmLibraryDisplayTime, setBgmLibraryDisplayTime] = useState<string>("00'00'-00'05'");
+
+  // 音效播放进度状态
+  const [playingBgmId, setPlayingBgmId] = useState<string | null>(null);
+  const [bgmProgress, setBgmProgress] = useState<number>(0);
+
   // 图片聊天记录数据状态
   const [imageChatHistory, setImageChatHistory] = useState<any[]>([]);
   const [isLoadingImageHistory, setIsLoadingImageHistory] = useState<boolean>(false);
@@ -1521,6 +1540,12 @@ function ShortplayEntryPage() {
       // 计算下一个排序号（当前音频内容列表长度 + 1）
       const orderNum = audioContent.length + 1;
 
+      // 从编辑后的时间计算毫秒值
+      const startSeconds = parseInt(bgmLibraryStartMinutes) * 60 + parseInt(bgmLibraryStartSeconds);
+      const endSeconds = parseInt(bgmLibraryEndMinutes) * 60 + parseInt(bgmLibraryEndSeconds);
+      const startTimeMs = startSeconds * 1000;
+      const endTimeMs = endSeconds * 1000;
+
       const response = await fetch(`${STORYAI_API_BASE}/scene/content`, {
         method: 'POST',
         headers: {
@@ -1533,8 +1558,8 @@ function ShortplayEntryPage() {
           content: bgm.prompt || bgm.name || '音效',
           orderNum: orderNum,
           fileId: bgm.attachmentId,
-          startTime: 0,
-          endTime: 5000
+          startTime: startTimeMs,
+          endTime: endTimeMs
         })
       });
 
@@ -1554,6 +1579,84 @@ function ShortplayEntryPage() {
       console.error('应用音效失败:', error);
       toast.error('应用音效失败：' + (error as Error).message);
     }
+  };
+
+  // 音效时间编辑处理函数
+  const handleBgmStartEditTime = (bgmId: string, timeRange: string) => {
+    setBgmEditingTimeId(bgmId);
+    const [startTime, endTime] = timeRange.split('-');
+    const [startMin, startSec] = startTime.trim().split(':');
+    const [endMin, endSec] = endTime.trim().split(':');
+    setBgmEditingStartMinutes(startMin || '00');
+    setBgmEditingStartSeconds(startSec || '00');
+    setBgmEditingEndMinutes(endMin || '00');
+    setBgmEditingEndSeconds(endSec || '00');
+  };
+
+  const handleBgmSaveTimeEdit = async (bgmId: string) => {
+    if (!bgmEditingStartMinutes || !bgmEditingStartSeconds || !bgmEditingEndMinutes || !bgmEditingEndSeconds) return;
+
+    const startSeconds = parseInt(bgmEditingStartMinutes) * 60 + parseInt(bgmEditingStartSeconds);
+    const endSeconds = parseInt(bgmEditingEndMinutes) * 60 + parseInt(bgmEditingEndSeconds);
+
+    if (startSeconds >= endSeconds) {
+      toast.error('开始时间必须小于结束时间');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const bgmItem = audioContent.find((item: any) => item.id.toString() === bgmId);
+
+      if (!bgmItem) {
+        toast.error('未找到该音效');
+        return;
+      }
+
+      // 将时间转换为毫秒格式
+      const startTimeMs = startSeconds * 1000;
+      const endTimeMs = endSeconds * 1000;
+
+      const response = await fetch(`${STORYAI_API_BASE}/scene/content`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Prompt-Manager-Token': token || '',
+        },
+        body: JSON.stringify({
+          id: bgmId,
+          startTime: startTimeMs,
+          endTime: endTimeMs
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.code === 0) {
+          // 更新本地状态
+          setAudioContent((items) =>
+            items.map((item) =>
+              item.id.toString() === bgmId
+                ? { ...item, startTime: startTimeMs, endTime: endTimeMs }
+                : item
+            )
+          );
+          setBgmEditingTimeId(null);
+          toast.success('时间更新成功');
+        } else {
+          throw new Error(result.message || '更新失败');
+        }
+      } else {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('更新音效时间失败:', error);
+      toast.error('更新时间失败：' + (error as Error).message);
+    }
+  };
+
+  const handleBgmCancelTimeEdit = () => {
+    setBgmEditingTimeId(null);
   };
 
   // 图片生成API调用
@@ -2593,10 +2696,37 @@ function ShortplayEntryPage() {
                                     <div className="text-sm font-medium text-gray-800">{bgm.prompt || bgm.name || bgm.title || '音效文件'}</div>
                                   </div>
                                   <button
-                                    className="px-1 py-0.5 text-sm border border-green-500 text-green-500 rounded hover:bg-green-50 flex items-center space-x-1"
+                                    className="px-1 py-0.5 text-sm rounded flex items-center space-x-1"
+                                    style={{ color: '#3E83F6', borderColor: '#3E83F6', borderWidth: '1px' }}
+                                    onClick={() => handleApplyBgm(bgm)}
+                                  >
+                                    <Icon icon="ri:check-line" className="w-3 h-3" />
+                                    <span>应用</span>
+                                  </button>
+                                  <button
+                                    className="px-1 py-0.5 text-sm rounded flex items-center space-x-1"
+                                    style={{ color: '#3E83F6', borderColor: '#3E83F6', borderWidth: '1px' }}
                                     onClick={() => {
                                       if (bgm.audioUrl) {
                                         const audio = new Audio(bgm.audioUrl);
+                                        setPlayingBgmId(bgm.id);
+                                        setBgmProgress(0);
+
+                                        // 更新进度条
+                                        const updateProgress = () => {
+                                          if (audio.duration) {
+                                            const progress = (audio.currentTime / audio.duration) * 100;
+                                            setBgmProgress(progress);
+                                          }
+                                        };
+
+                                        audio.addEventListener('timeupdate', updateProgress);
+                                        audio.addEventListener('ended', () => {
+                                          setPlayingBgmId(null);
+                                          setBgmProgress(0);
+                                          audio.removeEventListener('timeupdate', updateProgress);
+                                        });
+
                                         audio.play();
                                       } else {
                                         toast.error('音效文件缺少播放地址');
@@ -2606,31 +2736,56 @@ function ShortplayEntryPage() {
                                     <Icon icon="ri:play-circle-line" className="w-3 h-3" />
                                     <span>播放</span>
                                   </button>
-                                  <button
-                                    className="px-1 py-0.5 text-sm border border-green-500 text-green-500 rounded hover:bg-green-50 flex items-center space-x-1"
-                                    onClick={() => handleApplyBgm(bgm)}
-                                  >
-                                    <Icon icon="ri:check-line" className="w-3 h-3" />
-                                    <span>应用</span>
-                                  </button>
                                 </div>
                                 {bgm.description && (
                                   <div className="text-xs text-gray-500 pl-11">{bgm.description}</div>
                                 )}
                                 <div className="flex items-center space-x-2">
                                     <span className="text-sm text-gray-600">播放位置</span>
-                                    <TimeRangeInput
-                                      startMinutes="00"
-                                      startSeconds="00"
-                                      endMinutes="00"
-                                      endSeconds="05"
-                                      onStartMinutesChange={() => {}}
-                                      onStartSecondsChange={() => {}}
-                                      onEndMinutesChange={() => {}}
-                                      onEndSecondsChange={() => {}}
-                                    />
-                                    <div className="flex-1 relative h-1.5 bg-gray-300 rounded-full overflow-hidden">
-                                      <div className="absolute h-full bg-gray-600 rounded-full" style={{ width: '40%' }}></div>
+                                    {bgmLibraryEditingId === bgm.id ? (
+                                      <div className="flex items-center space-x-1">
+                                        <TimeRangeInput
+                                          startMinutes={bgmLibraryStartMinutes}
+                                          startSeconds={bgmLibraryStartSeconds}
+                                          endMinutes={bgmLibraryEndMinutes}
+                                          endSeconds={bgmLibraryEndSeconds}
+                                          onStartMinutesChange={setBgmLibraryStartMinutes}
+                                          onStartSecondsChange={setBgmLibraryStartSeconds}
+                                          onEndMinutesChange={setBgmLibraryEndMinutes}
+                                          onEndSecondsChange={setBgmLibraryEndSeconds}
+                                        />
+                                        <button
+                                          onClick={() => {
+                                            setBgmLibraryDisplayTime(`${bgmLibraryStartMinutes}'${bgmLibraryStartSeconds}'-${bgmLibraryEndMinutes}'${bgmLibraryEndSeconds}'`);
+                                            setBgmLibraryEditingId(null);
+                                          }}
+                                          className="text-green-600 hover:text-green-800 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
+                                        >
+                                          <Icon icon="ri:check-line" className="w-3 h-3" />
+                                        </button>
+                                        <button
+                                          onClick={() => setBgmLibraryEditingId(null)}
+                                          className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none cursor-pointer"
+                                        >
+                                          <Icon icon="ri:close-line" className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center space-x-1 text-xs text-gray-400">
+                                        <span>{bgmLibraryDisplayTime}</span>
+                                        <button
+                                          onClick={() => setBgmLibraryEditingId(bgm.id)}
+                                          className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
+                                        >
+                                          <Icon icon="ri:edit-line" className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    )}
+                                    <div className="w-20 relative h-1 bg-gray-300 rounded-full overflow-hidden">
+                                      <div
+                                        className="absolute h-full bg-gray-600 rounded-full transition-all"
+                                        style={{ width: playingBgmId === bgm.id ? `${bgmProgress}%` : '0%' }}
+                                      ></div>
                                     </div>
                                     <button className="px-1.5 py-0.5 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100">
                                       <Icon icon="ri:volume-mute-line" className="w-3 h-3" />
@@ -3116,6 +3271,18 @@ function ShortplayEntryPage() {
                           configuredVoices={configuredVoices}
                           onVoiceSelect={handleVoiceSelect}
                           onPlayAudio={handlePlayAudio}
+                          editingTimeId={bgmEditingTimeId}
+                          editingStartMinutes={bgmEditingStartMinutes}
+                          editingStartSeconds={bgmEditingStartSeconds}
+                          editingEndMinutes={bgmEditingEndMinutes}
+                          editingEndSeconds={bgmEditingEndSeconds}
+                          onEditingStartMinutesChange={setBgmEditingStartMinutes}
+                          onEditingStartSecondsChange={setBgmEditingStartSeconds}
+                          onEditingEndMinutesChange={setBgmEditingEndMinutes}
+                          onEditingEndSecondsChange={setBgmEditingEndSeconds}
+                          onStartEditTime={handleBgmStartEditTime}
+                          onSaveTimeEdit={handleBgmSaveTimeEdit}
+                          onCancelTimeEdit={handleBgmCancelTimeEdit}
                         />
                       ))
                     ) : (

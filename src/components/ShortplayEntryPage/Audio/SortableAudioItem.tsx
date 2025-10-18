@@ -1,10 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SortableAudioItemProps } from '../types';
+import { TimeRangeInput } from '../Common/TimeRangeInput';
 
-export function SortableAudioItem({ item, audioType, configuredVoices, onVoiceSelect, onPlayAudio }: SortableAudioItemProps) {
+export function SortableAudioItem({
+  item,
+  audioType,
+  configuredVoices,
+  onVoiceSelect,
+  onPlayAudio,
+  editingTimeId,
+  editingStartMinutes,
+  editingStartSeconds,
+  editingEndMinutes,
+  editingEndSeconds,
+  onEditingStartMinutesChange,
+  onEditingStartSecondsChange,
+  onEditingEndMinutesChange,
+  onEditingEndSecondsChange,
+  onStartEditTime,
+  onSaveTimeEdit,
+  onCancelTimeEdit
+}: SortableAudioItemProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const {
     attributes,
     listeners,
@@ -78,15 +98,51 @@ export function SortableAudioItem({ item, audioType, configuredVoices, onVoiceSe
         <div className="flex-1 text-sm" style={{ color: item.itemType === 1 ? '#3E83F6' : '#4B5563' }}>
           {item.content}
         </div>
-        <div className="text-xs text-gray-400">{item.timeRange}</div>
         <div className="flex items-center space-x-2">
+          {editingTimeId === item.id ? (
+            <div className="flex items-center space-x-1">
+              <TimeRangeInput
+                startMinutes={editingStartMinutes}
+                startSeconds={editingStartSeconds}
+                endMinutes={editingEndMinutes}
+                endSeconds={editingEndSeconds}
+                onStartMinutesChange={onEditingStartMinutesChange}
+                onStartSecondsChange={onEditingStartSecondsChange}
+                onEndMinutesChange={onEditingEndMinutesChange}
+                onEndSecondsChange={onEditingEndSecondsChange}
+              />
+              <button
+                onClick={() => onSaveTimeEdit?.(item.id)}
+                className="text-green-600 hover:text-green-800 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
+              >
+                <Icon icon="ri:check-line" className="w-3 h-3" />
+              </button>
+              <button
+                onClick={onCancelTimeEdit}
+                className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none cursor-pointer"
+              >
+                <Icon icon="ri:close-line" className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-1 text-xs text-gray-400">
+              <span>{item.timeRange}</span>
+              <button
+                onClick={() => {
+                  onStartEditTime?.(item.id, item.timeRange);
+                }}
+                className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
+              >
+                <Icon icon="ri:edit-line" className="w-3 h-3" />
+              </button>
+            </div>
+          )}
           <Icon
             icon="ri:play-circle-line"
             className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
             onClick={() => onPlayAudio?.(item.id)}
             title="播放音频"
           />
-          <Icon icon="ri:time-line" className="w-4 h-4 text-gray-400" />
           <Icon icon="ri:delete-bin-line" className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500" />
         </div>
       </div>
