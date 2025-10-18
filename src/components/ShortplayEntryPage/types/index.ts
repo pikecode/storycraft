@@ -72,6 +72,7 @@ export interface BottomInputAreaProps {
   placeholder?: string;
   generationStatus?: string;
   // 音频tab特有属性
+  audioType?: 'voice' | 'sound';
   voiceType?: string;
   onVoiceTypeChange?: (voice: string) => void;
   // 图片tab特有属性

@@ -14,6 +14,7 @@ export function BottomInputArea({
   placeholder,
   generationStatus,
   // 音频tab属性
+  audioType = 'voice',
   voiceType = "male",
   onVoiceTypeChange,
   // 图片tab属性
@@ -39,7 +40,7 @@ export function BottomInputArea({
   const finalPlaceholder = placeholder || t('shortplayEntry.input.placeholder');
 
   return (
-    <div className="border-t border-gray-100 p-4">
+    <div className="p-4">
       {activeTab === 'script' && (
         <>
           <div className="mb-3">
@@ -113,9 +114,11 @@ export function BottomInputArea({
                   onChange={(e) => onModelChange(e.target.value)}
                   className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
-                  <option value="gemini-2.5pro">Gemini2.5pro</option>
-                  <option value="deepseek-r1">DeepSeek-R1</option>
-                  <option value="gpt-4">GPT-4</option>
+                  {audioType === 'voice' ? (
+                    <option value="minimaxi">minimaxi</option>
+                  ) : (
+                    <option value="video">video</option>
+                  )}
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">

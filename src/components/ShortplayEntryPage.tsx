@@ -68,6 +68,7 @@ function ShortplayEntryPage() {
   const [singleGenerate, setSingleGenerate] = useState<boolean>(false);
 
   // 场次管理状态
+  const [seriesId, setSeriesId] = useState<string>(''); // 生成的series ID
   const [selectedScene, setSelectedScene] = useState<string>('');
   const [sceneOptions, setSceneOptions] = useState<string[]>([]);
   const [scenesData, setScenesData] = useState<any[]>([]); // 存储完整的场次数据
@@ -1263,7 +1264,7 @@ function ShortplayEntryPage() {
           'X-Prompt-Manager-Token': token || '',
         },
         body: JSON.stringify({
-          userId: userId,
+          seriesId: seriesId,
           status: status
         })
       });
@@ -2193,7 +2194,7 @@ function ShortplayEntryPage() {
   const loadSceneContent = async (sceneId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${STORYAI_API_BASE}/scene/content?sceneId=${sceneId}`, {
+      const response = await fetch(`${STORYAI_API_BASE}/scene/content?sceneId=${sceneId}&type=1&type=2`, {
         method: 'GET',
         headers: {
           'X-Prompt-Manager-Token': token || '',
@@ -2217,7 +2218,7 @@ function ShortplayEntryPage() {
     setIsLoadingAudioContent(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${STORYAI_API_BASE}/scene/content?sceneId=${sceneId}`, {
+      const response = await fetch(`${STORYAI_API_BASE}/scene/content?sceneId=${sceneId}&type=2&type=3`, {
         method: 'GET',
         headers: {
           'X-Prompt-Manager-Token': token || '',
@@ -2271,7 +2272,14 @@ function ShortplayEntryPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.code === 0 && result.data) {
-          const { seriesContent, scenes } = result.data;
+          const { seriesContent, scenes, seriesId: returnedSeriesId } = result.data;
+
+          // 如果有seriesId则设置，否则mock值为9
+          if (returnedSeriesId) {
+            setSeriesId(returnedSeriesId);
+          } else {
+            setSeriesId('9');
+          }
 
           // 如果有历史内容，则显示
           if (seriesContent) {
@@ -2336,11 +2344,13 @@ function ShortplayEntryPage() {
   // 音色/音效切换时只加载左侧资源（不重新加载中间列表）
   React.useEffect(() => {
     // 只有当audioType真正改变且在音频Tab中时才执行
-    if (activeTab === 'audio' && prevAudioTypeRef.current !== audioType) {
+    if (activeTab === 'audio') {
       if (audioType === 'voice') {
         loadAllVoices();
+        setSelectedModel('minimaxi');
       } else {
         loadBgmList();
+        setSelectedModel('video');
       }
       // 更新ref
       prevAudioTypeRef.current = audioType;
@@ -2385,7 +2395,8 @@ function ShortplayEntryPage() {
         },
         body: JSON.stringify({
           prompt: userInput.trim(),
-          userId: userId
+          userId: userId,
+          seriesId: seriesId
         })
       });
 
@@ -2479,6 +2490,7 @@ function ShortplayEntryPage() {
       }
 
       const seriesId = result.data.seriesId;
+      setSeriesId(seriesId);
       setGenerationStatus('剧本生成中，请稍候...');
 
       // 第二步：轮询获取生成结果
@@ -2499,7 +2511,14 @@ function ShortplayEntryPage() {
           console.log('轮询结果:', detailResult);
 
           if (detailResult.code === 0 && detailResult.data) {
-            const { generationStatus: status, seriesContent, scenes } = detailResult.data;
+            const { generationStatus: status, seriesContent, scenes, seriesId: returnedSeriesId } = detailResult.data;
+
+            // 如果有seriesId则设置，否则mock值为9
+            if (returnedSeriesId) {
+              setSeriesId(returnedSeriesId);
+            } else {
+              setSeriesId('9');
+            }
 
             if (status === 'COMPLETED') {
               // 生成完成
@@ -2566,7 +2585,7 @@ function ShortplayEntryPage() {
           {/* 左侧面板 - 一键创作 (均分) */}
           <div className="flex-1 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
           {/* 顶部Logo和标题区 */}
-          <div className="p-4 bg-white border-b border-gray-100">
+          <div className="p-4 bg-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <svg width="40" height="36" viewBox="0 0 56 51" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2622,7 +2641,7 @@ function ShortplayEntryPage() {
 
           {/* 内容区域 */}
           <div className="flex-grow min-h-0" style={{ padding: '10px' }}>
-            <div className="bg-white rounded-lg border border-gray-200 h-full flex flex-col">
+            <div className={`bg-white rounded-lg h-full flex flex-col ${activeTab === 'script' ? '' : 'border border-gray-200'}`}>
               {/* 卡片内容区域 */}
               <div className="flex-grow overflow-auto min-h-0 h-96" style={{ padding: '10px' }}>
                 {activeTab === 'script' && (
@@ -3104,6 +3123,7 @@ function ShortplayEntryPage() {
                   }
                   placeholder={t('shortplayEntry.input.placeholder')}
                   generationStatus={generationStatus}
+                  audioType={audioType}
                   voiceType={voiceType}
                   onVoiceTypeChange={setVoiceType}
                   backgroundType={backgroundType}
