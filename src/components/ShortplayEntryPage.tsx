@@ -1989,8 +1989,6 @@ function ShortplayEntryPage() {
 
         // 刷新音效列表
         await loadBgmList();
-
-        toast.success('音效生成完成！');
       } else {
         throw new Error(result.message || '音效生成失败');
       }
@@ -2215,8 +2213,6 @@ function ShortplayEntryPage() {
 
         // 刷新音频列表（可用音色列表）
         await loadAllVoices();
-
-        toast.success('音频生成完成！');
       } else {
         throw new Error(result.message || '音频生成失败');
       }
@@ -2437,7 +2433,7 @@ function ShortplayEntryPage() {
           <div className="flex-grow p-4 min-h-0">
             <div className="bg-white rounded-lg border border-gray-200 h-full flex flex-col">
               {/* 卡片内容区域 */}
-              <div className="flex-grow p-4 overflow-auto min-h-0 h-96">
+              <div className="flex-grow p-2.5 overflow-auto min-h-0 h-96">
                 {activeTab === 'script' && (
                   <div className="space-y-4">
                     {/* 生成的内容显示 */}
@@ -2457,16 +2453,16 @@ function ShortplayEntryPage() {
                   <div className="space-y-4">
                     {/* 可用音色/音效列表 - 居上排列 */}
                     <div className="space-y-2">
-                      {audioType === 'voice' ? (
-                        <>
-                          {isLoadingVoices ? (
-                            <div className="flex items-center justify-center p-4 text-gray-500">
-                              <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
-                              加载中...
-                            </div>
-                          ) : (
+                          {audioType === 'voice' ? (
+                            <>
+                              {isLoadingVoices ? (
+                                <div className="flex items-center justify-center p-4 text-gray-500">
+                                  <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
+                                  加载中...
+                                </div>
+                              ) : (
                             availableVoices.map((voice) => (
-                              <div key={voice.voiceId} className="flex items-center space-x-3 p-3">
+                              <div key={voice.voiceId} className="flex items-center space-x-3 py-3">
                                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                                   <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
                                 </div>
@@ -2503,15 +2499,18 @@ function ShortplayEntryPage() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                                  <span className="text-xs text-white font-medium">
-                                    {voice.voiceSource === 'CUSTOM' ? '定' : '系'}
-                                  </span>
+                                <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+                                  {voice.voiceSource === 'CUSTOM' ? (
+                                    <img src="/img/avatar.png" alt="定制音色" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full bg-orange-500 flex items-center justify-center">
+                                      <span className="text-xs text-white font-medium">系</span>
+                                    </div>
+                                  )}
                                 </div>
-                                <Icon icon="ri:arrow-down-s-line" className="w-4 h-4 text-gray-400" />
                                 <div className="flex space-x-2">
                                   <button
-                                    className="px-3 py-1 text-xs border border-blue-500 text-blue-500 rounded hover:bg-blue-50"
+                                    className="px-1 py-0.5 text-sm border border-blue-500 text-blue-500 rounded hover:bg-blue-50"
                                     onClick={() => {
                                       if (voice.sampleAudioUrl) {
                                         const audio = new Audio(voice.sampleAudioUrl);
@@ -2522,7 +2521,7 @@ function ShortplayEntryPage() {
                                     播放
                                   </button>
                                   <button
-                                    className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    className="px-1 py-0.5 text-sm border border-blue-500 text-blue-500 rounded hover:bg-blue-50"
                                     onClick={() => handleApplyVoice(voice.voiceId)}
                                   >
                                     应用
@@ -2541,7 +2540,7 @@ function ShortplayEntryPage() {
                             </div>
                           ) : (
                             bgmList.map((bgm, index) => (
-                              <div key={bgm.id || index} className="flex items-center space-x-3 p-3">
+                              <div key={bgm.id || index} className="flex items-center space-x-3 py-3">
                                 <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                                   <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
                                 </div>
@@ -2553,7 +2552,7 @@ function ShortplayEntryPage() {
                                 </div>
                                 <div className="flex space-x-2">
                                   <button
-                                    className="px-3 py-1 text-xs border border-green-500 text-green-500 rounded hover:bg-green-50"
+                                    className="px-1 py-0.5 text-sm border border-green-500 text-green-500 rounded hover:bg-green-50"
                                     onClick={() => {
                                       if (bgm.audioUrl) {
                                         const audio = new Audio(bgm.audioUrl);
@@ -2566,7 +2565,7 @@ function ShortplayEntryPage() {
                                     播放
                                   </button>
                                   <button
-                                    className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+                                    className="px-1 py-0.5 text-sm border border-green-500 text-green-500 rounded hover:bg-green-50"
                                     onClick={() => handleApplyBgm(bgm)}
                                   >
                                     应用
