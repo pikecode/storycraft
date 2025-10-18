@@ -176,9 +176,9 @@ export function BottomInputArea({
                   onChange={(e) => onModelChange(e.target.value)}
                   className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
-                  <option value="gemini-2.5pro">Gemini2.5pro</option>
-                  <option value="deepseek-r1">DeepSeek-R1</option>
-                  <option value="gpt-4">GPT-4</option>
+                  <option value="doubao-seedream-4.0">doubao-seedream-4.0</option>
+                  <option value="doubao-seedream-3.0-t2i">doubao-seedream-3.0-t2i</option>
+                  <option value="doubao-seededit-3.0-i2i">doubao-seededit-3.0-i2i</option>
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -189,31 +189,20 @@ export function BottomInputArea({
 
               <div className="relative w-20">
                 <select
-                  value={backgroundType}
-                  onChange={(e) => onBackgroundTypeChange?.(e.target.value)}
+                  value={videoLength}
+                  onChange={(e) => onVideoLengthChange?.(e.target.value)}
                   className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
-                  <option value="背景">{t('shortplayEntry.image.background')}</option>
-                  <option value="人物">{t('shortplayEntry.image.character')}</option>
-                  <option value="物体">{t('shortplayEntry.image.object')}</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="relative w-20">
-                <select
-                  value={style}
-                  onChange={(e) => onStyleChange?.(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="古风">{t('shortplayEntry.image.ancient')}</option>
-                  <option value="现代">{t('shortplayEntry.image.modern')}</option>
-                  <option value="科幻">{t('shortplayEntry.image.scifi')}</option>
-                  <option value="卡通">{t('shortplayEntry.image.cartoon')}</option>
+                  <option value="1s">1s</option>
+                  <option value="2s">2s</option>
+                  <option value="3s">3s</option>
+                  <option value="4s">4s</option>
+                  <option value="5s">5s</option>
+                  <option value="6s">6s</option>
+                  <option value="7s">7s</option>
+                  <option value="8s">8s</option>
+                  <option value="9s">9s</option>
+                  <option value="10s">10s</option>
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -223,6 +212,19 @@ export function BottomInputArea({
               </div>
             </div>
           </div>
+
+          {/* 生成状态显示 */}
+          {isGenerating && generationStatus && (
+            <div className="mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <svg className="animate-spin w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-sm text-blue-700">{generationStatus}</span>
+              </div>
+            </div>
+          )}
 
           <div className="relative">
             <textarea
@@ -320,6 +322,19 @@ export function BottomInputArea({
               </div>
             </div>
           </div>
+
+          {/* 生成状态显示 */}
+          {isGenerating && generationStatus && (
+            <div className="mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <svg className="animate-spin w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-sm text-blue-700">{generationStatus}</span>
+              </div>
+            </div>
+          )}
 
           <div className="relative">
             <textarea

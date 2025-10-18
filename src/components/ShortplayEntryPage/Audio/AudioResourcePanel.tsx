@@ -107,17 +107,18 @@ export function AudioResourcePanel({
                                 onChange={(e) => onEditingVoiceNameChange(e.target.value)}
                                 onKeyDown={onVoiceNameKeyDown}
                                 className="text-sm border border-blue-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                style={{ width: '120px' }}
                                 autoFocus
                               />
                               <button
                                 onClick={onSaveVoiceName}
-                                className="text-green-600 hover:text-green-800"
+                                className="text-green-600 hover:text-green-800 p-0 border-0 bg-transparent outline-none"
                               >
                                 <Icon icon="ri:check-line" className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={onCancelEditVoiceName}
-                                className="text-red-600 hover:text-red-800"
+                                className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none"
                               >
                                 <Icon icon="ri:close-line" className="w-4 h-4" />
                               </button>
@@ -161,7 +162,7 @@ export function AudioResourcePanel({
                 className="flex-shrink-0 pt-3 border-none bg-transparent w-2.5"
               >
                 <Icon
-                  icon={isConfiguredVoicesExpanded ? "ri:arrow-down-s-line" : "ri:arrow-up-s-line"}
+                  icon={isConfiguredVoicesExpanded ? "ri:arrow-up-s-line" : "ri:arrow-down-s-line"}
                   className="w-4 h-4 text-gray-400"
                 />
               </button>

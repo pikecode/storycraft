@@ -52,7 +52,7 @@ function ShortplayEntryPage() {
   const [selectedModel, setSelectedModel] = useState<string>('deepseek');
   const [progress, setProgress] = useState<number>(75); // 进度百分比
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [hasVideo, setHasVideo] = useState<boolean>(true); // 默认有视频
+  const [hasVideo, setHasVideo] = useState<boolean>(false); // 默认有视频
   const [userInput, setUserInput] = useState<string>(''); // 用户输入内容
   const [isGenerating, setIsGenerating] = useState<boolean>(false); // 生成状态
   const [generatedContent, setGeneratedContent] = useState<string>(''); // 生成的内容
@@ -148,7 +148,6 @@ function ShortplayEntryPage() {
         body: JSON.stringify({
           sceneId: sceneId.toString(),
           chatScene: "IMAGE",
-          type: "AI_ANSWER",
           pageNum: 1,
           pageSize: 24
         })
@@ -237,6 +236,40 @@ function ShortplayEntryPage() {
     }
   };
 
+  // 静默加载分镜板列表（不显示loading状态）
+  const silentLoadStoryboardList = async () => {
+    // 获取当前选中场次的sceneId
+    const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
+    const sceneId = currentSceneData?.sceneId;
+
+    if (!sceneId) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${STORYAI_API_BASE}/storyboard/list?sceneId=${sceneId}`, {
+        method: 'GET',
+        headers: {
+          'X-Prompt-Manager-Token': token || '',
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.code === 0 && result.data) {
+          // 按 storyboardOrder 排序后设置数据
+          const sortedData = (result.data || []).sort((a: any, b: any) =>
+            (a.storyboardOrder || 0) - (b.storyboardOrder || 0)
+          );
+          setStoryboardItems(sortedData);
+        }
+      }
+    } catch (error) {
+      console.error('静默加载分镜板列表失败:', error);
+    }
+  };
+
   // 视频预览
   const handleVideoPreview = async () => {
     // 获取当前选中场次的sceneId
@@ -318,9 +351,8 @@ function ShortplayEntryPage() {
 
       const result = await response.json();
       if (result.code === 0) {
-        toast.success(`已应用图片: ${fileName}`);
-        // 刷新分镜板列表
-        await loadStoryboardList();
+        // 静默刷新分镜板列表，不显示loading和toast提示
+        await silentLoadStoryboardList();
       } else {
         throw new Error(result.message || '应用图片失败');
       }
@@ -1681,6 +1713,10 @@ function ShortplayEntryPage() {
     try {
       const token = localStorage.getItem('token');
 
+      // 将时间格式 "1s", "2s" 等转换为毫秒
+      const durationSeconds = parseInt(videoLength.replace('s', ''));
+      const durationMillis = durationSeconds * 1000;
+
       const response = await fetch(`${STORYAI_API_BASE}/ai/image/generate`, {
         method: 'POST',
         headers: {
@@ -1689,7 +1725,9 @@ function ShortplayEntryPage() {
         },
         body: JSON.stringify({
           sceneId: sceneId,
-          userInput: userInput.trim()
+          userInput: userInput.trim(),
+          llmName: selectedModel,
+          durationMillis: durationMillis
         })
       });
 
@@ -1872,6 +1910,13 @@ function ShortplayEntryPage() {
   const [videoChatHistory, setVideoChatHistory] = useState<any[]>([]);
   const [isLoadingVideoHistory, setIsLoadingVideoHistory] = useState<boolean>(false);
 
+  // 图片/视频预览弹窗状态
+  const [previewModalVisible, setPreviewModalVisible] = useState<boolean>(false);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewType, setPreviewType] = useState<'image' | 'video'>('image');
+  const [previewFileId, setPreviewFileId] = useState<string>('');
+  const [previewFileName, setPreviewFileName] = useState<string>('');
+
   // 加载视频聊天记录
   const loadVideoChatHistory = async () => {
     // 获取当前选中场次的sceneId
@@ -1900,7 +1945,6 @@ function ShortplayEntryPage() {
         body: JSON.stringify({
           sceneId: sceneId.toString(),
           chatScene: "VIDEO",
-          type: "AI_ANSWER",
           pageNum: 1,
           pageSize: 24
         })
@@ -2622,17 +2666,18 @@ function ShortplayEntryPage() {
                                         onChange={(e) => setEditingVoiceName(e.target.value)}
                                         onKeyDown={handleVoiceNameKeyDown}
                                         className="text-sm border border-blue-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        style={{ width: '120px' }}
                                         autoFocus
                                       />
                                       <button
                                         onClick={handleSaveVoiceName}
-                                        className="text-green-600 hover:text-green-800"
+                                        className="text-green-600 hover:text-green-800 p-0 border-0 bg-transparent outline-none"
                                       >
                                         <Icon icon="ri:check-line" className="w-4 h-4" />
                                       </button>
                                       <button
                                         onClick={handleCancelEditVoiceName}
-                                        className="text-red-600 hover:text-red-800"
+                                        className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none"
                                       >
                                         <Icon icon="ri:close-line" className="w-4 h-4" />
                                       </button>
@@ -2819,116 +2864,76 @@ function ShortplayEntryPage() {
                           加载中...
                         </div>
                       ) : imageChatHistory.length > 0 ? (
-                        (() => {
-                          // 将所有records的files合并成一个数组
-                          const allFiles: any[] = [];
-                          imageChatHistory.forEach((item, itemIndex) => {
-                            if (item.files && item.files.length > 0) {
-                              item.files.forEach((file: any) => {
-                                if (file.fileType === 'IMAGE' && file.downloadUrl) {
-                                  allFiles.push({
-                                    ...file,
-                                    recordIndex: itemIndex,
-                                    recordContent: item.content || item.message || '图片内容',
-                                    createTime: item.createTime
-                                  });
-                                }
-                              });
-                            } else if (item.imageUrl) {
-                              // 兼容旧格式
-                              allFiles.push({
-                                downloadUrl: item.imageUrl,
-                                fileName: '生成的图片',
-                                fileType: 'IMAGE',
-                                recordIndex: itemIndex,
-                                recordContent: item.content || item.message || '图片内容',
-                                createTime: item.createTime
-                              });
-                            }
-                          });
-
-                          return (
-                            <div className="space-y-3">
-                              {allFiles.map((file, index) => (
-                                <div key={`file-${file.fileId || index}`} className="bg-white rounded-lg border border-gray-200 p-3">
-                                  <div className="flex items-start space-x-3">
-                                    {/* 序号 */}
-                                    <div className="text-sm font-medium text-blue-600 min-w-[20px]">
-                                      {index + 1}
-                                    </div>
-
-                                    {/* 图片缩略图 */}
-                                    <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                                      <img
-                                        src={file.downloadUrl}
-                                        alt={file.fileName || '生成的图片'}
-                                        className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                                        onError={(e) => {
-                                          e.currentTarget.style.display = 'none';
-                                        }}
-                                        onClick={() => {
-                                          window.open(file.downloadUrl, '_blank');
-                                        }}
-                                      />
-                                    </div>
-
-                                    {/* 内容信息 */}
-                                    <div className="flex-1 min-w-0">
-                                      <div className="text-sm text-gray-800 mb-1">
-                                        {file.recordContent}
-                                      </div>
-                                      <div className="text-xs text-gray-500 mb-1">
-                                        文件名: {file.fileName}
-                                      </div>
-                                      <div className="text-xs text-gray-400">
-                                        来源记录: #{file.recordIndex + 1}
-                                        {file.createTime && (
-                                          <span className="ml-2">
-                                            {new Date(file.createTime).toLocaleString()}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* 操作按钮 */}
-                                    <div className="flex items-center space-x-2">
-                                      <button
-                                        onClick={() => window.open(file.downloadUrl, '_blank')}
-                                        className="p-1 hover:bg-gray-100 rounded"
-                                        title="查看原图"
-                                      >
-                                        <Icon icon="ri:eye-line" className="w-4 h-4 text-gray-400 hover:text-blue-500" />
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          const link = document.createElement('a');
-                                          link.href = file.downloadUrl;
-                                          link.download = file.fileName || '图片';
-                                          document.body.appendChild(link);
-                                          link.click();
-                                          document.body.removeChild(link);
-                                        }}
-                                        className="p-1 hover:bg-gray-100 rounded"
-                                        title="下载图片"
-                                      >
-                                        <Icon icon="ri:download-line" className="w-4 h-4 text-gray-400 hover:text-green-500" />
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          handleCreateStoryboard(file.fileId, file.fileName);
-                                        }}
-                                        className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                                        title="应用此图片"
-                                      >
-                                        应用
-                                      </button>
-                                    </div>
+                        <div className="space-y-4">
+                          {imageChatHistory.map((message, messageIndex) => (
+                            <div key={`message-${messageIndex}`} className={`flex ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'bg-blue-100 rounded-2xl rounded-tr-none' : 'bg-gray-100 rounded-2xl rounded-tl-none'} p-3`}>
+                                {message.type === 'USER_QUESTION' ? (
+                                  // 用户问题 - 显示content
+                                  <div className="text-sm text-gray-800">
+                                    {message.content}
                                   </div>
-                                </div>
-                              ))}
+                                ) : message.type === 'AI_ANSWER' ? (
+                                  // AI回答 - 显示files中的图片，横向展示
+                                  <div>
+                                    {message.content && (
+                                      <div className="text-sm text-gray-700 mb-2">
+                                        {message.content}
+                                      </div>
+                                    )}
+                                    {message.files && message.files.length > 0 && (
+                                      <div className="flex gap-2 flex-wrap">
+                                        {message.files.map((file, fileIndex) => (
+                                          <div key={`file-${fileIndex}`} className="flex flex-col items-center gap-1 relative group">
+                                            <div className="w-20 bg-gray-200 overflow-hidden flex-shrink-0 relative" style={{ aspectRatio: '9 / 16' }}>
+                                              <img
+                                                src={file.downloadUrl}
+                                                alt={file.fileName || '生成的图片'}
+                                                className="w-full h-full object-cover cursor-pointer"
+                                                onError={(e) => {
+                                                  e.currentTarget.style.display = 'none';
+                                                }}
+                                              />
+                                              {/* 悬停时显示的按钮覆盖层 */}
+                                              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 rounded-lg">
+                                                <button
+                                                  onClick={() => {
+                                                    setPreviewUrl(file.downloadUrl);
+                                                    setPreviewType('image');
+                                                    setPreviewFileId(file.fileId);
+                                                    setPreviewFileName(file.fileName);
+                                                    setPreviewModalVisible(true);
+                                                  }}
+                                                  className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
+                                                  style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
+                                                  title="查看原图"
+                                                >
+                                                  <Icon icon="ri:external-link-line" className="w-3 h-3" />
+                                                  查看
+                                                </button>
+                                                <button
+                                                  onClick={() => {
+                                                    handleCreateStoryboard(file.fileId, file.fileName);
+                                                  }}
+                                                  className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
+                                                  style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
+                                                  title="应用此图片"
+                                                >
+                                                  <Icon icon="ri:check-line" className="w-3 h-3 text-green-400" />
+                                                  应用
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
-                          );
-                        })()
+                          ))}
+                        </div>
                       ) : (
                         <div className="text-center text-gray-500 py-8">
                           暂无图片记录
@@ -2948,112 +2953,82 @@ function ShortplayEntryPage() {
                           加载中...
                         </div>
                       ) : videoChatHistory.length > 0 ? (
-                        (() => {
-                          // 将所有records的files合并成一个数组
-                          const allFiles: any[] = [];
-                          videoChatHistory.forEach((item, itemIndex) => {
-                            if (item.files && item.files.length > 0) {
-                              item.files.forEach((file: any) => {
-                                if (file.fileType === 'VIDEO' && file.downloadUrl) {
-                                  allFiles.push({
-                                    ...file,
-                                    recordIndex: itemIndex,
-                                    recordContent: item.content || item.message || '视频内容',
-                                    createTime: item.createTime
-                                  });
-                                }
-                              });
-                            }
-                          });
-
-                          return (
-                            <div className="space-y-3">
-                              {allFiles.map((file, index) => (
-                                <div key={`file-${file.fileId || index}`} className="bg-white rounded-lg border border-gray-200 p-3">
-                                  <div className="flex items-start space-x-3">
-                                    {/* 序号 */}
-                                    <div className="text-sm font-medium text-blue-600 min-w-[20px]">
-                                      {index + 1}
-                                    </div>
-
-                                    {/* 视频缩略图/播放器 */}
-                                    <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                                      <video
-                                        src={file.downloadUrl}
-                                        className="w-full h-full object-cover cursor-pointer"
-                                        controls
-                                        onClick={(e) => e.stopPropagation()}
-                                        onError={(e) => {
-                                          // 如果视频加载失败，显示播放图标
-                                          e.currentTarget.style.display = 'none';
-                                          const parent = e.currentTarget.parentElement;
-                                          if (parent) {
-                                            parent.innerHTML = `<div class="w-full h-full bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
-                                              <svg class="w-8 h-8 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                                            </div>`;
-                                            parent.onclick = () => window.open(file.downloadUrl, '_blank');
-                                          }
-                                        }}
-                                      />
-                                    </div>
-
-                                    {/* 内容信息 */}
-                                    <div className="flex-1 min-w-0">
-                                      <div className="text-sm text-gray-800 mb-1">
-                                        {file.recordContent}
-                                      </div>
-                                      <div className="text-xs text-gray-500 mb-1">
-                                        文件名: {file.fileName}
-                                      </div>
-                                      <div className="text-xs text-gray-400">
-                                        来源记录: #{file.recordIndex + 1}
-                                        {file.createTime && (
-                                          <span className="ml-2">
-                                            {new Date(file.createTime).toLocaleString()}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* 操作按钮 */}
-                                    <div className="flex items-center space-x-2">
-                                      <button
-                                        onClick={() => window.open(file.downloadUrl, '_blank')}
-                                        className="p-1 hover:bg-gray-100 rounded"
-                                        title="播放视频"
-                                      >
-                                        <Icon icon="ri:play-line" className="w-4 h-4 text-gray-400 hover:text-blue-500" />
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          const link = document.createElement('a');
-                                          link.href = file.downloadUrl;
-                                          link.download = file.fileName || '视频';
-                                          document.body.appendChild(link);
-                                          link.click();
-                                          document.body.removeChild(link);
-                                        }}
-                                        className="p-1 hover:bg-gray-100 rounded"
-                                        title="下载视频"
-                                      >
-                                        <Icon icon="ri:download-line" className="w-4 h-4 text-gray-400 hover:text-green-500" />
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          handleCreateStoryboard(file.fileId, file.fileName);
-                                        }}
-                                        className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                                        title="应用此视频"
-                                      >
-                                        应用
-                                      </button>
-                                    </div>
+                        <div className="space-y-4">
+                          {videoChatHistory.map((message, messageIndex) => (
+                            <div key={`message-${messageIndex}`} className={`flex ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'bg-blue-100 rounded-2xl rounded-tr-none' : 'bg-gray-100 rounded-2xl rounded-tl-none'} p-3`}>
+                                {message.type === 'USER_QUESTION' ? (
+                                  // 用户问题 - 显示content
+                                  <div className="text-sm text-gray-800">
+                                    {message.content}
                                   </div>
-                                </div>
-                              ))}
+                                ) : message.type === 'AI_ANSWER' ? (
+                                  // AI回答 - 显示files中的视频，横向展示
+                                  <div>
+                                    {message.content && (
+                                      <div className="text-sm text-gray-700 mb-2">
+                                        {message.content}
+                                      </div>
+                                    )}
+                                    {message.files && message.files.length > 0 && (
+                                      <div className="flex gap-2 flex-wrap">
+                                        {message.files.map((file, fileIndex) => (
+                                          <div key={`file-${fileIndex}`} className="flex flex-col items-center gap-1">
+                                            <div className="w-20 bg-gray-200 overflow-hidden flex-shrink-0 relative group" style={{ aspectRatio: '9 / 16' }}>
+                                              <video
+                                                src={file.downloadUrl}
+                                                className="w-full h-full object-cover cursor-pointer"
+                                                onError={(e) => {
+                                                  e.currentTarget.style.display = 'none';
+                                                  const parent = e.currentTarget.parentElement;
+                                                  if (parent) {
+                                                    parent.innerHTML = `<div class="w-full h-full bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 flex items-center justify-center cursor-pointer">
+                                                      <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                                    </div>`;
+                                                    parent.onclick = () => window.open(file.downloadUrl, '_blank');
+                                                  }
+                                                }}
+                                              />
+                                              {/* 悬停时显示的按钮覆盖层 */}
+                                              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 rounded-lg">
+                                                <button
+                                                  onClick={() => {
+                                                    setPreviewUrl(file.downloadUrl);
+                                                    setPreviewType('video');
+                                                    setPreviewFileId(file.fileId);
+                                                    setPreviewFileName(file.fileName);
+                                                    setPreviewModalVisible(true);
+                                                  }}
+                                                  className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
+                                                  style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
+                                                  title="播放视频"
+                                                >
+                                                  <Icon icon="ri:play-line" className="w-3 h-3" />
+                                                  查看
+                                                </button>
+                                                <button
+                                                  onClick={() => {
+                                                    handleCreateStoryboard(file.fileId, file.fileName);
+                                                  }}
+                                                  className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
+                                                  style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
+                                                  title="应用此视频"
+                                                >
+                                                  <Icon icon="ri:check-line" className="w-3 h-3 text-green-400" />
+                                                  应用
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
-                          );
-                        })()
+                          ))}
+                        </div>
                       ) : (
                         <div className="text-center text-gray-500 py-8">
                           暂无视频记录
@@ -3610,6 +3585,55 @@ function ShortplayEntryPage() {
           </div>
         </div>
       )}
+
+      {/* 图片/视频预览弹窗 */}
+      <Modal
+        title={null}
+        open={previewModalVisible}
+        onCancel={() => setPreviewModalVisible(false)}
+        footer={null}
+        width={450}
+        centered
+        bodyStyle={{ padding: 0 }}
+        modalStyle={{ boxShadow: 'none' }}
+        closeIcon={null}
+      >
+        <div className="flex flex-col items-center justify-center">
+          {previewType === 'image' ? (
+            <img
+              src={previewUrl}
+              alt="预览图片"
+              className="w-full h-auto object-contain"
+            />
+          ) : (
+            <video
+              src={previewUrl}
+              controls
+              className="w-full h-auto"
+              autoPlay
+            />
+          )}
+          <div className="w-full flex gap-4 p-3 mt-3">
+            <button
+              onClick={() => setPreviewModalVisible(false)}
+              className="flex-1 px-4 py-2 text-gray-400 bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
+            >
+              关闭
+            </button>
+            <button
+              onClick={() => {
+                if (previewFileId && previewFileName) {
+                  handleCreateStoryboard(previewFileId, previewFileName);
+                  setPreviewModalVisible(false);
+                }
+              }}
+              className="flex-1 px-4 py-2 text-white bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
+            >
+              应用
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* 类型选择 Popover */}
       {showTypeSelector && popoverPosition && (
