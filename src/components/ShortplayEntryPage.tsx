@@ -4112,7 +4112,7 @@ function ShortplayEntryPage() {
               </div>
 
               {/* Ant Design Segmented组件 - 带边框和高度 */}
-              <div style={{ border: '1px solid #3E83F6', borderRadius: 8, padding: 8, height: 58, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div >
                 <Segmented
                   value={activeTab}
                   onChange={(value) => setActiveTab(value as 'script' | 'audio' | 'image' | 'video')}
@@ -4122,8 +4122,8 @@ function ShortplayEntryPage() {
                     { label: '图片', value: 'image' },
                     { label: '视频', value: 'video' }
                   ]}
-                  style={{ width: '100%' }}
-                  className="[&_.ant-segmented-item-selected]:!bg-[#3E83F6] [&_.ant-segmented-thumb]:!bg-[#3E83F6]"
+                  style={{ width: '100%', border: '1px solid #3E83F6', borderRadius: '29px' }}
+                  className="[&.ant-segmented]:!border [&.ant-segmented]:!border-[#3E83F6]! [&.ant-segmented]:!rounded-[29px]! [&_.ant-segmented-item-selected]:!bg-[#3E83F6] [&_.ant-segmented-thumb]:!bg-[#3E83F6] [&_.ant-segmented-item]:!rounded-[28px]"
                 />
               </div>
             </div>

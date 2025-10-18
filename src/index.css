@@ -142,3 +142,26 @@ textarea::-webkit-scrollbar {
 .overflow-auto::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* Segmented component item styling */
+.ant-segmented-item {
+  border-radius: 28px !important;
+  color: #3E83F6 !important;
+}
+
+.ant-segmented-item:not(.ant-segmented-item-selected):hover {
+  background-color: #3E83F6 !important;
+  color: #fff !important;
+}
+
+.ant-segmented {
+  padding: 0 !important;
+}
+
+.ant-segmented-thumb {
+  border-radius: 28px !important;
+}
+
+.ant-segmented-item-selected {
+  color: #fff !important;
+}
