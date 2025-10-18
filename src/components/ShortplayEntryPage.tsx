@@ -18,1758 +18,33 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import {
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+
+// 导入拆分后的组件
+import { SortableAudioItem } from './ShortplayEntryPage/Audio/SortableAudioItem';
+import { AudioResourcePanel } from './ShortplayEntryPage/Audio/AudioResourcePanel';
+import { AudioBottomPanel } from './ShortplayEntryPage/Audio/AudioBottomPanel';
+import { SortableScriptCard } from './ShortplayEntryPage/Script/SortableScriptCard';
+import { SortableScriptItem } from './ShortplayEntryPage/Script/SortableScriptItem';
+import { BottomInputArea } from './ShortplayEntryPage/Common/BottomInputArea';
+import { TimeRangeInput } from './ShortplayEntryPage/Common/TimeRangeInput';
+import { SectionHeader } from './ShortplayEntryPage/Common/SectionHeader';
+import { SortableImageItem } from './ShortplayEntryPage/Image/SortableImageItem';
+import { ImageItemComponent } from './ShortplayEntryPage/Image/ImageItemComponent';
+import { SortableVideoItem } from './ShortplayEntryPage/Video/SortableVideoItem';
+import { VideoItemComponent } from './ShortplayEntryPage/Video/VideoItemComponent';
+import { SortableStoryboardItem } from './ShortplayEntryPage/Storyboard/SortableStoryboardItem';
+import { StoryboardList } from './ShortplayEntryPage/Storyboard/StoryboardList';
+
+// 导入类型定义
+import type { ScriptCardProps } from './ShortplayEntryPage/types';
+
+// 导入工具函数
+import { formatMillisecondsToTime } from './ShortplayEntryPage/utils/formatTime';
 
 // 一键创作API基础路径
 const STORYAI_API_BASE = '/episode-api/storyai';
 
 const { Option } = Select;
-
-// 时间格式化工具函数：毫秒转 mm:ss
-const formatMillisecondsToTime = (milliseconds: number): string => {
-  const totalSeconds = Math.floor(milliseconds / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-};
-
-// 可排序的音频项组件
-interface AudioItem {
-  id: string;
-  type: 'voice' | 'sound';
-  itemType?: number; // 原始类型：1=场景描述, 2=对话, 3=音效
-  speaker: string;
-  content: string;
-  timeRange: string;
-  icon: string;
-}
-
-interface SortableAudioItemProps {
-  item: AudioItem;
-  audioType: 'voice' | 'sound';
-  configuredVoices: any[];
-  onVoiceSelect?: (itemId: string, voiceId: string) => void;
-  onPlayAudio?: (itemId: string) => void;
-}
-
-function SortableAudioItem({ item, audioType, configuredVoices, onVoiceSelect, onPlayAudio }: SortableAudioItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    // 防止拖动时字体变形
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
-    // 强制硬件加速，避免亚像素渲染问题
-    willChange: isDragging ? 'transform' : 'auto',
-    // 确保像素完美渲染
-    backfaceVisibility: 'hidden',
-    transformStyle: 'preserve-3d',
-    // 防止拖动时卡片伸缩
-    width: isDragging ? '100%' : 'auto',
-    zIndex: isDragging ? 1000 : 'auto',
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`bg-white rounded-lg border border-gray-200 px-3 py-2 cursor-move transition-all ${
-        isDragging ? 'shadow-lg z-10' : ''
-      }`}
-      {...attributes}
-    >
-      <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-2">
-          <div {...listeners}>
-            <Icon icon="ri:drag-move-line" className="w-4 h-4 text-gray-400 cursor-grab" />
-          </div>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            item.type === 'sound' ? 'bg-blue-500' : 'bg-gray-100'
-          }`}>
-            <Icon
-              icon={item.icon}
-              className={`w-4 h-4 ${item.type === 'sound' ? 'text-white' : 'text-gray-600'}`}
-            />
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium" style={{ color: item.itemType === 1 ? '#3E83F6' : '#1F2937' }}>
-            {item.speaker}
-          </span>
-          {item.type === 'voice' && (
-            <div className="relative">
-              <select
-                className="text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:border-blue-500"
-                onChange={(e) => onVoiceSelect?.(item.id, e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <option value="">选择音色</option>
-                {configuredVoices.map((voice) => (
-                  <option key={voice.voiceId} value={voice.voiceId}>
-                    {voice.voiceName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
-        <div className="flex-1 text-sm" style={{ color: item.itemType === 1 ? '#3E83F6' : '#4B5563' }}>
-          {item.content}
-        </div>
-        <div className="text-xs text-gray-400">{item.timeRange}</div>
-        <div className="flex items-center space-x-2">
-          <Icon
-            icon="ri:play-circle-line"
-            className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
-            onClick={() => onPlayAudio?.(item.id)}
-            title="播放音频"
-          />
-          <Icon icon="ri:time-line" className="w-4 h-4 text-gray-400" />
-          <Icon icon="ri:delete-bin-line" className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 剧本卡片组件
-interface ScriptCardProps {
-  id: string;
-  description: string;
-  dialogues: Array<{
-    character: string;
-    content: string;
-  }>;
-  descriptionColor?: string;
-  characterColor?: string;
-  contentColor?: string;
-  onDelete?: (id: string) => void;
-}
-
-interface SortableScriptCardProps {
-  item: ScriptCardProps;
-}
-
-
-function SortableScriptCard({ item }: SortableScriptCardProps) {
-  const { t } = useI18n();
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    // 防止拖动时字体变形
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
-    // 强制硬件加速，避免亚像素渲染问题
-    willChange: isDragging ? 'transform' : 'auto',
-    // 确保像素完美渲染
-    backfaceVisibility: 'hidden',
-    transformStyle: 'preserve-3d',
-    // 防止拖动时卡片伸缩
-    width: isDragging ? '100%' : 'auto',
-    zIndex: isDragging ? 1000 : 'auto',
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      className={`flex items-center space-x-4 transition-all ${
-        isDragging ? 'shadow-lg z-10' : ''
-      }`}
-    >
-      <div className="flex-1 bg-white rounded-lg border border-gray-200 p-4">
-        {/* 拖拽手柄 */}
-        <div className="flex items-start space-x-3">
-          <div
-            {...listeners}
-            className="cursor-grab active:cursor-grabbing mt-1 p-1 hover:bg-gray-100 rounded"
-            title={t('shortplayEntry.dragSort.title')}
-          >
-            <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
-          </div>
-
-          <div className="flex-1">
-            <div className={`text-sm mb-2 font-medium ${item.descriptionColor || 'text-blue-600'}`}>
-              {t('shortplayEntry.dragSort.scriptDescription')}{item.description}
-            </div>
-            <div className="space-y-3">
-              {item.dialogues.map((dialogue, index) => (
-                <div key={index} className="space-y-1">
-                  <div className="flex items-start space-x-2">
-                    <span className={`text-sm font-medium min-w-0 ${item.characterColor || 'text-gray-800'}`}>
-                      {dialogue.character}：
-                    </span>
-                    <div className="flex-1">
-                      <span className={`text-sm ${item.contentColor || 'text-gray-600'}`}>
-                        {dialogue.content}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* 独立的删除按钮列 */}
-      <div className="flex items-center">
-        <Icon
-          icon="ri:delete-bin-line"
-          className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
-          onClick={() => item.onDelete?.(item.id)}
-        />
-      </div>
-    </div>
-  );
-}
-
-// 可排序的剧本项组件
-interface SortableScriptItemProps {
-  item: any;
-  editingSceneItemId: number | null;
-  editingSceneType: number;
-  editingSceneContent: string;
-  editingSceneRoleName: string;
-  editingSceneStartMinutes: string;
-  editingSceneStartSeconds: string;
-  editingSceneEndMinutes: string;
-  editingSceneEndSeconds: string;
-  onEditingSceneTypeChange: (type: number) => void;
-  onEditingSceneContentChange: (content: string) => void;
-  onEditingSceneRoleNameChange: (name: string) => void;
-  onEditingSceneStartMinutesChange: (minutes: string) => void;
-  onEditingSceneStartSecondsChange: (seconds: string) => void;
-  onEditingSceneEndMinutesChange: (minutes: string) => void;
-  onEditingSceneEndSecondsChange: (seconds: string) => void;
-  onEditSceneItem: (item: any) => void;
-  onSaveSceneItem: () => void;
-  onCancelEditSceneItem: () => void;
-  onShowDeleteConfirm: (id: number) => void;
-  TimeRangeInput: React.ComponentType<any>;
-}
-
-function SortableScriptItem({
-  item,
-  index = 0,
-  editingSceneItemId,
-  editingSceneType,
-  editingSceneContent,
-  editingSceneRoleName,
-  editingSceneStartMinutes,
-  editingSceneStartSeconds,
-  editingSceneEndMinutes,
-  editingSceneEndSeconds,
-  onEditingSceneTypeChange,
-  onEditingSceneContentChange,
-  onEditingSceneRoleNameChange,
-  onEditingSceneStartMinutesChange,
-  onEditingSceneStartSecondsChange,
-  onEditingSceneEndMinutesChange,
-  onEditingSceneEndSecondsChange,
-  onEditSceneItem,
-  onSaveSceneItem,
-  onCancelEditSceneItem,
-  onShowDeleteConfirm,
-  TimeRangeInput,
-}: SortableScriptItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id.toString() });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
-    willChange: isDragging ? 'transform' : 'auto',
-    backfaceVisibility: 'hidden',
-    transformStyle: 'preserve-3d',
-    width: isDragging ? '100%' : 'auto',
-    zIndex: isDragging ? 1000 : 'auto',
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      className={`p-3 transition-all ${
-        isDragging ? 'shadow-lg z-10' : ''
-      }`}
-    >
-      {editingSceneItemId === item.id ? (
-        // 编辑模式
-        <div className="flex items-start space-x-3">
-          {/* 左侧操作区 - 竖直排列 */}
-          <div className="flex flex-col items-center justify-start pt-0.5">
-            {/* 序号 */}
-            <span className="text-xs text-gray-500 font-medium leading-tight">{index + 1}</span>
-            {/* 拖拽手柄 */}
-            <div
-              {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
-              title="拖拽排序"
-            >
-              <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
-            </div>
-          </div>
-
-          {/* 编辑内容区 */}
-          <div className="flex-1 space-y-2">
-            {/* 编辑内容输入 */}
-            <textarea
-              value={editingSceneContent}
-              onChange={(e) => onEditingSceneContentChange(e.target.value)}
-              className="w-full p-2 text-sm border border-gray-300 rounded resize-none"
-              rows={3}
-              placeholder="输入内容..."
-            />
-
-            {/* 编辑操作按钮 */}
-            <div className="flex items-center justify-end space-x-2">
-              <button
-                onClick={onSaveSceneItem}
-                className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                保存
-              </button>
-              <button
-                onClick={onCancelEditSceneItem}
-                className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
-              >
-                取消
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        // 显示模式
-        <div className="flex items-start space-x-3">
-          {/* 左侧操作区 - 竖直排列 */}
-          <div className="flex flex-col items-center justify-start pt-0.5">
-            {/* 序号 */}
-            <span className="text-xs text-gray-500 font-medium leading-tight">{index + 1}</span>
-            {/* 拖拽手柄 */}
-            <div
-              {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
-              title="拖拽排序"
-            >
-              <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
-            </div>
-            {/* 删除按钮 */}
-            <Icon
-              icon="ri:delete-bin-line"
-              className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
-              onClick={() => onShowDeleteConfirm(item.id)}
-              title="删除"
-            />
-          </div>
-
-          {/* 内容区域 */}
-          <div className="flex-1 cursor-pointer border border-gray-200 rounded p-2 min-h-[58px]" onDoubleClick={() => onEditSceneItem(item)}>
-            <div className="text-sm line-clamp-2" style={{ color: item.type === 1 ? '#3E83F6' : '#1F2937' }}>
-              {item.content}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// 底部输入区域组件
-interface BottomInputAreaProps {
-  activeTab: string;
-  selectedModel: string;
-  onModelChange: (model: string) => void;
-  userInput: string;
-  onInputChange: (value: string) => void;
-  isGenerating: boolean;
-  onGenerate: () => void;
-  placeholder?: string;
-  generationStatus?: string;
-  // 音频tab特有属性
-  voiceType?: string;
-  onVoiceTypeChange?: (voice: string) => void;
-  // 图片tab特有属性
-  backgroundType?: string;
-  onBackgroundTypeChange?: (bg: string) => void;
-  style?: string;
-  onStyleChange?: (style: string) => void;
-  // 视频tab特有属性
-  videoLength?: string;
-  onVideoLengthChange?: (length: string) => void;
-  resolution?: string;
-  onResolutionChange?: (res: string) => void;
-  singleGenerate?: boolean;
-  onSingleGenerateChange?: (single: boolean) => void;
-  onFileUpload?: (file: File) => Promise<any>;
-  onMultipleFileUpload?: (files: File[]) => Promise<any>;
-  isUploading?: boolean;
-  uploadProgress?: { current: number; total: number };
-}
-
-function BottomInputArea({
-  activeTab,
-  selectedModel,
-  onModelChange,
-  userInput,
-  onInputChange,
-  isGenerating,
-  onGenerate,
-  placeholder,
-  generationStatus,
-  // 音频tab属性
-  voiceType = "male",
-  onVoiceTypeChange,
-  // 图片tab属性
-  backgroundType = "背景",
-  onBackgroundTypeChange,
-  style = "古风",
-  onStyleChange,
-  // 视频tab属性
-  videoLength = "2s",
-  onVideoLengthChange,
-  resolution = "1080p",
-  onResolutionChange,
-  singleGenerate = false,
-  onSingleGenerateChange,
-  onFileUpload,
-  onMultipleFileUpload,
-  isUploading = false,
-  uploadProgress = { current: 0, total: 0 }
-}: BottomInputAreaProps) {
-  const { t } = useI18n();
-
-  // Use translated placeholder if not provided
-  const finalPlaceholder = placeholder || t('shortplayEntry.input.placeholder');
-
-  return (
-    <div className="border-t border-gray-100 p-4">
-      {activeTab === 'script' && (
-        <>
-          <div className="mb-3">
-            <div className="relative w-40">
-              <select
-                value={selectedModel}
-                onChange={(e) => onModelChange(e.target.value)}
-                className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-              >
-                <option value="gemini-2.5pro">Gemini2.5pro</option>
-                <option value="deepseek-r1">DeepSeek-R1</option>
-                <option value="gpt-4">GPT-4</option>
-              </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* 生成状态显示 */}
-          {isGenerating && generationStatus && (
-            <div className="mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <svg className="animate-spin w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span className="text-sm text-blue-700">{generationStatus}</span>
-              </div>
-            </div>
-          )}
-
-          <div className="relative">
-            <textarea
-              value={userInput}
-              onChange={(e) => onInputChange(e.target.value)}
-              className="w-full h-12 py-2 pl-4 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
-              placeholder={finalPlaceholder}
-              disabled={isGenerating}
-            />
-            <button
-              onClick={onGenerate}
-              disabled={isGenerating || !userInput.trim()}
-              className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors flex items-center space-x-1 ${
-                isGenerating || !userInput.trim()
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-600'
-              }`}
-            >
-              {isGenerating && (
-                <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              )}
-              <span>{isGenerating ? t('shortplayEntry.generation.generating') : t('shortplayEntry.generation.oneClickGenerate')}</span>
-            </button>
-          </div>
-        </>
-      )}
-
-      {activeTab === 'audio' && (
-        <>
-          <div className="mb-3">
-            <div className="flex space-x-3">
-              <div className="relative w-32">
-                <select
-                  value={selectedModel}
-                  onChange={(e) => onModelChange(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="gemini-2.5pro">Gemini2.5pro</option>
-                  <option value="deepseek-r1">DeepSeek-R1</option>
-                  <option value="gpt-4">GPT-4</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="relative w-20">
-                <select
-                  value={voiceType}
-                  onChange={(e) => onVoiceTypeChange?.(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="male">{t('shortplayEntry.audio.male')}</option>
-                  <option value="female">{t('shortplayEntry.audio.female')}</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative">
-            <textarea
-              value={userInput}
-              onChange={(e) => onInputChange(e.target.value)}
-              className="w-full h-12 py-2 pl-4 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
-              placeholder={finalPlaceholder}
-              disabled={isGenerating}
-            />
-            <button
-              onClick={onGenerate}
-              disabled={isGenerating || !userInput.trim()}
-              className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
-                isGenerating || !userInput.trim()
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-600'
-              }`}
-            >
-              {isGenerating ? t('shortplayEntry.generation.generating') : '一键生成'}
-            </button>
-          </div>
-        </>
-      )}
-
-      {activeTab === 'image' && (
-        <>
-          <div className="mb-3">
-            <div className="flex space-x-3">
-              <div className="relative w-32">
-                <select
-                  value={selectedModel}
-                  onChange={(e) => onModelChange(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="gemini-2.5pro">Gemini2.5pro</option>
-                  <option value="deepseek-r1">DeepSeek-R1</option>
-                  <option value="gpt-4">GPT-4</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="relative w-20">
-                <select
-                  value={backgroundType}
-                  onChange={(e) => onBackgroundTypeChange?.(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="背景">{t('shortplayEntry.image.background')}</option>
-                  <option value="人物">{t('shortplayEntry.image.character')}</option>
-                  <option value="物体">{t('shortplayEntry.image.object')}</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="relative w-20">
-                <select
-                  value={style}
-                  onChange={(e) => onStyleChange?.(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="古风">{t('shortplayEntry.image.ancient')}</option>
-                  <option value="现代">{t('shortplayEntry.image.modern')}</option>
-                  <option value="科幻">{t('shortplayEntry.image.scifi')}</option>
-                  <option value="卡通">{t('shortplayEntry.image.cartoon')}</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative">
-            <textarea
-              value={userInput}
-              onChange={(e) => onInputChange(e.target.value)}
-              className="w-full h-12 py-2 pl-4 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
-              placeholder={finalPlaceholder}
-              disabled={isGenerating}
-            />
-            <button
-              onClick={onGenerate}
-              disabled={isGenerating || !userInput.trim()}
-              className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
-                isGenerating || !userInput.trim()
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-600'
-              }`}
-            >
-              {isGenerating ? t('shortplayEntry.generation.generating') : t('shortplayEntry.generation.oneClickGenerate')}
-            </button>
-          </div>
-        </>
-      )}
-
-      {activeTab === 'video' && (
-        <>
-          <div className="mb-3">
-            <div className="flex space-x-2">
-              <div className="relative w-32">
-                <select
-                  value={selectedModel}
-                  onChange={(e) => onModelChange(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="gemini-2.5pro">Gemini2.5pro</option>
-                  <option value="deepseek-r1">DeepSeek-R1</option>
-                  <option value="gpt-4">GPT-4</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="relative w-24">
-                <select
-                  value={videoLength}
-                  onChange={(e) => onVideoLengthChange?.(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="2s">{t('shortplayEntry.video.duration2s')}</option>
-                  <option value="5s">{t('shortplayEntry.video.duration5s')}</option>
-                  <option value="10s">{t('shortplayEntry.video.duration10s')}</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="relative w-24">
-                <select
-                  value={resolution}
-                  onChange={(e) => onResolutionChange?.(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="1080p">{t('shortplayEntry.video.resolution1080p')}</option>
-                  <option value="720p">{t('shortplayEntry.video.resolution720p')}</option>
-                  <option value="4K">{t('shortplayEntry.video.resolution4k')}</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="relative w-24">
-                <select
-                  value={singleGenerate ? "single" : "batch"}
-                  onChange={(e) => onSingleGenerateChange?.(e.target.value === "single")}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="batch">{t('shortplayEntry.video.batchMode')}</option>
-                  <option value="single">{t('shortplayEntry.video.singleMode')}</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative">
-            <textarea
-              value={userInput}
-              onChange={(e) => onInputChange(e.target.value)}
-              className="w-full h-12 py-2 pl-12 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
-              placeholder={finalPlaceholder}
-              disabled={isGenerating}
-            />
-            <label className={`absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 ${
-              activeTab === 'video' ? '' : 'hidden'
-            } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`} title={isUploading && uploadProgress.total > 0 ? `上传进度: ${uploadProgress.current}/${uploadProgress.total}` : '上传图片'}>
-              {isUploading ? (
-                <div className="relative w-4 h-4">
-                  <Icon icon="ri:loader-4-line" className="w-4 h-4 text-gray-400 animate-spin" />
-                  {uploadProgress.total > 1 && (
-                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center" style={{ fontSize: '6px' }}>
-                      {uploadProgress.current}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Icon icon="ri:image-line" className="w-4 h-4 text-gray-400" />
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                disabled={isUploading}
-                onChange={async (e) => {
-                  console.log('文件选择事件触发');
-                  const files = Array.from(e.target.files || []);
-                  console.log('选择的文件:', files);
-                  console.log('当前上传状态:', isUploading);
-                  console.log('onMultipleFileUpload 函数:', onMultipleFileUpload);
-
-                  if (files.length > 0 && !isUploading) {
-                    console.log('开始上传文件:', files.map(f => f.name));
-
-                    // 使用批量上传处理
-                    if (onMultipleFileUpload) {
-                      console.log('调用批量上传函数');
-                      await onMultipleFileUpload(files);
-                    } else {
-                      console.log('批量上传函数不存在');
-                    }
-
-                    // 重置input的value，允许重复选择相同文件
-                    e.target.value = '';
-                  } else {
-                    console.log('跳过上传，原因:', {
-                      filesLength: files.length,
-                      isUploading
-                    });
-                  }
-                }}
-              />
-            </label>
-            <button
-              onClick={onGenerate}
-              disabled={isGenerating || !userInput.trim()}
-              className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
-                isGenerating || !userInput.trim()
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-600'
-              }`}
-            >
-              {isGenerating ? t('shortplayEntry.generation.generating') : t('shortplayEntry.generation.oneClickGenerate')}
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-// 可排序的图片项组件
-interface SortableImageItemProps {
-  item: ImageItem;
-  index: number;
-  editingTimeId: string | null;
-  editingStartMinutes: string;
-  editingStartSeconds: string;
-  editingEndMinutes: string;
-  editingEndSeconds: string;
-  onEditingStartMinutesChange: (value: string) => void;
-  onEditingStartSecondsChange: (value: string) => void;
-  onEditingEndMinutesChange: (value: string) => void;
-  onEditingEndSecondsChange: (value: string) => void;
-  onStartEditTime: (itemId: string, timeRange: string) => void;
-  onSaveTimeEdit: (itemId: string) => void;
-  onCancelTimeEdit: () => void;
-  parseTimeRange: (timeRange: string) => { startMinutes: string; startSeconds: string; endMinutes: string; endSeconds: string; };
-}
-
-function SortableImageItem({
-  item,
-  index,
-  editingTimeId,
-  editingStartMinutes,
-  editingStartSeconds,
-  editingEndMinutes,
-  editingEndSeconds,
-  onEditingStartMinutesChange,
-  onEditingStartSecondsChange,
-  onEditingEndMinutesChange,
-  onEditingEndSecondsChange,
-  onStartEditTime,
-  onSaveTimeEdit,
-  onCancelTimeEdit,
-  parseTimeRange,
-}: SortableImageItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <ImageItemComponent
-        item={item}
-        index={index}
-        editingTimeId={editingTimeId}
-        editingStartMinutes={editingStartMinutes}
-        editingStartSeconds={editingStartSeconds}
-        editingEndMinutes={editingEndMinutes}
-        editingEndSeconds={editingEndSeconds}
-        onEditingStartMinutesChange={onEditingStartMinutesChange}
-        onEditingStartSecondsChange={onEditingStartSecondsChange}
-        onEditingEndMinutesChange={onEditingEndMinutesChange}
-        onEditingEndSecondsChange={onEditingEndSecondsChange}
-        onStartEditTime={onStartEditTime}
-        onSaveTimeEdit={onSaveTimeEdit}
-        onCancelTimeEdit={onCancelTimeEdit}
-        parseTimeRange={parseTimeRange}
-        dragListeners={listeners}
-      />
-    </div>
-  );
-}
-
-// 图片项组件
-interface ImageItem {
-  id: string;
-  description: string;
-  parameters: string;
-  timeRange: string;
-}
-
-interface ImageItemProps {
-  item: ImageItem;
-  index: number;
-  editingTimeId: string | null;
-  editingStartMinutes: string;
-  editingStartSeconds: string;
-  editingEndMinutes: string;
-  editingEndSeconds: string;
-  onEditingStartMinutesChange: (value: string) => void;
-  onEditingStartSecondsChange: (value: string) => void;
-  onEditingEndMinutesChange: (value: string) => void;
-  onEditingEndSecondsChange: (value: string) => void;
-  onStartEditTime: (itemId: string, timeRange: string) => void;
-  onSaveTimeEdit: (itemId: string) => void;
-  onCancelTimeEdit: () => void;
-  parseTimeRange: (timeRange: string) => { startMinutes: string; startSeconds: string; endMinutes: string; endSeconds: string; };
-  dragListeners?: any;
-}
-
-function ImageItemComponent({
-  item,
-  index,
-  editingTimeId,
-  editingStartMinutes,
-  editingStartSeconds,
-  editingEndMinutes,
-  editingEndSeconds,
-  onEditingStartMinutesChange,
-  onEditingStartSecondsChange,
-  onEditingEndMinutesChange,
-  onEditingEndSecondsChange,
-  onStartEditTime,
-  onSaveTimeEdit,
-  onCancelTimeEdit,
-  parseTimeRange,
-  dragListeners,
-}: ImageItemProps) {
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3 flex items-stretch space-x-3 min-h-[100px]">
-      {/* 序号和操作按钮列 */}
-      <div className="flex flex-col justify-between items-center h-full min-w-[20px]">
-        <div className="text-lg font-medium text-blue-600">
-          {index + 1}
-        </div>
-        <div className="flex flex-col items-center space-y-1">
-          {dragListeners && (
-            <button className="p-1 hover:bg-gray-100 rounded cursor-grab active:cursor-grabbing" {...dragListeners}>
-              <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
-            </button>
-          )}
-          <button className="p-1 hover:bg-gray-100 rounded">
-            <Icon icon="ri:add-circle-line" className="w-4 h-4 text-gray-400" />
-          </button>
-          <button className="p-1 hover:bg-gray-100 rounded">
-            <Icon icon="ri:delete-bin-line" className="w-4 h-4 text-gray-400 hover:text-red-500" />
-          </button>
-        </div>
-      </div>
-
-      {/* 图片缩略图 */}
-      <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
-        <div className="w-full h-full bg-gradient-to-br from-purple-200 via-pink-200 to-blue-200"></div>
-      </div>
-
-      {/* 内容区域 */}
-      <div className="flex-1 min-w-0 flex space-x-4">
-        {/* 左侧：描述 */}
-        <div className="flex-1 text-sm text-gray-800 leading-relaxed">
-          {item.description}
-        </div>
-        {/* 右侧：参数和时间 */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div className="text-xs text-gray-500 leading-relaxed">
-            {item.parameters}
-          </div>
-          <div className="flex items-center space-x-2">
-            {editingTimeId === item.id ? (
-              <div className="flex items-center space-x-1">
-                <TimeRangeInput
-                  startMinutes={editingStartMinutes}
-                  startSeconds={editingStartSeconds}
-                  endMinutes={editingEndMinutes}
-                  endSeconds={editingEndSeconds}
-                  onStartMinutesChange={onEditingStartMinutesChange}
-                  onStartSecondsChange={onEditingStartSecondsChange}
-                  onEndMinutesChange={onEditingEndMinutesChange}
-                  onEndSecondsChange={onEditingEndSecondsChange}
-                />
-                {/* 统一的保存和取消按钮 */}
-                <button
-                  onClick={() => onSaveTimeEdit(item.id)}
-                  className="text-green-600 hover:text-green-800 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                >
-                  <Icon icon="ri:check-line" className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={onCancelTimeEdit}
-                  className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                >
-                  <Icon icon="ri:close-line" className="w-3 h-3" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-1 text-xs text-gray-400">
-                {(() => {
-                  const timeData = parseTimeRange(item.timeRange);
-                  return (
-                    <>
-                      <span>{timeData.startMinutes}:{timeData.startSeconds}</span>
-                      <span>-</span>
-                      <span>{timeData.endMinutes}:{timeData.endSeconds}</span>
-                      <button
-                        onClick={() => onStartEditTime(item.id, item.timeRange)}
-                        className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                      >
-                        <Icon icon="ri:edit-line" className="w-3 h-3" />
-                      </button>
-                    </>
-                  );
-                })()}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 视频项组件
-interface VideoItem {
-  id: string;
-  description: string;
-  parameters: string;
-  timeRange: string;
-}
-
-interface VideoItemProps {
-  item: VideoItem;
-  index: number;
-  editingTimeId: string | null;
-  editingStartMinutes: string;
-  editingStartSeconds: string;
-  editingEndMinutes: string;
-  editingEndSeconds: string;
-  onEditingStartMinutesChange: (value: string) => void;
-  onEditingStartSecondsChange: (value: string) => void;
-  onEditingEndMinutesChange: (value: string) => void;
-  onEditingEndSecondsChange: (value: string) => void;
-  onStartEditTime: (itemId: string, timeRange: string) => void;
-  onSaveTimeEdit: (itemId: string) => void;
-  onCancelTimeEdit: () => void;
-  parseTimeRange: (timeRange: string) => { startMinutes: string; startSeconds: string; endMinutes: string; endSeconds: string; };
-  dragListeners?: any;
-}
-
-function VideoItemComponent({
-  item,
-  index,
-  editingTimeId,
-  editingStartMinutes,
-  editingStartSeconds,
-  editingEndMinutes,
-  editingEndSeconds,
-  onEditingStartMinutesChange,
-  onEditingStartSecondsChange,
-  onEditingEndMinutesChange,
-  onEditingEndSecondsChange,
-  onStartEditTime,
-  onSaveTimeEdit,
-  onCancelTimeEdit,
-  parseTimeRange,
-  dragListeners,
-}: VideoItemProps) {
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3 flex items-stretch space-x-3 min-h-[100px]">
-      {/* 序号和操作按钮列 */}
-      <div className="flex flex-col justify-between items-center h-full min-w-[20px]">
-        <div className="text-lg font-medium text-blue-600">
-          {index + 1}
-        </div>
-        <div className="flex flex-col items-center space-y-1">
-          {dragListeners && (
-            <button className="p-1 hover:bg-gray-100 rounded cursor-grab active:cursor-grabbing" {...dragListeners}>
-              <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
-            </button>
-          )}
-          <button className="p-1 hover:bg-gray-100 rounded">
-            <Icon icon="ri:add-circle-line" className="w-4 h-4 text-gray-400" />
-          </button>
-          <button className="p-1 hover:bg-gray-100 rounded">
-            <Icon icon="ri:delete-bin-line" className="w-4 h-4 text-gray-400 hover:text-red-500" />
-          </button>
-        </div>
-      </div>
-
-      {/* 视频缩略图 */}
-      <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
-        <div className="w-full h-full bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-200"></div>
-      </div>
-
-      {/* 内容区域 */}
-      <div className="flex-1 min-w-0 flex space-x-4">
-        {/* 左侧：描述 */}
-        <div className="flex-1 text-sm text-gray-800 leading-relaxed">
-          {item.description}
-        </div>
-        {/* 右侧：参数和时间 */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div className="text-xs text-gray-500 leading-relaxed">
-            {item.parameters}
-          </div>
-          <div className="flex items-center space-x-2">
-            {editingTimeId === item.id ? (
-              <div className="flex items-center space-x-1">
-                <TimeRangeInput
-                  startMinutes={editingStartMinutes}
-                  startSeconds={editingStartSeconds}
-                  endMinutes={editingEndMinutes}
-                  endSeconds={editingEndSeconds}
-                  onStartMinutesChange={onEditingStartMinutesChange}
-                  onStartSecondsChange={onEditingStartSecondsChange}
-                  onEndMinutesChange={onEditingEndMinutesChange}
-                  onEndSecondsChange={onEditingEndSecondsChange}
-                />
-                {/* 统一的保存和取消按钮 */}
-                <button
-                  onClick={() => onSaveTimeEdit(item.id)}
-                  className="text-green-600 hover:text-green-800 ml-1"
-                >
-                  <Icon icon="ri:check-line" className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={onCancelTimeEdit}
-                  className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                >
-                  <Icon icon="ri:close-line" className="w-3 h-3" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-1 text-xs text-gray-400">
-                {(() => {
-                  const timeData = parseTimeRange(item.timeRange);
-                  return (
-                    <>
-                      <span>{timeData.startMinutes}:{timeData.startSeconds}</span>
-                      <span>-</span>
-                      <span>{timeData.endMinutes}:{timeData.endSeconds}</span>
-                      <button
-                        onClick={() => onStartEditTime(item.id, item.timeRange)}
-                        className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                      >
-                        <Icon icon="ri:edit-line" className="w-3 h-3" />
-                      </button>
-                    </>
-                  );
-                })()}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 可排序的分镜板项组件
-interface SortableStoryboardItemProps {
-  item: any;
-  index: number;
-  editingTimeId: string | null;
-  editingStartMinutes: string;
-  editingStartSeconds: string;
-  editingEndMinutes: string;
-  editingEndSeconds: string;
-  onEditingStartMinutesChange: (value: string) => void;
-  onEditingStartSecondsChange: (value: string) => void;
-  onEditingEndMinutesChange: (value: string) => void;
-  onEditingEndSecondsChange: (value: string) => void;
-  onStartEditTime: (itemId: string, timeRange: string) => void;
-  onSaveTimeEdit: (itemId: string) => void;
-  onCancelTimeEdit: () => void;
-  onDeleteItem: (itemId: string) => void;
-  TimeRangeInput: React.ComponentType<any>;
-}
-
-function SortableStoryboardItem({
-  item,
-  index,
-  editingTimeId,
-  editingStartMinutes,
-  editingStartSeconds,
-  editingEndMinutes,
-  editingEndSeconds,
-  onEditingStartMinutesChange,
-  onEditingStartSecondsChange,
-  onEditingEndMinutesChange,
-  onEditingEndSecondsChange,
-  onStartEditTime,
-  onSaveTimeEdit,
-  onCancelTimeEdit,
-  onDeleteItem,
-  TimeRangeInput,
-}: SortableStoryboardItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id.toString() });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
-    willChange: isDragging ? 'transform' : 'auto',
-    backfaceVisibility: 'hidden',
-    transformStyle: 'preserve-3d',
-    width: isDragging ? '100%' : 'auto',
-    zIndex: isDragging ? 1000 : 'auto',
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      className={`bg-white rounded-lg border border-gray-200 p-3 flex items-stretch space-x-3 min-h-[100px] transition-all ${
-        isDragging ? 'shadow-lg z-10' : ''
-      }`}
-    >
-      {/* 序号和操作按钮列 */}
-      <div className="flex flex-col justify-between items-center h-full min-w-[20px]">
-        <div className="text-lg font-medium text-blue-600">
-          {index + 1}
-        </div>
-        <div className="flex flex-col items-center space-y-1">
-          <div
-            {...listeners}
-            className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
-            title="拖拽排序"
-          >
-            <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
-          </div>
-          <button className="p-1 hover:bg-gray-100 rounded">
-            <Icon icon="ri:add-circle-line" className="w-4 h-4 text-gray-400" />
-          </button>
-          <button
-            className="p-1 hover:bg-gray-100 rounded"
-            onClick={() => {
-              onDeleteItem(item.id.toString());
-            }}
-          >
-            <Icon icon="ri:delete-bin-line" className="w-4 h-4 text-gray-400 hover:text-red-500" />
-          </button>
-        </div>
-      </div>
-
-      {/* 图片/视频缩略图 */}
-      <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
-        {item.fileUrl ? (
-          // 判断是否为视频文件 (.mp4, .webm, .mov, .avi)
-          /\.(mp4|webm|mov|avi)$/i.test(item.fileUrl) || /\.(mp4|webm|mov|avi)$/i.test(item.fileName || '') ? (
-            <video
-              src={item.fileUrl}
-              className="w-full h-full object-cover cursor-pointer"
-              controls
-              onClick={(e) => e.stopPropagation()}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          ) : (
-            <img
-              src={item.fileUrl}
-              alt={item.fileName || '分镜图片'}
-              className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-              onClick={() => {
-                window.open(item.fileUrl, '_blank');
-              }}
-            />
-          )
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-purple-200 via-pink-200 to-blue-200 flex items-center justify-center">
-            <Icon icon="ri:image-line" className="w-8 h-8 text-white" />
-          </div>
-        )}
-      </div>
-
-      {/* 内容区域 */}
-      <div className="flex-1 min-w-0 flex space-x-4">
-        {/* 左侧：描述 */}
-        <div className="flex-1 text-sm text-gray-800 leading-relaxed">
-          分镜板 #{index + 1}
-          {item.description && (
-            <div className="text-xs text-gray-600 mt-1">{item.description}</div>
-          )}
-        </div>
-        {/* 右侧：参数和时间 */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div className="text-xs text-gray-500 leading-relaxed">
-            文件ID: {item.fileId}
-            {item.fileName && (
-              <div>文件名: {item.fileName}</div>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            {editingTimeId === item.id ? (
-              <div className="flex items-center space-x-1">
-                <TimeRangeInput
-                  startMinutes={editingStartMinutes}
-                  startSeconds={editingStartSeconds}
-                  endMinutes={editingEndMinutes}
-                  endSeconds={editingEndSeconds}
-                  onStartMinutesChange={onEditingStartMinutesChange}
-                  onStartSecondsChange={onEditingStartSecondsChange}
-                  onEndMinutesChange={onEditingEndMinutesChange}
-                  onEndSecondsChange={onEditingEndSecondsChange}
-                />
-                <button
-                  onClick={() => onSaveTimeEdit(item.id)}
-                  className="text-green-600 hover:text-green-800 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                >
-                  <Icon icon="ri:check-line" className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={onCancelTimeEdit}
-                  className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                >
-                  <Icon icon="ri:close-line" className="w-3 h-3" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-1 text-xs text-gray-400">
-                <span>{formatMillisecondsToTime(item.startTime || 0)}</span>
-                <span>-</span>
-                <span>{formatMillisecondsToTime(item.endTime || 0)}</span>
-                <button
-                  onClick={() => {
-                    const startTime = formatMillisecondsToTime(item.startTime || 0);
-                    const endTime = formatMillisecondsToTime(item.endTime || 0);
-                    onStartEditTime(item.id, `${startTime}-${endTime}`);
-                  }}
-                  className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                >
-                  <Icon icon="ri:edit-line" className="w-3 h-3" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 通用分镜板列表组件
-interface StoryboardListProps {
-  storyboardItems: any[];
-  isLoadingStoryboard: boolean;
-  editingTimeId: string | null;
-  editingStartMinutes: string;
-  editingStartSeconds: string;
-  editingEndMinutes: string;
-  editingEndSeconds: string;
-  sensors: any;
-  onEditingStartMinutesChange: (value: string) => void;
-  onEditingStartSecondsChange: (value: string) => void;
-  onEditingEndMinutesChange: (value: string) => void;
-  onEditingEndSecondsChange: (value: string) => void;
-  onStartEditTime: (itemId: string, timeRange: string) => void;
-  onSaveTimeEdit: (itemId: string) => void;
-  onCancelTimeEdit: () => void;
-  onDragEnd: (event: DragEndEvent) => void;
-  onDeleteItem: (itemId: string) => void;
-  TimeRangeInput: React.ComponentType<any>;
-}
-
-function StoryboardList({
-  storyboardItems,
-  isLoadingStoryboard,
-  editingTimeId,
-  editingStartMinutes,
-  editingStartSeconds,
-  editingEndMinutes,
-  editingEndSeconds,
-  sensors,
-  onEditingStartMinutesChange,
-  onEditingStartSecondsChange,
-  onEditingEndMinutesChange,
-  onEditingEndSecondsChange,
-  onStartEditTime,
-  onSaveTimeEdit,
-  onCancelTimeEdit,
-  onDragEnd,
-  onDeleteItem,
-  TimeRangeInput,
-}: StoryboardListProps) {
-  return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={onDragEnd}
-    >
-      <SortableContext
-        items={storyboardItems.map(item => item.id.toString())}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className="space-y-3">
-          {isLoadingStoryboard ? (
-            <div className="flex items-center justify-center p-4 text-gray-500">
-              <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
-              加载中...
-            </div>
-          ) : storyboardItems.length > 0 ? (
-            storyboardItems.map((item, index) => (
-              <SortableStoryboardItem
-                key={item.id}
-                item={item}
-                index={index}
-                editingTimeId={editingTimeId}
-                editingStartMinutes={editingStartMinutes}
-                editingStartSeconds={editingStartSeconds}
-                editingEndMinutes={editingEndMinutes}
-                editingEndSeconds={editingEndSeconds}
-                onEditingStartMinutesChange={onEditingStartMinutesChange}
-                onEditingStartSecondsChange={onEditingStartSecondsChange}
-                onEditingEndMinutesChange={onEditingEndMinutesChange}
-                onEditingEndSecondsChange={onEditingEndSecondsChange}
-                onStartEditTime={onStartEditTime}
-                onSaveTimeEdit={onSaveTimeEdit}
-                onCancelTimeEdit={onCancelTimeEdit}
-                onDeleteItem={onDeleteItem}
-                TimeRangeInput={TimeRangeInput}
-              />
-            ))
-          ) : (
-            <div className="text-center text-gray-500 py-8">
-              暂无分镜板数据
-            </div>
-          )}
-        </div>
-      </SortableContext>
-    </DndContext>
-  );
-}
-
-// 可排序的视频项组件
-interface SortableVideoItemProps {
-  item: VideoItem;
-  index: number;
-  editingTimeId: string | null;
-  editingStartMinutes: string;
-  editingStartSeconds: string;
-  editingEndMinutes: string;
-  editingEndSeconds: string;
-  onEditingStartMinutesChange: (value: string) => void;
-  onEditingStartSecondsChange: (value: string) => void;
-  onEditingEndMinutesChange: (value: string) => void;
-  onEditingEndSecondsChange: (value: string) => void;
-  onStartEditTime: (itemId: string, timeRange: string) => void;
-  onSaveTimeEdit: (itemId: string) => void;
-  onCancelTimeEdit: () => void;
-  parseTimeRange: (timeRange: string) => { startMinutes: string; startSeconds: string; endMinutes: string; endSeconds: string; };
-}
-
-function SortableVideoItem({
-  item,
-  index,
-  editingTimeId,
-  editingStartMinutes,
-  editingStartSeconds,
-  editingEndMinutes,
-  editingEndSeconds,
-  onEditingStartMinutesChange,
-  onEditingStartSecondsChange,
-  onEditingEndMinutesChange,
-  onEditingEndSecondsChange,
-  onStartEditTime,
-  onSaveTimeEdit,
-  onCancelTimeEdit,
-  parseTimeRange,
-}: SortableVideoItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <VideoItemComponent
-        item={item}
-        index={index}
-        editingTimeId={editingTimeId}
-        editingStartMinutes={editingStartMinutes}
-        editingStartSeconds={editingStartSeconds}
-        editingEndMinutes={editingEndMinutes}
-        editingEndSeconds={editingEndSeconds}
-        onEditingStartMinutesChange={onEditingStartMinutesChange}
-        onEditingStartSecondsChange={onEditingStartSecondsChange}
-        onEditingEndMinutesChange={onEditingEndMinutesChange}
-        onEditingEndSecondsChange={onEditingEndSecondsChange}
-        onStartEditTime={onStartEditTime}
-        onSaveTimeEdit={onSaveTimeEdit}
-        onCancelTimeEdit={onCancelTimeEdit}
-        parseTimeRange={parseTimeRange}
-        dragListeners={listeners}
-      />
-    </div>
-  );
-}
-
-// 通用标题栏组件
-interface SectionHeaderProps {
-  title: string;
-  subtitle?: string;
-  subtitleOptions?: string[];
-  onSubtitleChange?: (value: string) => void;
-  onSubtitleEdit?: (value: string) => Promise<boolean>; // 新增：专门处理编辑的回调
-  onOptionsChange?: (options: string[]) => void;
-  onAddClick?: () => void;
-  onApplyClick?: () => void;
-}
-
-function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onSubtitleEdit, onOptionsChange, onAddClick, onApplyClick }: SectionHeaderProps) {
-  const { t } = useI18n();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingValue, setEditingValue] = useState('');
-  const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null);
-  const [editingOptionValue, setEditingOptionValue] = useState('');
-
-  // 处理单击文本开始编辑
-  const handleTextClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsEditing(true);
-    setEditingValue(subtitle || '');
-    setIsDropdownOpen(false);
-  };
-
-  // 处理点击箭头显示下拉框
-  const handleArrowClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsDropdownOpen(!isDropdownOpen);
-    setIsEditing(false);
-  };
-
-  // 处理编辑完成
-  const handleEditComplete = async () => {
-    if (editingValue.trim() && editingValue !== subtitle) {
-      // 如果有专门的编辑回调，优先使用它
-      if (onSubtitleEdit) {
-        const success = await onSubtitleEdit(editingValue.trim());
-        if (!success) {
-          // 编辑失败，恢复原值
-          setEditingValue(subtitle || '');
-          return;
-        }
-      } else {
-        // 否则使用通用的变更回调
-        onSubtitleChange?.(editingValue.trim());
-      }
-    }
-    setIsEditing(false);
-    setEditingValue('');
-  };
-
-  // 处理键盘事件
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleEditComplete();
-    } else if (e.key === 'Escape') {
-      setIsEditing(false);
-      setEditingValue('');
-    }
-  };
-
-  // 处理下拉选项编辑
-  const handleOptionDoubleClick = (index: number, option: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingOptionIndex(index);
-    setEditingOptionValue(option);
-  };
-
-  // 处理下拉选项编辑完成
-  const handleOptionEditComplete = () => {
-    if (editingOptionIndex !== null && subtitleOptions && onOptionsChange) {
-      const newOptions = [...subtitleOptions];
-      if (editingOptionValue.trim()) {
-        newOptions[editingOptionIndex] = editingOptionValue.trim();
-        onOptionsChange(newOptions);
-      }
-    }
-    setEditingOptionIndex(null);
-    setEditingOptionValue('');
-  };
-
-  // 处理下拉选项键盘事件
-  const handleOptionKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleOptionEditComplete();
-    } else if (e.key === 'Escape') {
-      setEditingOptionIndex(null);
-      setEditingOptionValue('');
-    }
-  };
-
-  const actionButtonClass =
-    "flex items-center space-x-1 px-1 py-0.5 text-sm font-medium text-gray-700 border border-blue-400 rounded hover:border-blue-500 hover:text-blue-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200";
-
-  return (
-    <div className="p-4 bg-white border-b border-gray-100">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <svg width="40" height="36" viewBox="0 0 56 51" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* 边框 */}
-            <rect width="56" height="51" rx="10" fill="#3E83F6"/>
-            {/* Logo内容 - 星星 */}
-            <g transform="translate(28, 25.5) scale(0.7, 0.7) translate(-19, -19)">
-              <path d="M34.8333 15.3109C34.7333 15.0213 34.5515 14.767 34.3098 14.5787C34.0681 14.3904 33.7769 14.2762 33.4717 14.2501L24.4625 12.9359L20.425 4.75011C20.2954 4.48241 20.0929 4.25665 19.8409 4.09868C19.5889 3.94072 19.2974 3.85693 19 3.85693C18.7026 3.85693 18.4111 3.94072 18.1591 4.09868C17.9071 4.25665 17.7047 4.48241 17.575 4.75011L13.5375 12.9201L4.52834 14.2501C4.2353 14.2918 3.9598 14.4147 3.73311 14.605C3.50642 14.7953 3.33761 15.0454 3.24584 15.3268C3.16183 15.6018 3.1543 15.8944 3.22403 16.1734C3.29377 16.4523 3.43815 16.707 3.64167 16.9101L10.1808 23.2434L8.59751 32.2368C8.54098 32.5336 8.57058 32.8404 8.6828 33.121C8.79503 33.4015 8.98519 33.6441 9.23084 33.8201C9.47027 33.9913 9.75266 34.0923 10.0463 34.1119C10.34 34.1315 10.6333 34.0688 10.8933 33.9309L19 29.7034L27.075 33.9468C27.2972 34.0721 27.5482 34.1376 27.8033 34.1368C28.1387 34.138 28.4658 34.0326 28.7375 33.8359C28.9832 33.66 29.1733 33.4174 29.2855 33.1368C29.3978 32.8563 29.4274 32.5494 29.3708 32.2526L27.7875 23.2593L34.3267 16.9259C34.5553 16.7323 34.7242 16.4777 34.8139 16.1918C34.9036 15.9059 34.9103 15.6005 34.8333 15.3109ZM25.0958 21.6443C24.9102 21.8239 24.7712 22.0462 24.6912 22.2918C24.6112 22.5374 24.5924 22.7989 24.6367 23.0534L25.7767 29.6876L19.8233 26.5209C19.5943 26.399 19.3387 26.3352 19.0792 26.3352C18.8196 26.3352 18.5641 26.399 18.335 26.5209L12.3817 29.6876L13.5217 23.0534C13.5659 22.7989 13.5472 22.5374 13.4671 22.2918C13.3871 22.0462 13.2482 21.8239 13.0625 21.6443L8.31251 16.8943L14.9783 15.9284C15.2348 15.8928 15.4787 15.7947 15.6885 15.6429C15.8983 15.4911 16.0676 15.2901 16.1817 15.0576L19 9.02511L21.9767 15.0734C22.0907 15.3059 22.2601 15.5069 22.4699 15.6587C22.6797 15.8105 22.9235 15.9086 23.18 15.9443L29.8458 16.9101L25.0958 21.6443Z" fill="white"/>
-            </g>
-          </svg>
-          <span className="text-base font-medium text-gray-900">{title}</span>
-          {subtitle && (
-            <div className="relative">
-              {isEditing ? (
-                // 编辑模式
-                <input
-                  type="text"
-                  value={editingValue}
-                  onChange={(e) => setEditingValue(e.target.value)}
-                  onBlur={handleEditComplete}
-                  onKeyDown={handleKeyDown}
-                  className="text-sm text-gray-600 bg-white border border-blue-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  autoFocus
-                  style={{ minWidth: '200px' }}
-                />
-              ) : (
-                // 显示模式
-                <div className="flex items-center space-x-1 text-sm text-gray-600 select-none">
-                  <span
-                    className="cursor-pointer hover:text-gray-800 transition-colors"
-                    onClick={handleTextClick}
-                    title={t('shortplayEntry.scenes.editSceneName')}
-                  >
-                    {subtitle}
-                  </span>
-                  <Icon
-                    icon="ri:arrow-down-s-line"
-                    className={`w-4 h-4 cursor-pointer hover:text-blue-500 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-                    onClick={handleArrowClick}
-                    title={t('shortplayEntry.scenes.selectPresetScene')}
-                  />
-                </div>
-              )}
-
-              {/* 下拉选择器 */}
-              {isDropdownOpen && subtitleOptions && !isEditing && (
-                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-48">
-                  {subtitleOptions.map((option, index) => (
-                    <div
-                      key={index}
-                      className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors first:rounded-t-lg last:rounded-b-lg"
-                      onClick={() => {
-                        if (editingOptionIndex !== index) {
-                          onSubtitleChange?.(option);
-                          setIsDropdownOpen(false);
-                        }
-                      }}
-                      onDoubleClick={(e) => handleOptionDoubleClick(index, option, e)}
-                      title={t('shortplayEntry.scenes.clickToSelectDoubleClickToEdit')}
-                    >
-                      {editingOptionIndex === index ? (
-                        <input
-                          type="text"
-                          value={editingOptionValue}
-                          onChange={(e) => setEditingOptionValue(e.target.value)}
-                          onBlur={handleOptionEditComplete}
-                          onKeyDown={handleOptionKeyDown}
-                          className="w-full bg-transparent border-none outline-none text-sm text-gray-700"
-                          autoFocus
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      ) : (
-                        option
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        {(onAddClick || onApplyClick) && (
-          <div className="flex items-center space-x-2">
-            {onAddClick && (
-              <button
-                type="button"
-                data-section-add-button="true"
-                onClick={onAddClick}
-                className={actionButtonClass}
-              >
-                <Icon icon="ri:add-circle-line" className="w-4 h-4" />
-                <span>新增</span>
-              </button>
-            )}
-            {onApplyClick && (
-              <button type="button" onClick={onApplyClick} className={actionButtonClass}>
-                <Icon icon="ri:check-line" className="w-4 h-4" />
-                <span>应用</span>
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* 点击其他地方关闭下拉框和编辑框 */}
-      {(isDropdownOpen || isEditing || editingOptionIndex !== null) && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => {
-            setIsDropdownOpen(false);
-            if (isEditing) {
-              handleEditComplete();
-            }
-            if (editingOptionIndex !== null) {
-              handleOptionEditComplete();
-            }
-          }}
-        />
-      )}
-    </div>
-  );
-}
 
 function ShortplayEntryPage() {
   const { t } = useI18n();
@@ -4137,6 +2412,27 @@ function ShortplayEntryPage() {
             </div>
           </div>
 
+          {/* 音频tab专属：音色选择和已设置的音色区域（头部下方） */}
+          {activeTab === 'audio' && (
+            <div className="px-4 pb-2">
+              <AudioResourcePanel
+                audioType={audioType}
+                onAudioTypeChange={setAudioType}
+                configuredVoices={configuredVoices}
+                isLoadingVoices={isLoadingVoices}
+                isConfiguredVoicesExpanded={isConfiguredVoicesExpanded}
+                onConfiguredVoicesExpandedChange={setIsConfiguredVoicesExpanded}
+                editingVoiceId={editingVoiceId}
+                editingVoiceName={editingVoiceName}
+                onEditingVoiceNameChange={setEditingVoiceName}
+                onStartEditVoiceName={handleStartEditVoiceName}
+                onSaveVoiceName={handleSaveVoiceName}
+                onCancelEditVoiceName={handleCancelEditVoiceName}
+                onVoiceNameKeyDown={handleVoiceNameKeyDown}
+              />
+            </div>
+          )}
+
           {/* 内容区域 */}
           <div className="flex-grow p-4 min-h-0">
             <div className="bg-white rounded-lg border border-gray-200 h-full flex flex-col">
@@ -4159,250 +2455,131 @@ function ShortplayEntryPage() {
 
                 {activeTab === 'audio' && (
                   <div className="space-y-4">
-                    {/* 配音选择区域 */}
-                    <div className="space-y-3">
-                      <div className="relative w-24">
-                        <select
-                          value={audioType}
-                          onChange={(e) => setAudioType(e.target.value as 'voice' | 'sound')}
-                          className="w-full h-9 pl-3 pr-8 text-sm rounded-lg bg-white focus:outline-none appearance-none"
-                        >
-                          <option value="voice">音色</option>
-                          <option value="sound">音效</option>
-                        </select>
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                      </div>
-
+                    {/* 可用音色/音效列表 - 居上排列 */}
+                    <div className="space-y-2">
                       {audioType === 'voice' ? (
                         <>
-                          {/* 已设置的配音人员 */}
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-gray-700">已设置的音色</span>
-                              <button
-                                onClick={() => setIsConfiguredVoicesExpanded(!isConfiguredVoicesExpanded)}
-                                className="p-1 hover:bg-gray-100 rounded"
-                              >
-                                <Icon
-                                  icon={isConfiguredVoicesExpanded ? "ri:arrow-up-s-line" : "ri:arrow-down-s-line"}
-                                  className="w-4 h-4 text-gray-400"
-                                />
-                              </button>
+                          {isLoadingVoices ? (
+                            <div className="flex items-center justify-center p-4 text-gray-500">
+                              <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
+                              加载中...
                             </div>
-
-                            {/* 显示第一条或全部 */}
-                            <div className="space-y-2">
-                              {isLoadingVoices ? (
-                                <div className="flex items-center justify-center p-4 text-gray-500">
-                                  <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
-                                  加载中...
+                          ) : (
+                            availableVoices.map((voice) => (
+                              <div key={voice.voiceId} className="flex items-center space-x-3 p-3">
+                                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                  <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
                                 </div>
-                              ) : (
-                                configuredVoices
-                                  .slice(0, isConfiguredVoicesExpanded ? configuredVoices.length : 1)
-                                  .map((voice, index) => (
-                                    <div key={voice.voiceId} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                      <div className="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
-                                        <span className="text-xs text-white font-medium">
-                                          {voice.voiceName?.charAt(0) || '音'}
-                                        </span>
-                                      </div>
-                                      <div className="flex-1">
-                                        {editingVoiceId === voice.voiceId ? (
-                                          <div className="flex items-center space-x-2">
-                                            <input
-                                              type="text"
-                                              value={editingVoiceName}
-                                              onChange={(e) => setEditingVoiceName(e.target.value)}
-                                              onKeyDown={handleVoiceNameKeyDown}
-                                              className="text-sm border border-blue-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                              autoFocus
-                                            />
-                                            <button
-                                              onClick={handleSaveVoiceName}
-                                              className="text-green-600 hover:text-green-800"
-                                            >
-                                              <Icon icon="ri:check-line" className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                              onClick={handleCancelEditVoiceName}
-                                              className="text-red-600 hover:text-red-800"
-                                            >
-                                              <Icon icon="ri:close-line" className="w-4 h-4" />
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <div
-                                            className="text-sm text-gray-800 cursor-pointer hover:text-blue-600"
-                                            onClick={() => handleStartEditVoiceName(voice.voiceId, voice.voiceName)}
-                                          >
-                                            {voice.voiceName}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="flex space-x-2">
-                                        <button
-                                          className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100"
-                                          onClick={() => {
-                                            if (voice.sampleAudioUrl) {
-                                              const audio = new Audio(voice.sampleAudioUrl);
-                                              audio.play();
-                                            }
-                                          }}
-                                        >
-                                          试听
-                                        </button>
-                                        <button className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100">
-                                          删除
-                                        </button>
-                                      </div>
+                                <div className="flex-1">
+                                  {editingVoiceId === voice.voiceId ? (
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="text"
+                                        value={editingVoiceName}
+                                        onChange={(e) => setEditingVoiceName(e.target.value)}
+                                        onKeyDown={handleVoiceNameKeyDown}
+                                        className="text-sm border border-blue-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        autoFocus
+                                      />
+                                      <button
+                                        onClick={handleSaveVoiceName}
+                                        className="text-green-600 hover:text-green-800"
+                                      >
+                                        <Icon icon="ri:check-line" className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        onClick={handleCancelEditVoiceName}
+                                        className="text-red-600 hover:text-red-800"
+                                      >
+                                        <Icon icon="ri:close-line" className="w-4 h-4" />
+                                      </button>
                                     </div>
-                                  ))
-                              )}
-                            </div>
-                          </div>
-
-                          {/* 音频文件列表 */}
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-gray-700">可用音色</span>
-                            </div>
-
-                            <div className="space-y-2">
-                              {isLoadingVoices ? (
-                                <div className="flex items-center justify-center p-4 text-gray-500">
-                                  <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
-                                  加载中...
+                                  ) : (
+                                    <div
+                                      className="text-sm font-medium text-gray-800 cursor-pointer hover:text-blue-600"
+                                      onClick={() => handleStartEditVoiceName(voice.voiceId, voice.voiceName)}
+                                    >
+                                      {voice.voiceName}
+                                    </div>
+                                  )}
                                 </div>
-                              ) : (
-                                availableVoices
-                                  .map((voice, index) => (
-                                    <div key={voice.voiceId} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
-                                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                        <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
-                                      </div>
-                                      <div className="flex-1">
-                                        {editingVoiceId === voice.voiceId ? (
-                                          <div className="flex items-center space-x-2">
-                                            <input
-                                              type="text"
-                                              value={editingVoiceName}
-                                              onChange={(e) => setEditingVoiceName(e.target.value)}
-                                              onKeyDown={handleVoiceNameKeyDown}
-                                              className="text-sm border border-blue-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                              autoFocus
-                                            />
-                                            <button
-                                              onClick={handleSaveVoiceName}
-                                              className="text-green-600 hover:text-green-800"
-                                            >
-                                              <Icon icon="ri:check-line" className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                              onClick={handleCancelEditVoiceName}
-                                              className="text-red-600 hover:text-red-800"
-                                            >
-                                              <Icon icon="ri:close-line" className="w-4 h-4" />
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <div
-                                            className="text-sm font-medium text-gray-800 cursor-pointer hover:text-blue-600"
-                                            onClick={() => handleStartEditVoiceName(voice.voiceId, voice.voiceName)}
-                                          >
-                                            {voice.voiceName}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                                        <span className="text-xs text-white font-medium">
-                                          {voice.voiceSource === 'CUSTOM' ? '定' : '系'}
-                                        </span>
-                                      </div>
-                                      <Icon icon="ri:arrow-down-s-line" className="w-4 h-4 text-gray-400" />
-                                      <div className="flex space-x-2">
-                                        <button
-                                          className="px-3 py-1 text-xs border border-blue-500 text-blue-500 rounded hover:bg-blue-50"
-                                          onClick={() => {
-                                            if (voice.sampleAudioUrl) {
-                                              const audio = new Audio(voice.sampleAudioUrl);
-                                              audio.play();
-                                            }
-                                          }}
-                                        >
-                                          播放
-                                        </button>
-                                        <button
-                                          className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-                                          onClick={() => handleApplyVoice(voice.voiceId)}
-                                        >
-                                          应用
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))
-                              )}
-                            </div>
-                          </div>
+                                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                                  <span className="text-xs text-white font-medium">
+                                    {voice.voiceSource === 'CUSTOM' ? '定' : '系'}
+                                  </span>
+                                </div>
+                                <Icon icon="ri:arrow-down-s-line" className="w-4 h-4 text-gray-400" />
+                                <div className="flex space-x-2">
+                                  <button
+                                    className="px-3 py-1 text-xs border border-blue-500 text-blue-500 rounded hover:bg-blue-50"
+                                    onClick={() => {
+                                      if (voice.sampleAudioUrl) {
+                                        const audio = new Audio(voice.sampleAudioUrl);
+                                        audio.play();
+                                      }
+                                    }}
+                                  >
+                                    播放
+                                  </button>
+                                  <button
+                                    className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    onClick={() => handleApplyVoice(voice.voiceId)}
+                                  >
+                                    应用
+                                  </button>
+                                </div>
+                              </div>
+                            ))
+                          )}
                         </>
                       ) : (
                         <>
-                          {/* 音效文件列表 */}
-                          <div className="space-y-2">
-                            <span className="text-sm font-medium text-gray-700">音效文件</span>
-                            <div className="space-y-2">
-                              {isLoadingBgm ? (
-                                <div className="flex items-center justify-center p-4 text-gray-500">
-                                  <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
-                                  加载中...
-                                </div>
-                              ) : (
-                                bgmList.map((bgm, index) => (
-                                  <div key={bgm.id || index} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
-                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                      <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="text-sm font-medium text-gray-800">{bgm.prompt || bgm.name || bgm.title || '音效文件'}</div>
-                                      {bgm.description && (
-                                        <div className="text-xs text-gray-500">{bgm.description}</div>
-                                      )}
-                                    </div>
-                                    <div className="flex space-x-2">
-                                      <button
-                                        className="px-3 py-1 text-xs border border-green-500 text-green-500 rounded hover:bg-green-50"
-                                        onClick={() => {
-                                          if (bgm.audioUrl) {
-                                            const audio = new Audio(bgm.audioUrl);
-                                            audio.play();
-                                          } else {
-                                            toast.error('音效文件缺少播放地址');
-                                          }
-                                        }}
-                                      >
-                                        播放
-                                      </button>
-                                      <button
-                                        className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
-                                        onClick={() => handleApplyBgm(bgm)}
-                                      >
-                                        应用
-                                      </button>
-                                    </div>
-                                  </div>
-                                ))
-                              )}
-                              {!isLoadingBgm && bgmList.length === 0 && (
-                                <div className="text-center text-gray-500 py-4">
-                                  暂无音效文件
-                                </div>
-                              )}
+                          {isLoadingBgm ? (
+                            <div className="flex items-center justify-center p-4 text-gray-500">
+                              <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
+                              加载中...
                             </div>
-                          </div>
+                          ) : (
+                            bgmList.map((bgm, index) => (
+                              <div key={bgm.id || index} className="flex items-center space-x-3 p-3">
+                                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                  <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-gray-800">{bgm.prompt || bgm.name || bgm.title || '音效文件'}</div>
+                                  {bgm.description && (
+                                    <div className="text-xs text-gray-500">{bgm.description}</div>
+                                  )}
+                                </div>
+                                <div className="flex space-x-2">
+                                  <button
+                                    className="px-3 py-1 text-xs border border-green-500 text-green-500 rounded hover:bg-green-50"
+                                    onClick={() => {
+                                      if (bgm.audioUrl) {
+                                        const audio = new Audio(bgm.audioUrl);
+                                        audio.play();
+                                      } else {
+                                        toast.error('音效文件缺少播放地址');
+                                      }
+                                    }}
+                                  >
+                                    播放
+                                  </button>
+                                  <button
+                                    className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+                                    onClick={() => handleApplyBgm(bgm)}
+                                  >
+                                    应用
+                                  </button>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                          {!isLoadingBgm && bgmList.length === 0 && (
+                            <div className="text-center text-gray-500 py-4">
+                              暂无音效文件
+                            </div>
+                          )}
                         </>
                       )}
                     </div>
@@ -4665,39 +2842,78 @@ function ShortplayEntryPage() {
               </div>
 
               {/* 卡片底部输入区域 */}
-              <BottomInputArea
-                activeTab={activeTab}
-                selectedModel={selectedModel}
-                onModelChange={setSelectedModel}
-                userInput={userInput}
-                onInputChange={setUserInput}
-                isGenerating={isGenerating}
-                onGenerate={
-                  activeTab === 'audio'
-                    ? (audioType === 'voice' ? handleAudioGenerate : handleBgmGenerate)
-                    : activeTab === 'image'
-                    ? handleImageGenerate
-                    : handleGenerate
-                }
-                placeholder={t('shortplayEntry.input.placeholder')}
-                generationStatus={generationStatus}
-                voiceType={voiceType}
-                onVoiceTypeChange={setVoiceType}
-                backgroundType={backgroundType}
-                onBackgroundTypeChange={setBackgroundType}
-                style={style}
-                onStyleChange={setStyle}
-                videoLength={videoLength}
-                onVideoLengthChange={setVideoLength}
-                resolution={resolution}
-                onResolutionChange={setResolution}
-                singleGenerate={singleGenerate}
-                onSingleGenerateChange={setSingleGenerate}
-                onFileUpload={handleFileUpload}
-                onMultipleFileUpload={handleMultipleFileUpload}
-                isUploading={isUploading}
-                uploadProgress={uploadProgress}
-              />
+              {activeTab === 'audio' ? (
+                <AudioBottomPanel
+                  audioType={audioType}
+                  availableVoices={availableVoices}
+                  isLoadingVoices={isLoadingVoices}
+                  editingVoiceId={editingVoiceId}
+                  editingVoiceName={editingVoiceName}
+                  onEditingVoiceNameChange={setEditingVoiceName}
+                  onStartEditVoiceName={(voiceId, voiceName) => {
+                    setEditingVoiceId(voiceId);
+                    setEditingVoiceName(voiceName);
+                  }}
+                  onSaveVoiceName={handleSaveVoiceName}
+                  onCancelEditVoiceName={() => {
+                    setEditingVoiceId(null);
+                    setEditingVoiceName('');
+                  }}
+                  onVoiceNameKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveVoiceName();
+                    } else if (e.key === 'Escape') {
+                      setEditingVoiceId(null);
+                      setEditingVoiceName('');
+                    }
+                  }}
+                  onApplyVoice={handleApplyVoice}
+                  bgmList={bgmList}
+                  isLoadingBgm={isLoadingBgm}
+                  onApplyBgm={handleApplyBgm}
+                  selectedModel={selectedModel}
+                  onModelChange={setSelectedModel}
+                  userInput={userInput}
+                  onInputChange={setUserInput}
+                  isGenerating={isGenerating}
+                  onGenerate={audioType === 'voice' ? handleAudioGenerate : handleBgmGenerate}
+                  generationStatus={generationStatus}
+                  voiceType={voiceType}
+                  onVoiceTypeChange={setVoiceType}
+                />
+              ) : (
+                <BottomInputArea
+                  activeTab={activeTab}
+                  selectedModel={selectedModel}
+                  onModelChange={setSelectedModel}
+                  userInput={userInput}
+                  onInputChange={setUserInput}
+                  isGenerating={isGenerating}
+                  onGenerate={
+                    activeTab === 'image'
+                      ? handleImageGenerate
+                      : handleGenerate
+                  }
+                  placeholder={t('shortplayEntry.input.placeholder')}
+                  generationStatus={generationStatus}
+                  voiceType={voiceType}
+                  onVoiceTypeChange={setVoiceType}
+                  backgroundType={backgroundType}
+                  onBackgroundTypeChange={setBackgroundType}
+                  style={style}
+                  onStyleChange={setStyle}
+                  videoLength={videoLength}
+                  onVideoLengthChange={setVideoLength}
+                  resolution={resolution}
+                  onResolutionChange={setResolution}
+                  singleGenerate={singleGenerate}
+                  onSingleGenerateChange={setSingleGenerate}
+                  onFileUpload={handleFileUpload}
+                  onMultipleFileUpload={handleMultipleFileUpload}
+                  isUploading={isUploading}
+                  uploadProgress={uploadProgress}
+                />
+              )}
             </div>
           </div>
         </div>
