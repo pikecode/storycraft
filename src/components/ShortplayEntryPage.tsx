@@ -2584,19 +2584,16 @@ function ShortplayEntryPage() {
                             </div>
                           ) : (
                             bgmList.map((bgm, index) => (
-                              <div key={bgm.id || index} className="flex items-center space-x-3 py-3">
-                                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                  <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
-                                </div>
-                                <div className="flex-1">
-                                  <div className="text-sm font-medium text-gray-800">{bgm.prompt || bgm.name || bgm.title || '音效文件'}</div>
-                                  {bgm.description && (
-                                    <div className="text-xs text-gray-500">{bgm.description}</div>
-                                  )}
-                                </div>
-                                <div className="flex space-x-2">
+                              <div key={bgm.id || index} className="py-3 space-y-2">
+                                <div className="flex items-start space-x-3">
+                                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="text-sm font-medium text-gray-800">{bgm.prompt || bgm.name || bgm.title || '音效文件'}</div>
+                                  </div>
                                   <button
-                                    className="px-1 py-0.5 text-sm border border-green-500 text-green-500 rounded hover:bg-green-50"
+                                    className="px-1 py-0.5 text-sm border border-green-500 text-green-500 rounded hover:bg-green-50 flex items-center space-x-1"
                                     onClick={() => {
                                       if (bgm.audioUrl) {
                                         const audio = new Audio(bgm.audioUrl);
@@ -2606,14 +2603,42 @@ function ShortplayEntryPage() {
                                       }
                                     }}
                                   >
-                                    播放
+                                    <Icon icon="ri:play-circle-line" className="w-3 h-3" />
+                                    <span>播放</span>
                                   </button>
                                   <button
-                                    className="px-1 py-0.5 text-sm border border-green-500 text-green-500 rounded hover:bg-green-50"
+                                    className="px-1 py-0.5 text-sm border border-green-500 text-green-500 rounded hover:bg-green-50 flex items-center space-x-1"
                                     onClick={() => handleApplyBgm(bgm)}
                                   >
-                                    应用
+                                    <Icon icon="ri:check-line" className="w-3 h-3" />
+                                    <span>应用</span>
                                   </button>
+                                </div>
+                                {bgm.description && (
+                                  <div className="text-xs text-gray-500 pl-11">{bgm.description}</div>
+                                )}
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-sm text-gray-600">播放位置</span>
+                                    <TimeRangeInput
+                                      startMinutes="00"
+                                      startSeconds="00"
+                                      endMinutes="00"
+                                      endSeconds="05"
+                                      onStartMinutesChange={() => {}}
+                                      onStartSecondsChange={() => {}}
+                                      onEndMinutesChange={() => {}}
+                                      onEndSecondsChange={() => {}}
+                                    />
+                                    <div className="flex-1 relative h-1.5 bg-gray-300 rounded-full overflow-hidden">
+                                      <div className="absolute h-full bg-gray-600 rounded-full" style={{ width: '40%' }}></div>
+                                    </div>
+                                    <button className="px-1.5 py-0.5 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100">
+                                      <Icon icon="ri:volume-mute-line" className="w-3 h-3" />
+                                    </button>
+                                    <span className="text-xs text-blue-500">10</span>
+                                    <button className="px-1.5 py-0.5 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100">
+                                      <Icon icon="ri:arrow-down-s-line" className="w-3 h-3" />
+                                    </button>
                                 </div>
                               </div>
                             ))
