@@ -37,6 +37,9 @@ interface AudioResourcePanelProps {
   onSaveVoiceName: () => void;
   onCancelEditVoiceName: () => void;
   onVoiceNameKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+
+  // 删除音色
+  onDeleteVoice?: (voiceId: string) => void;
 }
 
 export function AudioResourcePanel({
@@ -53,16 +56,17 @@ export function AudioResourcePanel({
   onSaveVoiceName,
   onCancelEditVoiceName,
   onVoiceNameKeyDown,
+  onDeleteVoice,
 }: AudioResourcePanelProps) {
   return (
     <div className="space-y-4">
       {/* 配音选择区域 */}
       <div className="space-y-3">
-        <div className="relative w-24">
+        <div className="relative w-16">
           <select
             value={audioType}
             onChange={(e) => onAudioTypeChange(e.target.value as 'voice' | 'sound')}
-            className="w-full h-9 pl-3 pr-8 text-sm rounded-lg bg-white focus:outline-none appearance-none"
+            className="w-full h-9 pr-8 text-sm rounded-lg bg-transparent focus:outline-none appearance-none"
           >
             <option value="voice">音色</option>
             <option value="sound">音效</option>
@@ -77,27 +81,12 @@ export function AudioResourcePanel({
         {audioType === 'voice' ? (
           <>
             {/* 已设置的配音人员 */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">已设置的音色</span>
-              {(isLoadingVoices || configuredVoices.length > 0) && (
-              <button
-                onClick={() => onConfiguredVoicesExpandedChange(!isConfiguredVoicesExpanded)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <Icon
-                  icon={isConfiguredVoicesExpanded ? "ri:arrow-up-s-line" : "ri:arrow-down-s-line"}
-                  className="w-4 h-4 text-gray-400"
-                />
-              </button>
-              )}
-            </div>
-
             {(isLoadingVoices || configuredVoices.length > 0) && (
-            <div className="space-y-2">
-              {/* 显示第一条或全部 */}
-              <div className="space-y-2">
+            <div className="flex items-start space-x-2">
+              <span className="text-sm font-medium text-gray-700 min-w-fit pt-3">已设置</span>
+              <div className="flex-1 space-y-2.5">
                 {isLoadingVoices ? (
-                  <div className="flex items-center justify-center p-4 text-gray-500">
+                  <div className="flex items-center justify-center text-gray-500">
                     <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
                     加载中...
                   </div>
@@ -105,11 +94,9 @@ export function AudioResourcePanel({
                   configuredVoices
                     .slice(0, isConfiguredVoicesExpanded ? configuredVoices.length : 1)
                     .map((voice) => (
-                      <div key={voice.voiceId} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-white font-medium">
-                            {voice.voiceName?.charAt(0) || '音'}
-                          </span>
+                      <div key={voice.voiceId} className="flex items-center space-x-3 px-2 py-1.5 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+                          <img src="/img/avatar.png" alt="定制音色" className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1">
                           {editingVoiceId === voice.voiceId ? (
@@ -146,7 +133,7 @@ export function AudioResourcePanel({
                         </div>
                         <div className="flex space-x-2">
                           <button
-                            className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100"
+                            className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100 flex items-center space-x-1"
                             onClick={() => {
                               if (voice.sampleAudioUrl) {
                                 const audio = new Audio(voice.sampleAudioUrl);
@@ -154,16 +141,30 @@ export function AudioResourcePanel({
                               }
                             }}
                           >
-                            试听
+                            <Icon icon="ri:play-circle-line" className="w-3 h-3" />
+                            <span>试听</span>
                           </button>
-                          <button className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100">
-                            删除
+                          <button
+                            className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100 flex items-center space-x-1"
+                            onClick={() => onDeleteVoice?.(voice.voiceId)}
+                          >
+                            <Icon icon="ri:delete-bin-line" className="w-3 h-3" />
+                            <span>删除</span>
                           </button>
                         </div>
                       </div>
                     ))
                 )}
               </div>
+              <button
+                onClick={() => onConfiguredVoicesExpandedChange(!isConfiguredVoicesExpanded)}
+                className="flex-shrink-0 pt-3 border-none bg-transparent w-2.5"
+              >
+                <Icon
+                  icon={isConfiguredVoicesExpanded ? "ri:arrow-down-s-line" : "ri:arrow-up-s-line"}
+                  className="w-4 h-4 text-gray-400"
+                />
+              </button>
             </div>
             )}
           </>

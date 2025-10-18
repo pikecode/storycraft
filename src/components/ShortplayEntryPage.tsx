@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Icon } from '@iconify/react';
-import { Button, Select, Segmented } from 'antd';
+import { Button, Select, Segmented, Modal } from 'antd';
 import toast from 'react-hot-toast';
 import { useI18n } from '../contexts/I18nContext';
 import {
@@ -1246,6 +1246,49 @@ function ShortplayEntryPage() {
   };
 
   // 应用音色到已设置列表
+  // 删除音色
+  const handleDeleteVoice = async (voiceId: string) => {
+    const voice = configuredVoices.find(v => v.voiceId === voiceId);
+    const voiceName = voice?.voiceName || '该音色';
+
+    Modal.confirm({
+      title: '删除音色',
+      content: `确定要删除音色"${voiceName}"吗？`,
+      okText: '确定',
+      cancelText: '取消',
+      okType: 'danger',
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${STORYAI_API_BASE}/voice/delete?voiceId=${voiceId}`, {
+            method: 'POST',
+            headers: {
+              'X-Prompt-Manager-Token': token || '',
+            }
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.code === 0) {
+              // 删除成功，刷新已设置的音色列表和可用音色列表
+              const updatedConfigured = await loadVoiceList(1);
+              const updatedAvailable = await loadVoiceList(2);
+              setConfiguredVoices(updatedConfigured);
+              setAvailableVoices(updatedAvailable);
+            } else {
+              throw new Error(result.message || '删除音色失败');
+            }
+          } else {
+            throw new Error(`请求失败: ${response.status}`);
+          }
+        } catch (error) {
+          console.error('删除音色失败:', error);
+          toast.error('删除音色失败：' + (error as Error).message);
+        }
+      },
+    });
+  };
+
   const handleApplyVoice = async (voiceId: string) => {
     try {
       const token = localStorage.getItem('token');
@@ -2425,15 +2468,16 @@ function ShortplayEntryPage() {
                 onSaveVoiceName={handleSaveVoiceName}
                 onCancelEditVoiceName={handleCancelEditVoiceName}
                 onVoiceNameKeyDown={handleVoiceNameKeyDown}
+                onDeleteVoice={handleDeleteVoice}
               />
             </div>
           )}
 
           {/* 内容区域 */}
-          <div className="flex-grow p-4 min-h-0">
+          <div className="flex-grow min-h-0" style={{ padding: '10px' }}>
             <div className="bg-white rounded-lg border border-gray-200 h-full flex flex-col">
               {/* 卡片内容区域 */}
-              <div className="flex-grow p-2.5 overflow-auto min-h-0 h-96">
+              <div className="flex-grow overflow-auto min-h-0 h-96" style={{ padding: '10px' }}>
                 {activeTab === 'script' && (
                   <div className="space-y-4">
                     {/* 生成的内容显示 */}

@@ -78,7 +78,7 @@ export function AudioBottomPanel({
   onVoiceTypeChange,
 }: AudioBottomPanelProps) {
   const { t } = useI18n();
-  const finalPlaceholder = t('shortplayEntry.input.placeholder');
+  const finalPlaceholder = '简单描述你想要的音乐风格';
 
   return (
     <div>
