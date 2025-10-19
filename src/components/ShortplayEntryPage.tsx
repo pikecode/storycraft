@@ -58,7 +58,9 @@ function ShortplayEntryPage() {
   }, [location.search]);
 
   const [activeTab, setActiveTab] = useState<string>('script');
-  const [selectedModel, setSelectedModel] = useState<string>('deepseek');
+  const [selectedModel, setSelectedModel] = useState<string>('deepseek'); // 脚本tab模型
+  const [imageModel, setImageModel] = useState<string>('doubao-seedream-4.0'); // 图片tab模型
+  const [audioModel, setAudioModel] = useState<string>('minmax'); // 音频tab模型
   const [progress, setProgress] = useState<number>(0); // 进度百分比
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [hasVideo, setHasVideo] = useState<boolean>(false); // 默认有视频
@@ -1894,7 +1896,7 @@ function ShortplayEntryPage() {
         body: JSON.stringify({
           sceneId: sceneId,
           userInput: userInput.trim(),
-          llmName: selectedModel,
+          llmName: imageModel,
           durationMillis: durationMillis
         })
       });
@@ -2322,7 +2324,8 @@ function ShortplayEntryPage() {
           seriesId: seriesId,
           userId: userId,
           style: style,
-          userInput: userInput.trim()
+          userInput: userInput.trim(),
+          llmName: audioModel
         })
       });
 
@@ -2527,23 +2530,6 @@ function ShortplayEntryPage() {
     }
   };
 
-  // 监听activeTab变化，自动切换selectedModel到对应tab的默认模型
-  React.useEffect(() => {
-    if (activeTab === 'image') {
-      // 图片tab的默认模型
-      setSelectedModel('doubao-seedream-4.0');
-    } else if (activeTab === 'audio') {
-      // 音频tab的默认模型
-      setSelectedModel('minmax');
-    } else if (activeTab === 'script') {
-      // 脚本tab的默认模型
-      setSelectedModel('deepseek');
-    } else if (activeTab === 'video') {
-      // 视频tab的默认模型
-      setSelectedModel('doubao-seedance-1.0-lite-text');
-    }
-  }, [activeTab]);
-
   // 组件加载时，根据URL参数决定加载哪个数据源
   React.useEffect(() => {
     console.log('URLseriesId:', urlSeriesId);
@@ -2609,10 +2595,10 @@ function ShortplayEntryPage() {
     if (activeTab === 'audio') {
       if (audioType === 'voice') {
         loadAllVoices();
-        setSelectedModel('minmax');
+        setAudioModel('minmax');
       } else {
         loadBgmList();
-        setSelectedModel('video');
+        setAudioModel('minmax');
       }
       // 更新ref
       prevAudioTypeRef.current = audioType;
@@ -2658,7 +2644,8 @@ function ShortplayEntryPage() {
         body: JSON.stringify({
           prompt: userInput.trim(),
           userId: userId,
-          seriesId: seriesId
+          seriesId: seriesId,
+          llmName: audioModel
         })
       });
 
@@ -3332,8 +3319,8 @@ function ShortplayEntryPage() {
                   bgmList={bgmList}
                   isLoadingBgm={isLoadingBgm}
                   onApplyBgm={handleApplyBgm}
-                  selectedModel={selectedModel}
-                  onModelChange={setSelectedModel}
+                  selectedModel={audioModel}
+                  onModelChange={setAudioModel}
                   userInput={userInput}
                   onInputChange={setUserInput}
                   isGenerating={isGenerating}
@@ -3343,8 +3330,8 @@ function ShortplayEntryPage() {
               ) : (
                 <BottomInputArea
                   activeTab={activeTab}
-                  selectedModel={selectedModel}
-                  onModelChange={setSelectedModel}
+                  selectedModel={activeTab === 'image' ? imageModel : selectedModel}
+                  onModelChange={activeTab === 'image' ? setImageModel : setSelectedModel}
                   userInput={userInput}
                   onInputChange={setUserInput}
                   isGenerating={isGenerating}
