@@ -149,22 +149,6 @@ function ShortplayEntryPage() {
     }
   }, []);
 
-  // 当场景切换时，检查是否有缓存的视频
-  React.useEffect(() => {
-    if (currentSceneId) {
-      const cachedData = videoCacheMap[currentSceneId];
-      if (cachedData) {
-        // 从缓存数据中提取 downloadUrl
-        const downloadUrl = typeof cachedData === 'string' ? cachedData : cachedData.downloadUrl;
-        setVideoSrc(downloadUrl);
-        console.log(`Loaded cached video for scene ${currentSceneId}:`, downloadUrl);
-      } else {
-        // 没有缓存，使用默认视频
-        setVideoSrc("/32767410413-1-192.mp4");
-      }
-    }
-  }, [currentSceneId, videoCacheMap]);
-
   React.useEffect(() => {
     Object.values(audioRefMap.current).forEach((audio) => {
       if (audio) {
@@ -333,18 +317,17 @@ function ShortplayEntryPage() {
     const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
     const sceneId = currentSceneData?.sceneId;
 
-    if (!sceneId) {
+    if (!sceneId && sceneId !== 0) {
       toast.error('请先选择场次');
       return;
     }
 
-    setIsGeneratingPreview(true);
+    setIsLoadingPreviewVideo(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${STORYAI_API_BASE}/multimedia/video/preview?sceneId=${sceneId}`, {
+      const response = await fetch(`${STORYAI_API_BASE}/multimedia/episode/video/preview?sceneId=${sceneId}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'X-Prompt-Manager-Token': token || '',
         }
       });
@@ -354,12 +337,26 @@ function ShortplayEntryPage() {
       }
 
       const result = await response.json();
+      console.log('视频预览请求成功:', result);
+
       if (result.code === 0) {
-        toast.success('视频预览生成成功！');
-        // 可以在这里处理返回的预览视频URL
-        if (result.data?.videoUrl) {
-          // 打开预览视频
-          window.open(result.data.videoUrl, '_blank');
+        // 获取下载地址并更新视频源
+        if (result.data?.downloadUrl) {
+          const downloadUrl = result.data.downloadUrl;
+          console.log('设置videoSrc:', downloadUrl);
+          setVideoSrc(downloadUrl);
+          setHasVideo(true);
+
+          // 保存完整的返回数据到缓存（使用seriesId和sceneId组合作为key）
+          const cacheKey = `${seriesId}_${sceneId}`;
+          const newCache = { ...videoCacheMap, [cacheKey]: result.data };
+          setVideoCacheMap(newCache);
+          localStorage.setItem('videoCacheMap', JSON.stringify(newCache));
+          console.log(`Saved video data to cache for series ${seriesId}, scene ${sceneId}:`, result.data);
+
+          toast.success('视频预览已加载');
+        } else {
+          throw new Error('返回数据中缺少downloadUrl');
         }
       } else {
         throw new Error(result.message || '视频预览生成失败');
@@ -368,7 +365,7 @@ function ShortplayEntryPage() {
       console.error('视频预览失败:', error);
       toast.error('视频预览失败：' + (error as Error).message);
     } finally {
-      setIsGeneratingPreview(false);
+      setIsLoadingPreviewVideo(false);
     }
   };
 
@@ -445,7 +442,7 @@ function ShortplayEntryPage() {
   // 视频数据状态 (使用与图片相同的数据结构)
   const [videoItems, setVideoItems] = useState([]);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoSrc, setVideoSrc] = useState<string>("/32767410413-1-192.mp4"); // 视频文件路径
+  const [videoSrc, setVideoSrc] = useState<string>(""); // 视频文件路径
   const [isLoadingPreviewVideo, setIsLoadingPreviewVideo] = useState<boolean>(false); // 视频预览加载状态
   const [highlightedItemId, setHighlightedItemId] = useState<string | number | null>(null); // 当前高亮的列表项 ID
 
@@ -455,21 +452,16 @@ function ShortplayEntryPage() {
   // 进度条拖拽状态
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
-  // 视频音量
-  const [videoVolume, setVideoVolume] = useState<number>(1);
-
-  // 监听视频音量变化
-  React.useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.volume = videoVolume;
-    }
-  }, [videoVolume]);
-
   // 监听 videoSrc 变化，自动显示视频
   React.useEffect(() => {
-    if (videoSrc && videoSrc !== "/32767410413-1-192.mp4") {
+    if (videoSrc) {
       setHasVideo(true);
       setProgress(0); // 新视频加载时重置进度条
+      // 重新加载视频
+      if (videoRef.current) {
+        videoRef.current.load();
+        console.log('视频已加载，开始播放');
+      }
     } else {
       setHasVideo(false);
       setProgress(0); // 没有视频时重置进度条
@@ -3436,7 +3428,7 @@ function ShortplayEntryPage() {
 
                 setIsLoadingPreviewVideo(true);
                 const token = localStorage.getItem('token');
-                const response = await fetch(`${STORYAI_API_BASE}/multimedia/video/preview?sceneId=${sceneId}`, {
+                const response = await fetch(`${STORYAI_API_BASE}/multimedia/episode/video/preview?sceneId=${sceneId}`, {
                   method: 'POST',
                   headers: {
                     'X-Prompt-Manager-Token': token || '',
@@ -3457,11 +3449,12 @@ function ShortplayEntryPage() {
                   setVideoSrc(downloadUrl);
                   setHasVideo(true);
 
-                  // 保存完整的返回数据到缓存
-                  const newCache = { ...videoCacheMap, [sceneId]: result.data };
+                  // 保存完整的返回数据到缓存（使用seriesId和sceneId组合作为key）
+                  const cacheKey = `${seriesId}_${sceneId}`;
+                  const newCache = { ...videoCacheMap, [cacheKey]: result.data };
                   setVideoCacheMap(newCache);
                   localStorage.setItem('videoCacheMap', JSON.stringify(newCache));
-                  console.log(`Saved video data to cache for scene ${sceneId}:`, result.data);
+                  console.log(`Saved video data to cache for series ${seriesId}, scene ${sceneId}:`, result.data);
 
                   toast.success('视频预览已加载');
                 } else {
@@ -3886,7 +3879,7 @@ function ShortplayEntryPage() {
 
                       <>
                         {/* 进度条 */}
-                        <div className="absolute bottom-16 left-4 right-4 z-10">
+                        <div className="absolute bottom-12 left-4 right-4 z-10">
                             <div className="flex items-center justify-between text-white text-xs mb-1">
                               <span>{timeDisplay}</span>
                               <span>{totalTimeDisplay}</span>
@@ -3919,23 +3912,6 @@ function ShortplayEntryPage() {
                                 onMouseLeave={handleMouseLeave}
                               ></div>
                             </div>
-                          </div>
-
-                          {/* 音量控制 */}
-                          <div className="absolute bottom-12 left-4 right-4 z-10 flex items-center space-x-2">
-                            <Icon icon="ri:volume-up-line" className="w-4 h-4 text-white flex-shrink-0" />
-                            <input
-                              type="range"
-                              min="0"
-                              max="1"
-                              step="0.1"
-                              value={videoVolume}
-                              onChange={(e) => setVideoVolume(parseFloat(e.target.value))}
-                              className="flex-1 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
-                              style={{
-                                background: `linear-gradient(to right, white 0%, white ${videoVolume * 100}%, rgba(255,255,255,0.3) ${videoVolume * 100}%, rgba(255,255,255,0.3) 100%)`
-                              }}
-                            />
                           </div>
 
                           {/* 底部操作栏 */}
