@@ -444,6 +444,7 @@ function ShortplayEntryPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoSrc, setVideoSrc] = useState<string>(""); // 视频文件路径
   const [isLoadingPreviewVideo, setIsLoadingPreviewVideo] = useState<boolean>(false); // 视频预览加载状态
+  const [lastFrameImage, setLastFrameImage] = useState<string>(""); // 最后一帧图片
   const [highlightedItemId, setHighlightedItemId] = useState<string | number | null>(null); // 当前高亮的列表项 ID
 
   // 用于跟踪上一次的audioType值
@@ -456,6 +457,7 @@ function ShortplayEntryPage() {
   React.useEffect(() => {
     if (videoSrc) {
       setHasVideo(true);
+      setLastFrameImage(""); // 清除lastFrame
       setProgress(0); // 新视频加载时重置进度条
       // 重新加载视频
       if (videoRef.current) {
@@ -2525,6 +2527,23 @@ function ShortplayEntryPage() {
     }
   };
 
+  // 监听activeTab变化，自动切换selectedModel到对应tab的默认模型
+  React.useEffect(() => {
+    if (activeTab === 'image') {
+      // 图片tab的默认模型
+      setSelectedModel('doubao-seedream-4.0');
+    } else if (activeTab === 'audio') {
+      // 音频tab的默认模型
+      setSelectedModel('minmax');
+    } else if (activeTab === 'script') {
+      // 脚本tab的默认模型
+      setSelectedModel('deepseek');
+    } else if (activeTab === 'video') {
+      // 视频tab的默认模型
+      setSelectedModel('doubao-seedance-1.0-lite-text');
+    }
+  }, [activeTab]);
+
   // 组件加载时，根据URL参数决定加载哪个数据源
   React.useEffect(() => {
     console.log('URLseriesId:', urlSeriesId);
@@ -3775,7 +3794,23 @@ function ShortplayEntryPage() {
                   <Icon icon="ri:download-line" className="w-3 h-3 mr-1" />
                   下载
                 </Button>
-                <Button size="small" type="text" className="text-xs text-blue-500 border border-blue-200 rounded">
+                <Button
+                  size="small"
+                  type="text"
+                  className="text-xs text-blue-500 border border-blue-200 rounded"
+                  onClick={() => {
+                    // 从缓存中获取lastFrame
+                    const cacheKey = `${seriesId}_${currentSceneId}`;
+                    const cachedData = videoCacheMap[cacheKey];
+                    if (cachedData && cachedData.lastFrame) {
+                      setLastFrameImage(cachedData.lastFrame);
+                      toast.success('已插入最后一帧图片');
+                      console.log('插入lastFrame:', cachedData.lastFrame);
+                    } else {
+                      toast.error('暂无缓存的最后一帧图片，请先点击预览或应用');
+                    }
+                  }}
+                >
                   插入选项
                 </Button>
               </div>
@@ -3846,6 +3881,13 @@ function ShortplayEntryPage() {
                             }
                           }}
                           onLoadedMetadata={handleVideoLoaded}
+                        />
+                      ) : lastFrameImage ? (
+                        // 显示最后一帧图片
+                        <img
+                          src={lastFrameImage}
+                          alt="最后一帧"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
                         // 默认黑色背景
