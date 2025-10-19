@@ -24,6 +24,7 @@ export function SortableStoryboardItem({
   onDeleteItem,
   TimeRangeInput: TimeRangeInputComponent,
   onPreview,
+  isHighlighted,
 }: SortableStoryboardItemProps) {
   const {
     attributes,

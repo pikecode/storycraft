@@ -59,7 +59,7 @@ function ShortplayEntryPage() {
 
   const [activeTab, setActiveTab] = useState<string>('script');
   const [selectedModel, setSelectedModel] = useState<string>('deepseek');
-  const [progress, setProgress] = useState<number>(75); // 进度百分比
+  const [progress, setProgress] = useState<number>(0); // 进度百分比
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [hasVideo, setHasVideo] = useState<boolean>(false); // 默认有视频
   const [userInput, setUserInput] = useState<string>(''); // 用户输入内容
@@ -455,10 +455,24 @@ function ShortplayEntryPage() {
   // 进度条拖拽状态
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
+  // 视频音量
+  const [videoVolume, setVideoVolume] = useState<number>(1);
+
+  // 监听视频音量变化
+  React.useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = videoVolume;
+    }
+  }, [videoVolume]);
+
   // 监听 videoSrc 变化，自动显示视频
   React.useEffect(() => {
     if (videoSrc && videoSrc !== "/32767410413-1-192.mp4") {
       setHasVideo(true);
+      setProgress(0); // 新视频加载时重置进度条
+    } else {
+      setHasVideo(false);
+      setProgress(0); // 没有视频时重置进度条
     }
   }, [videoSrc]);
 
@@ -2442,6 +2456,12 @@ function ShortplayEntryPage() {
             setSceneOptions(sceneOptions);
             setSelectedScene(sceneOptions[0] || '');
             isCurrentSceneIdInitialized.current = false;
+
+            // 设置第一个场景为当前场景
+            const firstScene = scenes[0];
+            if (firstScene?.sceneId) {
+              setCurrentSceneId(firstScene.sceneId);
+            }
           }
         } else {
           console.warn('API返回异常状态码或无数据:', result);
@@ -3433,7 +3453,9 @@ function ShortplayEntryPage() {
                 // 获取下载地址并更新视频源
                 if (result.data?.downloadUrl) {
                   const downloadUrl = result.data.downloadUrl;
+                  console.log('设置videoSrc:', downloadUrl);
                   setVideoSrc(downloadUrl);
+                  setHasVideo(true);
 
                   // 保存完整的返回数据到缓存
                   const newCache = { ...videoCacheMap, [sceneId]: result.data };
@@ -3833,80 +3855,8 @@ function ShortplayEntryPage() {
                           onLoadedMetadata={handleVideoLoaded}
                         />
                       ) : (
-                        <>
-                          {/* 默认雪景背景 */}
-                          <div className="relative w-full h-full">
-                            {/* 雪景背景 - 模拟真实照片效果 */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-blue-100 via-gray-200 to-blue-200">
-                              {/* 背景纹理 */}
-                              <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-gray-300/30"></div>
-
-                              {/* 雪花效果 - 更真实的大小和分布 */}
-                              <div className="absolute inset-0">
-                                {Array.from({ length: 35 }, (_, i) => (
-                                  <div
-                                    key={i}
-                                    className={`absolute bg-white rounded-full opacity-80 ${
-                                      Math.random() > 0.7 ? 'w-1.5 h-1.5' : 'w-1 h-1'
-                                    }`}
-                                    style={{
-                                      left: `${Math.random() * 100}%`,
-                                      top: `${Math.random() * 100}%`,
-                                      boxShadow: '0 0 2px rgba(255,255,255,0.5)'
-                                    }}
-                                  ></div>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* 人物照片模拟 */}
-                            <div className="absolute inset-0">
-                              {/* 男主角 - 前景中心位置 */}
-                              <div className="absolute top-16 left-8 w-32 h-48 rounded-lg overflow-hidden">
-                                <div className="w-full h-full bg-gradient-to-b from-amber-100 via-orange-200 to-amber-300 relative">
-                                  {/* 脸部区域 */}
-                                  <div className="absolute top-4 left-6 w-20 h-24 bg-gradient-to-b from-pink-200 to-orange-200 rounded-lg">
-                                    {/* 眼睛 */}
-                                    <div className="absolute top-6 left-3 w-2 h-1 bg-gray-700 rounded-full"></div>
-                                    <div className="absolute top-6 right-3 w-2 h-1 bg-gray-700 rounded-full"></div>
-                                    {/* 嘴巴 */}
-                                    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-3 h-1 bg-red-300 rounded-full"></div>
-                                  </div>
-                                  {/* 头发 */}
-                                  <div className="absolute top-2 left-4 w-24 h-16 bg-gradient-to-b from-gray-800 to-gray-600 rounded-t-lg"></div>
-                                  {/* 衣服 - 黑色外套 */}
-                                  <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-b from-gray-900 to-black"></div>
-                                </div>
-                              </div>
-
-                              {/* 女主角 - 右侧较远位置 */}
-                              <div className="absolute top-28 right-6 w-24 h-36 rounded-lg overflow-hidden opacity-90">
-                                <div className="w-full h-full bg-gradient-to-b from-pink-100 via-rose-200 to-pink-300 relative">
-                                  {/* 脸部区域 */}
-                                  <div className="absolute top-3 left-3 w-16 h-18 bg-gradient-to-b from-pink-200 to-rose-200 rounded-lg">
-                                    {/* 眼睛 */}
-                                    <div className="absolute top-4 left-2 w-1.5 h-0.5 bg-gray-700 rounded-full"></div>
-                                    <div className="absolute top-4 right-2 w-1.5 h-0.5 bg-gray-700 rounded-full"></div>
-                                  </div>
-                                  {/* 头发 */}
-                                  <div className="absolute top-1 left-2 w-18 h-12 bg-gradient-to-b from-amber-800 to-amber-600 rounded-t-lg"></div>
-                                  {/* 衣服 */}
-                                  <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-b from-gray-700 to-gray-800"></div>
-                                </div>
-                              </div>
-
-                              {/* 景深模糊效果 */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
-                            </div>
-
-                            {/* 字幕区域 */}
-                            <div className="absolute bottom-24 left-6 right-6">
-                              <div className="text-white text-base font-medium text-center leading-relaxed drop-shadow-lg">
-                                她前夫要是看到这个场景
-                              </div>
-                            </div>
-                          </div>
-                        </>
+                        // 默认黑色背景
+                        <div className="w-full h-full bg-black"></div>
                       )}
 
                       {/* 加载中覆盖层 */}
@@ -3936,7 +3886,7 @@ function ShortplayEntryPage() {
 
                       <>
                         {/* 进度条 */}
-                        <div className="absolute bottom-12 left-4 right-4 z-10">
+                        <div className="absolute bottom-16 left-4 right-4 z-10">
                             <div className="flex items-center justify-between text-white text-xs mb-1">
                               <span>{timeDisplay}</span>
                               <span>{totalTimeDisplay}</span>
@@ -3969,6 +3919,23 @@ function ShortplayEntryPage() {
                                 onMouseLeave={handleMouseLeave}
                               ></div>
                             </div>
+                          </div>
+
+                          {/* 音量控制 */}
+                          <div className="absolute bottom-12 left-4 right-4 z-10 flex items-center space-x-2">
+                            <Icon icon="ri:volume-up-line" className="w-4 h-4 text-white flex-shrink-0" />
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
+                              step="0.1"
+                              value={videoVolume}
+                              onChange={(e) => setVideoVolume(parseFloat(e.target.value))}
+                              className="flex-1 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
+                              style={{
+                                background: `linear-gradient(to right, white 0%, white ${videoVolume * 100}%, rgba(255,255,255,0.3) ${videoVolume * 100}%, rgba(255,255,255,0.3) 100%)`
+                              }}
+                            />
                           </div>
 
                           {/* 底部操作栏 */}
@@ -4096,7 +4063,11 @@ function ShortplayEntryPage() {
         closeIcon={null}
         styles={{
           content: {
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
+            boxShadow: 'none'
+          },
+          mask: {
+            backgroundColor: 'rgba(0, 0, 0, 0.45)'
           }
         }}
       >
