@@ -84,7 +84,7 @@ export function SortableStoryboardItem({
       </div>
 
       {/* 图片/视频缩略图 */}
-      <div className="w-12 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden relative group" style={{ aspectRatio: '9 / 16' }}>
+      <div className="w-16 bg-gray-200 flex-shrink-0 overflow-hidden relative group" style={{ aspectRatio: '9 / 16' }}>
         {item.fileUrl ? (
           // 判断是否为视频文件 (.mp4, .webm, .mov, .avi)
           /\.(mp4|webm|mov|avi)$/i.test(item.fileUrl) || /\.(mp4|webm|mov|avi)$/i.test(item.fileName || '') ? (
@@ -118,73 +118,65 @@ export function SortableStoryboardItem({
         {/* 查看按钮 */}
         <button
           onClick={() => onPreview?.(item.fileUrl, item.fileName)}
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-none"
         >
           <Icon icon="ri:eye-line" className="w-5 h-5 text-white" />
         </button>
       </div>
 
-      {/* 内容区域 */}
-      <div className="flex-1 min-w-0 flex space-x-4">
-        {/* 左侧：描述 */}
-        <div className="flex-1 text-sm text-gray-800 leading-relaxed">
-          分镜板 #{index + 1}
-          {item.description && (
-            <div className="text-xs text-gray-600 mt-1">{item.description}</div>
-          )}
+      {/* 内容区域 - 分为上下两行 */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* 上面一行：userPrompt 内容，高度自适应 */}
+        <div className="flex-1 min-w-0 overflow-hidden mb-2">
+          <div className="text-sm text-gray-800 leading-relaxed line-clamp-3">
+            {item.description}
+          </div>
         </div>
-        {/* 右侧：参数和时间 */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div className="text-xs text-gray-500 leading-relaxed">
-            文件ID: {item.fileId}
-            {item.fileName && (
-              <div>文件名: {item.fileName}</div>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            {editingTimeId === item.id ? (
-              <div className="flex items-center space-x-1">
-                <TimeRangeInput
-                  startMinutes={editingStartMinutes}
-                  startSeconds={editingStartSeconds}
-                  endMinutes={editingEndMinutes}
-                  endSeconds={editingEndSeconds}
-                  onStartMinutesChange={onEditingStartMinutesChange}
-                  onStartSecondsChange={onEditingStartSecondsChange}
-                  onEndMinutesChange={onEditingEndMinutesChange}
-                  onEndSecondsChange={onEditingEndSecondsChange}
-                />
-                <button
-                  onClick={() => onSaveTimeEdit(item.id)}
-                  className="text-green-600 hover:text-green-800 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                >
-                  <Icon icon="ri:check-line" className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={onCancelTimeEdit}
-                  className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                >
-                  <Icon icon="ri:close-line" className="w-3 h-3" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-1 text-xs text-gray-400">
-                <span>{formatMillisecondsToTime(item.startTime || 0)}</span>
-                <span>-</span>
-                <span>{formatMillisecondsToTime(item.endTime || 0)}</span>
-                <button
-                  onClick={() => {
-                    const startTime = formatMillisecondsToTime(item.startTime || 0);
-                    const endTime = formatMillisecondsToTime(item.endTime || 0);
-                    onStartEditTime(item.id, `${startTime}-${endTime}`);
-                  }}
-                  className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
-                >
-                  <Icon icon="ri:edit-line" className="w-3 h-3" />
-                </button>
-              </div>
-            )}
-          </div>
+
+        {/* 下面一行：时间信息，固定高度底部布局，居右 */}
+        <div className="h-6 flex items-center justify-end">
+          {editingTimeId === item.id ? (
+            <div className="flex items-center space-x-1">
+              <TimeRangeInput
+                startMinutes={editingStartMinutes}
+                startSeconds={editingStartSeconds}
+                endMinutes={editingEndMinutes}
+                endSeconds={editingEndSeconds}
+                onStartMinutesChange={onEditingStartMinutesChange}
+                onStartSecondsChange={onEditingStartSecondsChange}
+                onEndMinutesChange={onEditingEndMinutesChange}
+                onEndSecondsChange={onEditingEndSecondsChange}
+              />
+              <button
+                onClick={() => onSaveTimeEdit(item.id)}
+                className="text-green-600 hover:text-green-800 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
+              >
+                <Icon icon="ri:check-line" className="w-3 h-3" />
+              </button>
+              <button
+                onClick={onCancelTimeEdit}
+                className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none cursor-pointer"
+              >
+                <Icon icon="ri:close-line" className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-1 text-xs text-gray-400">
+              <span>{formatMillisecondsToTime(item.startTime || 0)}</span>
+              <span>-</span>
+              <span>{formatMillisecondsToTime(item.endTime || 0)}</span>
+              <button
+                onClick={() => {
+                  const startTime = formatMillisecondsToTime(item.startTime || 0);
+                  const endTime = formatMillisecondsToTime(item.endTime || 0);
+                  onStartEditTime(item.id, `${startTime}-${endTime}`);
+                }}
+                className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
+              >
+                <Icon icon="ri:edit-line" className="w-3 h-3" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

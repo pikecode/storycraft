@@ -153,6 +153,16 @@ export const extractFilesFromChatHistory = (
 }> => {
   const allFiles: any[] = [];
 
+  // 查找最近的 USER_QUESTION 记录
+  const getLatestUserQuestion = (upToIndex: number): string => {
+    for (let i = upToIndex; i >= 0; i--) {
+      if (chatHistory[i].type === 'USER_QUESTION' && chatHistory[i].content) {
+        return chatHistory[i].content;
+      }
+    }
+    return `${fileType === 'IMAGE' ? '图片' : '视频'}内容`;
+  };
+
   chatHistory.forEach((item, itemIndex) => {
     if (item.files && item.files.length > 0) {
       item.files.forEach((file: any) => {
@@ -160,7 +170,7 @@ export const extractFilesFromChatHistory = (
           allFiles.push({
             ...file,
             recordIndex: itemIndex,
-            recordContent: item.content || item.message || `${fileType === 'IMAGE' ? '图片' : '视频'}内容`,
+            recordContent: getLatestUserQuestion(itemIndex),
             createTime: item.createTime
           });
         }
@@ -172,7 +182,7 @@ export const extractFilesFromChatHistory = (
         fileName: '生成的图片',
         fileType: 'IMAGE',
         recordIndex: itemIndex,
-        recordContent: item.content || item.message || '图片内容',
+        recordContent: getLatestUserQuestion(itemIndex),
         createTime: item.createTime
       });
     }

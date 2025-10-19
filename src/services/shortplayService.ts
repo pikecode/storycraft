@@ -436,6 +436,9 @@ export const generateVideo = async (data: {
   userMessage: string;
   useImageGeneration: boolean;
   images: string[];
+  resolution: string;           // 分辨率
+  ratio: string;               // 宽高比 (16:9/4:3/1:1/3:4/9:16/21:9/keep_ratio/adaptive)
+  durationMillis: number;      // 持续时间(毫秒，最长90000)
 }) => {
   const response = await fetch(`${STORYAI_API_BASE}/ai/video/generate`, {
     method: 'POST',

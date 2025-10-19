@@ -110,10 +110,15 @@ export interface BottomInputAreaProps {
   onResolutionChange?: (res: string) => void;
   singleGenerate?: boolean;
   onSingleGenerateChange?: (single: boolean) => void;
+  videoModel?: string;
+  onVideoModelChange?: (model: string) => void;
+  uploadedImagesCount?: number;
   onFileUpload?: (file: File) => Promise<any>;
   onMultipleFileUpload?: (files: File[]) => Promise<any>;
   isUploading?: boolean;
   uploadProgress?: { current: number; total: number };
+  uploadedImages?: Array<{fileId: string; fileUrl: string; fileName: string}>;
+  onRemoveImage?: (fileId: string) => void;
 }
 
 // 图片相关类型

@@ -65,7 +65,8 @@ function ShortplayEntryPage() {
   const [style, setStyle] = useState<string>(t('shortplayEntry.image.ancient'));
   const [videoLength, setVideoLength] = useState<string>('2s');
   const [resolution, setResolution] = useState<string>('1080p');
-  const [singleGenerate, setSingleGenerate] = useState<boolean>(false);
+  const [singleGenerate, setSingleGenerate] = useState<string>('5s');
+  const [videoModel, setVideoModel] = useState<string>('doubao-seedance-1.0-lite-text');
 
   // 场次管理状态
   const [seriesId, setSeriesId] = useState<string>(''); // 生成的series ID
@@ -1915,9 +1916,6 @@ function ShortplayEntryPage() {
     const successfulUploads: Array<{fileId: string; fileUrl: string; fileName: string}> = [];
 
     try {
-      console.log('显示开始上传toast');
-      toast(`开始上传 ${files.length} 个文件`, { icon: '📤' });
-
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         console.log(`开始上传第 ${i + 1} 个文件:`, file.name);
@@ -1936,12 +1934,10 @@ function ShortplayEntryPage() {
             });
           }
 
-          toast.success(`${file.name} 上传成功 (${i + 1}/${files.length})`);
           console.log(`文件 ${file.name} 上传成功`, data);
         } catch (error) {
           const errorMessage = (error as Error).message;
           results.push({ file, success: false, error: errorMessage });
-          toast.error(`${file.name} 上传失败: ${errorMessage}`);
           console.log(`文件 ${file.name} 上传失败:`, errorMessage);
         }
       }
@@ -1957,23 +1953,17 @@ function ShortplayEntryPage() {
       const failCount = results.filter(r => !r.success).length;
       console.log('上传结果统计:', { successCount, failCount });
 
-      if (successCount > 0 && failCount === 0) {
-        toast.success(`所有文件上传成功！(${successCount}个)`);
-      } else if (successCount > 0 && failCount > 0) {
-        toast(`部分文件上传成功：${successCount}个成功，${failCount}个失败`, {
-          icon: '⚠️',
-          duration: 4000
-        });
-      } else {
-        toast.error(`所有文件上传失败！(${failCount}个)`);
-      }
-
       return results;
     } finally {
       console.log('重置上传状态');
       setIsUploading(false);
       setUploadProgress({ current: 0, total: 0 });
     }
+  };
+
+  // 移除上传的图片
+  const handleRemoveImage = (fileId: string) => {
+    setUploadedImages(prev => prev.filter(img => img.fileId !== fileId));
   };
 
   // 视频聊天记录数据状态
@@ -2071,12 +2061,14 @@ function ShortplayEntryPage() {
       const token = localStorage.getItem('token');
 
       // 构建请求参数
+      const durationSeconds = parseInt(singleGenerate?.toString().replace('s', '') || '5');
       const requestBody = {
         sceneId: sceneId.toString(),
-        llmName: "", // 固定为空字符串
+        llmName: videoModel,
         userMessage: userInput.trim(),
         useImageGeneration: uploadedImages.length > 0,
-        images: uploadedImages.map(img => img.fileId) // 使用fileId而不是fileUrl
+        images: uploadedImages.map(img => img.fileId), // 使用fileId而不是fileUrl
+        durationMillis: durationSeconds * 1000 // 转换秒为毫秒
       };
 
       console.log('视频生成请求参数:', requestBody);
@@ -3163,6 +3155,8 @@ function ShortplayEntryPage() {
                   onGenerate={
                     activeTab === 'image'
                       ? handleImageGenerate
+                      : activeTab === 'video'
+                      ? handleVideoGenerate
                       : handleGenerate
                   }
                   placeholder={t('shortplayEntry.input.placeholder')}
@@ -3180,10 +3174,15 @@ function ShortplayEntryPage() {
                   onResolutionChange={setResolution}
                   singleGenerate={singleGenerate}
                   onSingleGenerateChange={setSingleGenerate}
+                  videoModel={videoModel}
+                  onVideoModelChange={setVideoModel}
+                  uploadedImagesCount={uploadedImages.length}
                   onFileUpload={handleFileUpload}
                   onMultipleFileUpload={handleMultipleFileUpload}
                   isUploading={isUploading}
                   uploadProgress={uploadProgress}
+                  uploadedImages={uploadedImages}
+                  onRemoveImage={handleRemoveImage}
                 />
               )}
             </div>
@@ -3831,6 +3830,11 @@ function ShortplayEntryPage() {
         centered
         bodyStyle={{ padding: 0 }}
         closeIcon={null}
+        styles={{
+          content: {
+            backgroundColor: 'transparent'
+          }
+        }}
       >
         <div className="flex flex-col items-center justify-center">
           {previewType === 'image' ? (

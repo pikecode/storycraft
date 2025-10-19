@@ -29,15 +29,47 @@ export function BottomInputArea({
   onResolutionChange,
   singleGenerate = false,
   onSingleGenerateChange,
+  videoModel = 'doubao-seedance-1.0-lite-text',
+  onVideoModelChange,
+  uploadedImagesCount = 0,
   onFileUpload,
   onMultipleFileUpload,
   isUploading = false,
-  uploadProgress = { current: 0, total: 0 }
+  uploadProgress = { current: 0, total: 0 },
+  uploadedImages = [],
+  onRemoveImage
 }: BottomInputAreaProps) {
   const { t } = useI18n();
 
   // Use translated placeholder if not provided
   const finalPlaceholder = placeholder || t('shortplayEntry.input.placeholder');
+
+  // 计算可用的视频生成模型
+  const getAvailableVideoModels = () => {
+    const imageCount = uploadedImages?.length || 0;
+    if (imageCount === 0) {
+      // 没有上传图片：只能用 doubao-seedance-1.0-lite-text
+      return [{ value: 'doubao-seedance-1.0-lite-text', label: 'doubao-seedance-1.0-lite-text' }];
+    } else if (imageCount === 1) {
+      // 单张图片：可用 doubao-seedance-1.0-pro 和 doubao-seedance-1.0-lite-image
+      return [
+        { value: 'doubao-seedance-1.0-pro', label: 'doubao-seedance-1.0-pro' },
+        { value: 'doubao-seedance-1.0-lite-image', label: 'doubao-seedance-1.0-lite-image' }
+      ];
+    } else {
+      // 多张图片：只能用 doubao-seedance-1.0-pro
+      return [{ value: 'doubao-seedance-1.0-pro', label: 'doubao-seedance-1.0-pro' }];
+    }
+  };
+
+  const availableVideoModels = getAvailableVideoModels();
+
+  // 当可用模型改变时，如果当前选中的模型不在可用列表中，则自动切换到第一个可用模型
+  React.useEffect(() => {
+    if (activeTab === 'video' && !availableVideoModels.find(m => m.value === videoModel)) {
+      onVideoModelChange?.(availableVideoModels[0].value);
+    }
+  }, [availableVideoModels, videoModel, activeTab, onVideoModelChange]);
 
   return (
     <div className="p-4">
@@ -257,15 +289,18 @@ export function BottomInputArea({
         <>
           <div className="mb-3">
             <div className="flex space-x-2">
-              <div className="relative w-32">
+              {/* 模型选择 */}
+              <div className="relative flex-1 min-w-fit max-w-xs">
                 <select
-                  value={selectedModel}
-                  onChange={(e) => onModelChange(e.target.value)}
+                  value={videoModel || availableVideoModels[0].value}
+                  onChange={(e) => onVideoModelChange?.(e.target.value)}
                   className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
-                  <option value="gemini-2.5pro">Gemini2.5pro</option>
-                  <option value="deepseek-r1">DeepSeek-R1</option>
-                  <option value="gpt-4">GPT-4</option>
+                  {availableVideoModels.map((model) => (
+                    <option key={model.value} value={model.value}>
+                      {model.label}
+                    </option>
+                  ))}
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -274,32 +309,17 @@ export function BottomInputArea({
                 </div>
               </div>
 
-              <div className="relative w-24">
-                <select
-                  value={videoLength}
-                  onChange={(e) => onVideoLengthChange?.(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="2s">{t('shortplayEntry.video.duration2s')}</option>
-                  <option value="5s">{t('shortplayEntry.video.duration5s')}</option>
-                  <option value="10s">{t('shortplayEntry.video.duration10s')}</option>
-                </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="relative w-24">
+              {/* 分辨率 */}
+              <div className="relative w-28">
                 <select
                   value={resolution}
                   onChange={(e) => onResolutionChange?.(e.target.value)}
                   className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
-                  <option value="1080p">{t('shortplayEntry.video.resolution1080p')}</option>
-                  <option value="720p">{t('shortplayEntry.video.resolution720p')}</option>
-                  <option value="4K">{t('shortplayEntry.video.resolution4k')}</option>
+                  <option value="720p">720p</option>
+                  <option value="1080p">1080p</option>
+                  <option value="2k">2k</option>
+                  <option value="4k">4k</option>
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -308,14 +328,56 @@ export function BottomInputArea({
                 </div>
               </div>
 
-              <div className="relative w-24">
+              {/* 宽高比 */}
+              <div className="relative w-28">
                 <select
-                  value={singleGenerate ? "single" : "batch"}
-                  onChange={(e) => onSingleGenerateChange?.(e.target.value === "single")}
+                  value={videoLength}
+                  onChange={(e) => onVideoLengthChange?.(e.target.value)}
                   className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
-                  <option value="batch">{t('shortplayEntry.video.batchMode')}</option>
-                  <option value="single">{t('shortplayEntry.video.singleMode')}</option>
+                  <option value="16:9">16:9</option>
+                  <option value="4:3">4:3</option>
+                  <option value="1:1">1:1</option>
+                  <option value="3:4">3:4</option>
+                  <option value="9:16">9:16</option>
+                  <option value="21:9">21:9</option>
+                  <option value="keep_ratio">保持比例</option>
+                  <option value="adaptive">自适应</option>
+                </select>
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* 持续时间（秒）*/}
+              <div className="relative w-24">
+                <select
+                  value={singleGenerate || '5s'}
+                  onChange={(e) => onSingleGenerateChange?.(e.target.value)}
+                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
+                >
+                  <option value="1s">1s</option>
+                  <option value="2s">2s</option>
+                  <option value="3s">3s</option>
+                  <option value="4s">4s</option>
+                  <option value="5s">5s</option>
+                  <option value="6s">6s</option>
+                  <option value="7s">7s</option>
+                  <option value="8s">8s</option>
+                  <option value="9s">9s</option>
+                  <option value="10s">10s</option>
+                  <option value="11s">11s</option>
+                  <option value="12s">12s</option>
+                  <option value="13s">13s</option>
+                  <option value="14s">14s</option>
+                  <option value="15s">15s</option>
+                  <option value="16s">16s</option>
+                  <option value="17s">17s</option>
+                  <option value="18s">18s</option>
+                  <option value="19s">19s</option>
+                  <option value="20s">20s</option>
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -410,6 +472,32 @@ export function BottomInputArea({
               {isGenerating ? t('shortplayEntry.generation.generating') : t('shortplayEntry.generation.oneClickGenerate')}
             </button>
           </div>
+
+          {/* 上传图片预览 */}
+          {uploadedImages && uploadedImages.length > 0 && (
+            <div className="mt-3 p-2 bg-gray-50 rounded-lg">
+              <div className="text-xs text-gray-600 mb-2">已上传 {uploadedImages.length} 张图片</div>
+              <div className="flex flex-wrap gap-2">
+                {uploadedImages.map((image) => (
+                  <div key={image.fileId} className="relative group">
+                    <img
+                      src={image.fileUrl}
+                      alt={image.fileName}
+                      className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                      title={image.fileName}
+                    />
+                    <button
+                      onClick={() => onRemoveImage?.(image.fileId)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                      title="移除"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
