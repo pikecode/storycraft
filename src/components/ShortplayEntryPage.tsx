@@ -71,11 +71,15 @@ function ShortplayEntryPage() {
   // 场次管理状态
   const [seriesId, setSeriesId] = useState<string>(''); // 生成的series ID
   const [selectedScene, setSelectedScene] = useState<string>('');
+  const [currentSceneId, setCurrentSceneId] = useState<string | number>(''); // 中间区域头部下拉选择的场景 ID
   const [sceneOptions, setSceneOptions] = useState<string[]>([]);
   const [scenesData, setScenesData] = useState<any[]>([]); // 存储完整的场次数据
   const [sceneContent, setSceneContent] = useState<any[]>([]); // 存储当前场次的内容数据
   const [showTypeSelector, setShowTypeSelector] = useState(false); // 显示类型选择弹窗
   const [popoverPosition, setPopoverPosition] = useState<{ top: number; left: number } | null>(null);
+
+  // 视频缓存：存储每个场景的视频 URL (sceneId -> videoUrl)
+  const [videoCacheMap, setVideoCacheMap] = useState<Record<string, string>>({});
 
   // 剧本卡片数据状态
   const [scriptCards, setScriptCards] = useState<ScriptCardProps[]>([]);
@@ -119,7 +123,39 @@ function ShortplayEntryPage() {
   const [bgmVolume, setBgmVolume] = useState<number>(10);
   const audioRefMap = useRef<Record<string, HTMLAudioElement>>({});
 
+  // 标记是否已经初始化过 currentSceneId（用于避免重复设置）
+  const isCurrentSceneIdInitialized = useRef<boolean>(false);
+
   // 监听音量变化，更新所有 audio 元素
+  // 初始化：从 localStorage 加载视频缓存
+  React.useEffect(() => {
+    const savedCache = localStorage.getItem('videoCacheMap');
+    if (savedCache) {
+      try {
+        const cache = JSON.parse(savedCache);
+        setVideoCacheMap(cache);
+      } catch (error) {
+        console.error('Failed to load video cache:', error);
+      }
+    }
+  }, []);
+
+  // 当场景切换时，检查是否有缓存的视频
+  React.useEffect(() => {
+    if (currentSceneId) {
+      const cachedData = videoCacheMap[currentSceneId];
+      if (cachedData) {
+        // 从缓存数据中提取 downloadUrl
+        const downloadUrl = typeof cachedData === 'string' ? cachedData : cachedData.downloadUrl;
+        setVideoSrc(downloadUrl);
+        console.log(`Loaded cached video for scene ${currentSceneId}:`, downloadUrl);
+      } else {
+        // 没有缓存，使用默认视频
+        setVideoSrc("/32767410413-1-192.mp4");
+      }
+    }
+  }, [currentSceneId, videoCacheMap]);
+
   React.useEffect(() => {
     Object.values(audioRefMap.current).forEach((audio) => {
       if (audio) {
@@ -400,13 +436,22 @@ function ShortplayEntryPage() {
   // 视频数据状态 (使用与图片相同的数据结构)
   const [videoItems, setVideoItems] = useState([]);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const videoSrc = "/32767410413-1-192.mp4"; // 视频文件路径
+  const [videoSrc, setVideoSrc] = useState<string>("/32767410413-1-192.mp4"); // 视频文件路径
+  const [isLoadingPreviewVideo, setIsLoadingPreviewVideo] = useState<boolean>(false); // 视频预览加载状态
+  const [highlightedItemId, setHighlightedItemId] = useState<string | number | null>(null); // 当前高亮的列表项 ID
 
   // 用于跟踪上一次的audioType值
   const prevAudioTypeRef = useRef<'voice' | 'sound'>(audioType);
 
   // 进度条拖拽状态
   const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  // 监听 videoSrc 变化，自动显示视频
+  React.useEffect(() => {
+    if (videoSrc && videoSrc !== "/32767410413-1-192.mp4") {
+      setHasVideo(true);
+    }
+  }, [videoSrc]);
 
   // 拖拽传感器配置
   const sensors = useSensors(
@@ -1284,6 +1329,41 @@ function ShortplayEntryPage() {
   const handleMouseLeave = () => {
     setIsDragging(false);
   };
+
+  // 全局鼠标事件监听，支持拖动超出元素范围
+  React.useEffect(() => {
+    if (!isDragging) return;
+
+    const handleGlobalMouseMove = (event: MouseEvent) => {
+      // 查找进度条容器
+      const progressBars = document.querySelectorAll('[data-progress-bar]');
+      if (progressBars.length === 0) return;
+
+      const progressBar = progressBars[0] as HTMLDivElement;
+      const rect = progressBar.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const newProgress = (clickX / rect.width) * 100;
+      setProgress(Math.max(0, Math.min(100, newProgress)));
+
+      // 同步视频时间
+      if (videoRef.current && videoRef.current.duration) {
+        const newTime = (newProgress / 100) * videoRef.current.duration;
+        videoRef.current.currentTime = newTime;
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleGlobalMouseMove);
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging]);
 
   // 视频控制函数
   const togglePlay = () => {
@@ -2354,10 +2434,8 @@ function ShortplayEntryPage() {
             const sceneOptions = scenes.map((scene: any) => scene.sceneName);
             setSceneOptions(sceneOptions);
             setSelectedScene(sceneOptions[0] || '');
-            // 自动加载第一个场次的内容
-            if (scenes[0]?.sceneId) {
-              loadSceneContent(scenes[0].sceneId);
-            }
+            // 重置初始化标志，使得新的场景列表会触发 currentSceneId 的初始化
+            isCurrentSceneIdInitialized.current = false;
           }
         }
       }
@@ -2372,6 +2450,21 @@ function ShortplayEntryPage() {
   React.useEffect(() => {
     loadUserData();
   }, []);
+
+  // 当 scenesData 有数据但 currentSceneId 还未初始化时，初始化为第一个场景
+  React.useEffect(() => {
+    if (scenesData.length > 0 && !isCurrentSceneIdInitialized.current) {
+      setCurrentSceneId(scenesData[0].sceneId);
+      isCurrentSceneIdInitialized.current = true;
+    }
+  }, [scenesData]);
+
+  // 当 currentSceneId 改变时，加载该场景的内容
+  React.useEffect(() => {
+    if (currentSceneId && (activeTab === 'script' || activeTab === 'audio' || activeTab === 'image' || activeTab === 'video')) {
+      loadSceneContent(currentSceneId as number);
+    }
+  }, [currentSceneId, activeTab]);
 
   // Tab切换时加载数据
   React.useEffect(() => {
@@ -2409,7 +2502,7 @@ function ShortplayEntryPage() {
     if (activeTab === 'audio') {
       if (audioType === 'voice') {
         loadAllVoices();
-        setSelectedModel('minimaxi');
+        setSelectedModel('minmax');
       } else {
         loadBgmList();
         setSelectedModel('video');
@@ -2575,11 +2668,9 @@ function ShortplayEntryPage() {
           if (detailResult.code === 0 && detailResult.data) {
             const { generationStatus: status, seriesContent, scenes, seriesId: returnedSeriesId } = detailResult.data;
 
-            // 如果有seriesId则设置，否则mock值为9
+            // 设置seriesId
             if (returnedSeriesId) {
               setSeriesId(returnedSeriesId);
-            } else {
-              setSeriesId('9');
             }
 
             if (status === 'COMPLETED') {
@@ -2593,10 +2684,8 @@ function ShortplayEntryPage() {
                 const sceneOptions = scenes.map((scene: any) => scene.sceneName);
                 setSceneOptions(sceneOptions);
                 setSelectedScene(sceneOptions[0] || '');
-                // 自动加载第一个场次的内容
-                if (scenes[0]?.sceneId) {
-                  loadSceneContent(scenes[0].sceneId);
-                }
+                // 重置初始化标志，使得新的场景列表会触发 currentSceneId 的初始化
+                isCurrentSceneIdInitialized.current = false;
               }
 
               setUserInput(''); // 清空输入
@@ -3212,6 +3301,7 @@ function ShortplayEntryPage() {
               setSelectedScene(value);
               const selectedSceneData = scenesData.find((scene: any) => scene.sceneName === value);
               if (selectedSceneData?.sceneId) {
+                setCurrentSceneId(selectedSceneData.sceneId);
                 loadSceneContent(selectedSceneData.sceneId);
                 if (activeTab === 'image') {
                   loadImageChatHistory();
@@ -3238,7 +3328,54 @@ function ShortplayEntryPage() {
             onAddClick={
               activeTab === 'script' || activeTab === 'audio' ? handleStartAddNewItem : undefined
             }
-            onApplyClick={() => {}}
+            onApplyClick={async () => {
+              try {
+                // 使用中间区域头部下拉选择的 sceneId
+                const sceneId = currentSceneId;
+
+                if (!sceneId && sceneId !== 0) {
+                  toast.error('请先选择场次');
+                  return;
+                }
+
+                setIsLoadingPreviewVideo(true);
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${STORYAI_API_BASE}/multimedia/video/preview?sceneId=${sceneId}`, {
+                  method: 'POST',
+                  headers: {
+                    'X-Prompt-Manager-Token': token || '',
+                  }
+                });
+
+                if (!response.ok) {
+                  throw new Error(`请求失败: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('视频预览请求成功:', result);
+
+                // 获取下载地址并更新视频源
+                if (result.data?.downloadUrl) {
+                  const downloadUrl = result.data.downloadUrl;
+                  setVideoSrc(downloadUrl);
+
+                  // 保存完整的返回数据到缓存
+                  const newCache = { ...videoCacheMap, [sceneId]: result.data };
+                  setVideoCacheMap(newCache);
+                  localStorage.setItem('videoCacheMap', JSON.stringify(newCache));
+                  console.log(`Saved video data to cache for scene ${sceneId}:`, result.data);
+
+                  toast.success('视频预览已加载');
+                } else {
+                  throw new Error('返回数据中缺少downloadUrl');
+                }
+              } catch (error) {
+                console.error('视频预览请求失败:', error);
+                toast.error('视频预览失败：' + (error as Error).message);
+              } finally {
+                setIsLoadingPreviewVideo(false);
+              }
+            }}
           />
 
           {/* 剧本内容区域 */}
@@ -3279,6 +3416,7 @@ function ShortplayEntryPage() {
                         onCancelEditSceneItem={handleCancelEditSceneItem}
                         onShowDeleteConfirm={handleShowDeleteConfirm}
                         TimeRangeInput={TimeRangeInput}
+                        isHighlighted={highlightedItemId === item.id}
                       />
                     ))}
                   </div>
@@ -3437,6 +3575,7 @@ function ShortplayEntryPage() {
                             setEditingSceneContent('');
                             setEditingSceneRoleName('');
                           }}
+                          isHighlighted={highlightedItemId === item.id}
                           editingTimeId={bgmEditingTimeId}
                           editingStartMinutes={bgmEditingStartMinutes}
                           editingStartSeconds={bgmEditingStartSeconds}
@@ -3477,6 +3616,7 @@ function ShortplayEntryPage() {
                 onDragEnd={handleStoryboardDragEnd}
                 onDeleteItem={handleShowDeleteStoryboardConfirm}
                 TimeRangeInput={TimeRangeInput}
+                highlightedItemId={highlightedItemId}
                 onPreview={(fileUrl, fileName) => {
                   setPreviewUrl(fileUrl);
                   setPreviewFileName(fileName);
@@ -3508,6 +3648,7 @@ function ShortplayEntryPage() {
                 onDragEnd={handleStoryboardDragEnd}
                 onDeleteItem={handleShowDeleteStoryboardConfirm}
                 TimeRangeInput={TimeRangeInput}
+                highlightedItemId={highlightedItemId}
                 onPreview={(fileUrl, fileName) => {
                   setPreviewUrl(fileUrl);
                   setPreviewFileName(fileName);
@@ -3574,6 +3715,43 @@ function ShortplayEntryPage() {
                             const video = e.currentTarget;
                             if (video.duration && !isDragging) {
                               setProgress((video.currentTime / video.duration) * 100);
+
+                              // 根据当前播放时间高亮对应的列表项
+                              const currentTimeMs = video.currentTime * 1000;
+                              let itemToHighlight = null;
+
+                              // 辅助函数：处理时间格式并进行比较
+                              const isTimeInRange = (item: any): boolean => {
+                                let startTime = item.startTime || 0;
+                                let endTime = item.endTime || 0;
+
+                                // 如果时间小于 1000，可能是秒，转换为毫秒
+                                if (startTime > 0 && startTime < 1000) {
+                                  startTime = startTime * 1000;
+                                }
+                                if (endTime > 0 && endTime < 1000) {
+                                  endTime = endTime * 1000;
+                                }
+
+                                return currentTimeMs >= startTime && currentTimeMs < endTime;
+                              };
+
+                              // 根据当前 tab 查找对应的列表
+                              if (activeTab === 'script' && sceneContent && sceneContent.length > 0) {
+                                // 在脚本列表中查找对应的项
+                                itemToHighlight = sceneContent.find((item: any) => isTimeInRange(item));
+                              } else if (activeTab === 'audio' && sceneContent && sceneContent.length > 0) {
+                                // 在音频列表中查找对应的项
+                                itemToHighlight = sceneContent.find((item: any) => isTimeInRange(item));
+                              } else if (activeTab === 'image' && storyboardItems && storyboardItems.length > 0) {
+                                // 在图片列表中查找对应的项
+                                itemToHighlight = storyboardItems.find((item: any) => isTimeInRange(item));
+                              } else if (activeTab === 'video' && storyboardItems && storyboardItems.length > 0) {
+                                // 在分镜板列表中查找对应的项
+                                itemToHighlight = storyboardItems.find((item: any) => isTimeInRange(item));
+                              }
+
+                              setHighlightedItemId(itemToHighlight?.id || null);
                             }
                           }}
                           onLoadedMetadata={handleVideoLoaded}
@@ -3655,6 +3833,15 @@ function ShortplayEntryPage() {
                         </>
                       )}
 
+                      {/* 加载中覆盖层 */}
+                      {isLoadingPreviewVideo && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
+                          <div className="flex flex-col items-center">
+                            <Icon icon="ri:loader-4-line" className="w-8 h-8 text-white animate-spin mb-2" />
+                            <div className="text-white text-sm">生成中...</div>
+                          </div>
+                        </div>
+                      )}
 
                       {/* 播放控制按钮 */}
                       {hasVideo && (
@@ -3680,6 +3867,7 @@ function ShortplayEntryPage() {
                             </div>
                             <div className="relative">
                               <div
+                                data-progress-bar
                                 className="w-full h-1 bg-white/30 rounded-full cursor-pointer select-none"
                                 onMouseDown={handleMouseDown}
                                 onMouseMove={handleMouseMove}

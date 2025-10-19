@@ -32,7 +32,8 @@ export function SortableAudioItem({
   onEditingEndSecondsChange,
   onStartEditTime,
   onSaveTimeEdit,
-  onCancelTimeEdit
+  onCancelTimeEdit,
+  isHighlighted
 }: SortableAudioItemProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [displaySpeaker, setDisplaySpeaker] = useState<string>(item.speaker);
@@ -74,8 +75,10 @@ export function SortableAudioItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white rounded-lg border border-gray-200 px-3 py-2 transition-all ${
+      className={`bg-white rounded-lg border px-3 py-2 transition-all ${
         isDragging ? 'shadow-lg z-10' : ''
+      } ${
+        isHighlighted ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-gray-200'
       }`}
       {...attributes}
     >

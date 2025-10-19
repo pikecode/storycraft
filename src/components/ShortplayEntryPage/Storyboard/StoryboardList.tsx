@@ -25,6 +25,7 @@ export function StoryboardList({
   onDeleteItem,
   TimeRangeInput,
   onPreview,
+  highlightedItemId,
 }: StoryboardListProps) {
   return (
     <DndContext
@@ -63,6 +64,7 @@ export function StoryboardList({
                 onDeleteItem={onDeleteItem}
                 TimeRangeInput={TimeRangeInput}
                 onPreview={onPreview}
+                isHighlighted={highlightedItemId === item.id}
               />
             ))
           ) : null}

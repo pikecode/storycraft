@@ -147,7 +147,7 @@ export function BottomInputArea({
                   className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
                   {audioType === 'voice' ? (
-                    <option value="minimaxi">minimaxi</option>
+                    <option value="minmax">minmax</option>
                   ) : (
                     <option value="video">video</option>
                   )}

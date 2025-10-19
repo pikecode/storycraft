@@ -38,6 +38,7 @@ export interface SortableAudioItemProps {
   onStartEditTime?: (itemId: string, timeRange: string) => void;
   onSaveTimeEdit?: (itemId: string) => void;
   onCancelTimeEdit?: () => void;
+  isHighlighted?: boolean;
 }
 
 // 剧本相关类型
@@ -81,6 +82,7 @@ export interface SortableScriptItemProps {
   onCancelEditSceneItem: () => void;
   onShowDeleteConfirm: (id: number) => void;
   TimeRangeInput: React.ComponentType<any>;
+  isHighlighted?: boolean;
 }
 
 // 底部输入区域类型
@@ -230,6 +232,7 @@ export interface SortableStoryboardItemProps {
   onDeleteItem: (itemId: string) => void;
   TimeRangeInput: React.ComponentType<any>;
   onPreview?: (fileUrl: string, fileName?: string) => void;
+  isHighlighted?: boolean;
 }
 
 export interface StoryboardListProps {
@@ -252,6 +255,7 @@ export interface StoryboardListProps {
   onDeleteItem: (itemId: string) => void;
   TimeRangeInput: React.ComponentType<any>;
   onPreview?: (fileUrl: string, fileName?: string) => void;
+  highlightedItemId?: string | number | null;
 }
 
 // 通用组件类型

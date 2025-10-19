@@ -27,6 +27,7 @@ export function SortableScriptItem({
   onCancelEditSceneItem,
   onShowDeleteConfirm,
   TimeRangeInput,
+  isHighlighted,
 }: SortableScriptItemProps) {
   const {
     attributes,
@@ -57,6 +58,8 @@ export function SortableScriptItem({
       {...attributes}
       className={`p-3 transition-all ${
         isDragging ? 'shadow-lg z-10' : ''
+      } ${
+        isHighlighted ? 'bg-blue-50 border-l-4 border-blue-500' : ''
       }`}
     >
       {editingSceneItemId === item.id ? (

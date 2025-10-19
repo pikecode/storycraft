@@ -52,8 +52,12 @@ export function SortableStoryboardItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`bg-white rounded-lg border border-gray-200 p-3 flex items-stretch space-x-3 min-h-[100px] transition-all ${
+      className={`bg-white rounded-lg border p-3 flex items-stretch space-x-3 min-h-[100px] transition-all ${
         isDragging ? 'shadow-lg z-10' : ''
+      } ${
+        isHighlighted
+          ? 'border-blue-500 bg-blue-50 shadow-md'
+          : 'border-gray-200'
       }`}
     >
       {/* 序号和操作按钮列 */}
