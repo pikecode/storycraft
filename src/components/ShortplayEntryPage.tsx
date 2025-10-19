@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { Button, Select, Segmented, Modal } from 'antd';
 import toast from 'react-hot-toast';
@@ -48,6 +49,14 @@ const { Option } = Select;
 
 function ShortplayEntryPage() {
   const { t } = useI18n();
+  const location = useLocation();
+
+  // 从URL的search部分提取seriesId参数
+  const urlSeriesId = React.useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('seriesId');
+  }, [location.search]);
+
   const [activeTab, setActiveTab] = useState<string>('script');
   const [selectedModel, setSelectedModel] = useState<string>('deepseek');
   const [progress, setProgress] = useState<number>(75); // 进度百分比
@@ -2389,6 +2398,64 @@ function ShortplayEntryPage() {
   // 用户数据加载状态
   const [isLoadingUserData, setIsLoadingUserData] = useState<boolean>(false);
 
+  // 根据URL中的seriesId加载数据
+  const loadSeriesBySeriesId = async (targetSeriesId: string) => {
+    if (isLoadingUserData) return;
+    setIsLoadingUserData(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const url = `${STORYAI_API_BASE}/series/detail?seriesId=${targetSeriesId}`;
+      console.log('加载series数据，URL:', url);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'X-Prompt-Manager-Token': token || '',
+        }
+      });
+
+      console.log('API响应状态:', response.status);
+      if (response.ok) {
+        const result = await response.json();
+        console.log('API返回数据:', result);
+
+        if (result.code === 0 && result.data) {
+          const { seriesContent, scenes, seriesId: returnedSeriesId } = result.data;
+
+          // 设置seriesId
+          if (returnedSeriesId) {
+            setSeriesId(returnedSeriesId);
+          } else {
+            setSeriesId(targetSeriesId);
+          }
+
+          // 设置历史内容
+          if (seriesContent) {
+            setGeneratedContent(seriesContent);
+          }
+
+          // 设置场景数据
+          if (scenes && scenes.length > 0) {
+            setScenesData(scenes);
+            const sceneOptions = scenes.map((scene: any) => scene.sceneName);
+            setSceneOptions(sceneOptions);
+            setSelectedScene(sceneOptions[0] || '');
+            isCurrentSceneIdInitialized.current = false;
+          }
+        } else {
+          console.warn('API返回异常状态码或无数据:', result);
+        }
+      } else {
+        console.error('API请求失败，状态码:', response.status);
+      }
+    } catch (error) {
+      console.error('加载series数据失败:', error);
+    } finally {
+      setIsLoadingUserData(false);
+    }
+  };
+
   // 获取用户历史数据
   const loadUserData = async () => {
     // 防止重复调用
@@ -2446,10 +2513,19 @@ function ShortplayEntryPage() {
     }
   };
 
-  // 组件加载时获取用户历史数据
+  // 组件加载时，根据URL参数决定加载哪个数据源
   React.useEffect(() => {
-    loadUserData();
-  }, []);
+    console.log('URLseriesId:', urlSeriesId);
+    if (urlSeriesId) {
+      // 如果URL中有seriesId参数，加载指定的series数据
+      console.log('从URL参数加载seriesId:', urlSeriesId);
+      loadSeriesBySeriesId(urlSeriesId);
+    } else {
+      // 否则加载用户的历史数据
+      console.log('加载用户历史数据');
+      loadUserData();
+    }
+  }, [urlSeriesId]);
 
   // 当 scenesData 有数据但 currentSceneId 还未初始化时，初始化为第一个场景
   React.useEffect(() => {
