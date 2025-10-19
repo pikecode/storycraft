@@ -115,7 +115,17 @@ function ShortplayEntryPage() {
 
   // 音效播放进度状态
   const [playingBgmId, setPlayingBgmId] = useState<string | null>(null);
-  const [bgmProgress, setBgmProgress] = useState<number>(0);
+  const [bgmVolume, setBgmVolume] = useState<number>(10);
+  const audioRefMap = useRef<Record<string, HTMLAudioElement>>({});
+
+  // 监听音量变化，更新所有 audio 元素
+  React.useEffect(() => {
+    Object.values(audioRefMap.current).forEach((audio) => {
+      if (audio) {
+        audio.volume = bgmVolume / 10;
+      }
+    });
+  }, [bgmVolume]);
 
   // 图片聊天记录数据状态
   const [imageChatHistory, setImageChatHistory] = useState<any[]>([]);
@@ -2772,44 +2782,11 @@ function ShortplayEntryPage() {
                                     <Icon icon="ri:check-line" className="w-3 h-3" />
                                     <span>应用</span>
                                   </button>
-                                  <button
-                                    className="px-1 py-0.5 text-sm rounded flex items-center space-x-1"
-                                    style={{ color: '#3E83F6', borderColor: '#3E83F6', borderWidth: '1px' }}
-                                    onClick={() => {
-                                      if (bgm.audioUrl) {
-                                        const audio = new Audio(bgm.audioUrl);
-                                        setPlayingBgmId(bgm.id);
-                                        setBgmProgress(0);
-
-                                        // 更新进度条
-                                        const updateProgress = () => {
-                                          if (audio.duration) {
-                                            const progress = (audio.currentTime / audio.duration) * 100;
-                                            setBgmProgress(progress);
-                                          }
-                                        };
-
-                                        audio.addEventListener('timeupdate', updateProgress);
-                                        audio.addEventListener('ended', () => {
-                                          setPlayingBgmId(null);
-                                          setBgmProgress(0);
-                                          audio.removeEventListener('timeupdate', updateProgress);
-                                        });
-
-                                        audio.play();
-                                      } else {
-                                        toast.error('音效文件缺少播放地址');
-                                      }
-                                    }}
-                                  >
-                                    <Icon icon="ri:play-circle-line" className="w-3 h-3" />
-                                    <span>播放</span>
-                                  </button>
                                 </div>
                                 {bgm.description && (
                                   <div className="text-xs text-gray-500 pl-11">{bgm.description}</div>
                                 )}
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-2 pl-11">
                                     <span className="text-sm text-gray-600">播放位置</span>
                                     {bgmLibraryEditingId === bgm.id ? (
                                       <div className="flex items-center space-x-1">
@@ -2840,8 +2817,8 @@ function ShortplayEntryPage() {
                                         </button>
                                       </div>
                                     ) : (
-                                      <div className="flex items-center space-x-1 text-xs text-gray-400">
-                                        <span>{bgmLibraryDisplayTime}</span>
+                                      <div className="flex items-center space-x-1">
+                                        <span style={{ color: '#000', fontSize: '14px' }}>{bgmLibraryDisplayTime}</span>
                                         <button
                                           onClick={() => setBgmLibraryEditingId(bgm.id)}
                                           className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
@@ -2850,19 +2827,45 @@ function ShortplayEntryPage() {
                                         </button>
                                       </div>
                                     )}
-                                    <div className="w-20 relative h-1 bg-gray-300 rounded-full overflow-hidden">
-                                      <div
-                                        className="absolute h-full bg-gray-600 rounded-full transition-all"
-                                        style={{ width: playingBgmId === bgm.id ? `${bgmProgress}%` : '0%' }}
-                                      ></div>
-                                    </div>
-                                    <button className="px-1.5 py-0.5 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100">
-                                      <Icon icon="ri:volume-mute-line" className="w-3 h-3" />
-                                    </button>
-                                    <span className="text-xs text-blue-500">10</span>
-                                    <button className="px-1.5 py-0.5 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100">
-                                      <Icon icon="ri:arrow-down-s-line" className="w-3 h-3" />
-                                    </button>
+                                </div>
+                                {/* 自定义进度条 + audio 元素 */}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', paddingLeft: '44px' }}>
+                                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    {/* 播放控制 */}
+                                    <audio
+                                      key={bgm.id}
+                                      ref={(el) => {
+                                        if (el) {
+                                          audioRefMap.current[bgm.id || ''] = el;
+                                          el.volume = bgmVolume / 10;
+                                        }
+                                      }}
+                                      onPlay={() => setPlayingBgmId(bgm.id)}
+                                      onPause={() => setPlayingBgmId(null)}
+                                      onEnded={() => setPlayingBgmId(null)}
+                                      src={bgm.audioUrl}
+                                      style={{
+                                        width: '100%',
+                                        height: '28px'
+                                      }}
+                                      controls
+                                    />
+                                  </div>
+                                  <div className="relative inline-flex items-center border border-blue-500 rounded-lg text-blue-500 appearance-none flex-shrink-0" style={{ padding: '0 4px', height: '28px', display: 'none' }}>
+                                    <Icon icon="ri:volume-up-line" className="w-4 h-4" />
+                                    <select
+                                      value={bgmVolume}
+                                      onChange={(e) => setBgmVolume(parseInt(e.target.value))}
+                                      className="text-sm font-medium bg-transparent border-0 focus:outline-none cursor-pointer text-blue-500 appearance-none ml-1 pr-5"
+                                    >
+                                      {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                                        <option key={num} value={num} className="text-black">
+                                          {num}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <Icon icon="ri:arrow-down-s-line" className="w-4 h-4 absolute pointer-events-none" style={{ right: '2px' }} />
+                                  </div>
                                 </div>
                               </div>
                             ))
