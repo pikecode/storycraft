@@ -15,6 +15,7 @@ export interface SortableAudioItemProps {
   configuredVoices: any[];
   onVoiceSelect?: (itemId: string, voiceId: string) => void;
   onPlayAudio?: (itemId: string) => void;
+  onShowDeleteConfirm?: (itemId: number) => void;
   // 内容编辑相关
   editingItemId?: string | number | null;
   editingContent?: string;

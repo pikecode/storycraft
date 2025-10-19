@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Icon } from '@iconify/react';
+import { Tooltip } from 'antd';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SortableAudioItemProps } from '../types';
@@ -11,6 +12,7 @@ export function SortableAudioItem({
   configuredVoices,
   onVoiceSelect,
   onPlayAudio,
+  onShowDeleteConfirm,
   editingItemId,
   editingContent,
   editingRoleName,
@@ -33,6 +35,10 @@ export function SortableAudioItem({
   onCancelTimeEdit
 }: SortableAudioItemProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [displaySpeaker, setDisplaySpeaker] = useState<string>(item.speaker);
+  const [showContentTooltip, setShowContentTooltip] = useState(false);
+  const editSelectRef = useRef<HTMLSelectElement>(null);
+  const displaySelectRef = useRef<HTMLSelectElement>(null);
   const {
     attributes,
     listeners,
@@ -41,6 +47,11 @@ export function SortableAudioItem({
     transition,
     isDragging,
   } = useSortable({ id: item.id });
+
+  // 当 item.speaker 改变时，更新显示的角色名称
+  React.useEffect(() => {
+    setDisplaySpeaker(item.speaker);
+  }, [item.speaker]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -73,20 +84,45 @@ export function SortableAudioItem({
         <div className="space-y-2">
           {/* 音色选择和时间在一行 */}
           <div className="flex items-center space-x-2">
+            {item.type === 'voice' && (
+              <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
+                <img src="/img/avatar.png" alt="角色" className="w-full h-full object-cover" />
+              </div>
+            )}
             {audioType === 'voice' ? (
-              <select
-                className="text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:border-blue-500"
-                value={editingRoleName || ''}
-                onChange={(e) => onEditingRoleNameChange?.(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <option value="">选择音色</option>
-                {configuredVoices.map((voice) => (
-                  <option key={voice.voiceId} value={voice.voiceId}>
-                    {voice.voiceName}
-                  </option>
-                ))}
-              </select>
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <select
+                  ref={editSelectRef}
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: '24px',
+                    height: '24px',
+                    opacity: 0,
+                    cursor: 'pointer',
+                    zIndex: 10
+                  }}
+                  value={editingRoleName || ''}
+                  onChange={(e) => {
+                    const voiceId = e.target.value;
+                    const selectedVoice = configuredVoices.find(v => v.voiceId === voiceId);
+                    onEditingRoleNameChange?.(selectedVoice?.voiceName || voiceId);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {configuredVoices.map((voice) => (
+                    <option key={voice.voiceId} value={voice.voiceId}>
+                      {voice.voiceName}
+                    </option>
+                  ))}
+                </select>
+                <Icon
+                  icon="ri:arrow-down-s-line"
+                  className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
+                  style={{ pointerEvents: 'none' }}
+                />
+              </div>
             ) : (
               <div></div>
             )}
@@ -129,47 +165,97 @@ export function SortableAudioItem({
         </div>
       ) : (
         // 显示模式
-        <div className="flex items-center space-x-3 cursor-move"
+        <div className="flex items-center justify-between"
           onDoubleClick={() => onStartEditContent?.(item.id, item.content, item.speaker)}
         >
-        <div className="flex items-center space-x-2">
-          <div {...listeners}>
-            <Icon icon="ri:drag-move-line" className="w-4 h-4 text-gray-400 cursor-grab" />
-          </div>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            item.type === 'sound' ? 'bg-blue-500' : 'bg-gray-100'
-          }`}>
-            <Icon
-              icon={item.icon}
-              className={`w-4 h-4 ${item.type === 'sound' ? 'text-white' : 'text-gray-600'}`}
-            />
-          </div>
+        <div className="flex items-center space-x-2 flex-shrink-0">
+          {item.type === 'voice' ? (
+            <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+              <img src="/img/avatar.png" alt="角色" className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-500">
+              <Icon
+                icon={item.icon}
+                className="w-4 h-4 text-white"
+              />
+            </div>
+          )}
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium" style={{ color: item.itemType === 1 ? '#3E83F6' : '#1F2937' }}>
-            {item.speaker}
-          </span>
+        <div className="flex items-center space-x-2" style={{ flex: '0 1 70px', minWidth: '70px', marginLeft: '4px' }}>
+          <div className="flex items-center" style={{ overflow: 'hidden', width: '100%' }}>
+            <Tooltip title={displaySpeaker}>
+              <span
+                className="text-sm font-medium truncate inline-block w-full"
+                style={{
+                  color: item.itemType === 1 ? '#3E83F6' : '#1F2937'
+                }}
+              >
+                {displaySpeaker}
+              </span>
+            </Tooltip>
+          </div>
           {item.type === 'voice' && (
-            <div className="relative">
+            <div style={{ position: 'relative', display: 'inline-block' }}>
               <select
-                className="text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:border-blue-500"
-                onChange={(e) => onVoiceSelect?.(item.id, e.target.value)}
+                ref={displaySelectRef}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: '24px',
+                  height: '24px',
+                  opacity: 0,
+                  cursor: 'pointer',
+                  zIndex: 10
+                }}
+                onChange={(e) => {
+                  const voiceId = e.target.value;
+                  const selectedVoice = configuredVoices.find(v => v.voiceId === voiceId);
+                  // 立即更新前端显示的角色名称
+                  if (selectedVoice) {
+                    setDisplaySpeaker(selectedVoice.voiceName);
+                  }
+                  // 异步请求后端绑定音色
+                  onVoiceSelect?.(item.id, voiceId);
+                }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <option value="">选择音色</option>
                 {configuredVoices.map((voice) => (
                   <option key={voice.voiceId} value={voice.voiceId}>
                     {voice.voiceName}
                   </option>
                 ))}
               </select>
+              <Icon
+                icon="ri:arrow-down-s-line"
+                className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
+                style={{ pointerEvents: 'none' }}
+              />
             </div>
           )}
         </div>
-        <div className="flex-1 text-sm" style={{ color: item.itemType === 1 ? '#3E83F6' : '#4B5563' }}>
-          {item.content}
+        <div className="flex items-center" style={{ overflow: 'hidden', minWidth: 0, maxWidth: '100px', marginLeft: '4px' }}>
+          <Tooltip
+            title={
+              <div style={{ maxHeight: '200px', overflowY: 'auto', maxWidth: '400px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                {item.content}
+              </div>
+            }
+            placement="top"
+            overlayStyle={{ zIndex: 1000, backgroundColor: '#ffffff' }}
+            overlayInnerStyle={{ backgroundColor: '#ffffff', color: '#333333' }}
+          >
+            <div
+              className="text-sm truncate"
+              style={{ color: item.itemType === 1 ? '#3E83F6' : '#4B5563' }}
+            >
+              {item.content}
+            </div>
+          </Tooltip>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex-1 flex items-center"></div>
+        <div className="flex items-center space-x-2" style={{ width: '150px', minWidth: '150px', flexShrink: 0 }}>
           {editingTimeId === item.id ? (
             <div className="flex items-center space-x-1">
               <TimeRangeInput
@@ -196,16 +282,8 @@ export function SortableAudioItem({
               </button>
             </div>
           ) : (
-            <div className="flex items-center space-x-1 text-xs text-gray-400">
+            <div className="text-xs text-gray-400">
               <span>{item.timeRange}</span>
-              <button
-                onClick={() => {
-                  onStartEditTime?.(item.id, item.timeRange);
-                }}
-                className="text-gray-400 hover:text-blue-600 ml-1 p-0 border-0 bg-transparent outline-none cursor-pointer"
-              >
-                <Icon icon="ri:edit-line" className="w-3 h-3" />
-              </button>
             </div>
           )}
           <Icon
@@ -214,7 +292,15 @@ export function SortableAudioItem({
             onClick={() => onPlayAudio?.(item.id)}
             title="播放音频"
           />
-          <Icon icon="ri:delete-bin-line" className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500" />
+          <div {...listeners} className="cursor-move">
+            <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400 cursor-grab" />
+          </div>
+          <Icon
+            icon="ri:delete-bin-line"
+            className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
+            onClick={() => onShowDeleteConfirm?.(parseInt(item.id))}
+            title="删除"
+          />
         </div>
       </div>
       )}

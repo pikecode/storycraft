@@ -87,7 +87,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
   };
 
   const actionButtonClass =
-    "flex items-center space-x-1 px-1 py-0.5 text-sm font-medium text-gray-700 border border-blue-400 rounded hover:border-blue-500 hover:text-blue-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200";
+    "flex items-center space-x-1 px-1 py-0.5 text-sm font-normal text-gray-700 border border-blue-400 rounded hover:border-blue-500 hover:text-blue-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200";
 
   return (
     <div className="p-4 bg-white border-b border-gray-100">
@@ -182,7 +182,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                 className={actionButtonClass}
               >
                 <Icon icon="ri:add-circle-line" className="w-4 h-4" />
-                <span>新增</span>
+                <span>添加</span>
               </button>
             )}
             {onApplyClick && (

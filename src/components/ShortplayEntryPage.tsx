@@ -394,6 +394,7 @@ function ShortplayEntryPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [deleteStoryboardId, setDeleteStoryboardId] = useState<string | null>(null);
   const [removeUploadedImageId, setRemoveUploadedImageId] = useState<string | null>(null);
+  const [deleteAudioItemId, setDeleteAudioItemId] = useState<number | null>(null);
 
   // 视频数据状态 (使用与图片相同的数据结构)
   const [videoItems, setVideoItems] = useState([]);
@@ -655,6 +656,56 @@ function ShortplayEntryPage() {
   // 取消删除
   const handleCancelDelete = () => {
     setDeleteConfirmId(null);
+  };
+
+  // 显示删除音频项确认对话框
+  const handleShowDeleteAudioConfirm = (id: number) => {
+    setDeleteAudioItemId(id);
+  };
+
+  // 确认删除音频项
+  const handleConfirmDeleteAudio = async () => {
+    if (deleteAudioItemId === null) return;
+
+    const id = deleteAudioItemId;
+    setDeleteAudioItemId(null); // 先关闭对话框
+
+    // 如果是新创建的临时项（还没保存到服务器），直接从本地删除
+    if (id > 1000000000000) {
+      setAudioContent((items) => items.filter((item) => item.id !== id));
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${STORYAI_API_BASE}/scene/content/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'X-Prompt-Manager-Token': token || '',
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.code === 0) {
+          // 从本地状态中删除
+          setAudioContent((items) => items.filter((item) => item.id !== id));
+          toast.success('删除成功！');
+        } else {
+          toast.error('删除失败：' + (result.message || '未知错误'));
+        }
+      } else {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('删除音频项失败:', error);
+      toast.error('删除失败：' + (error as Error).message);
+    }
+  };
+
+  // 取消删除音频项
+  const handleCancelDeleteAudio = () => {
+    setDeleteAudioItemId(null);
   };
 
   // 更新场次名称
@@ -3269,6 +3320,7 @@ function ShortplayEntryPage() {
                           configuredVoices={configuredVoices}
                           onVoiceSelect={handleVoiceSelect}
                           onPlayAudio={handlePlayAudio}
+                          onShowDeleteConfirm={handleShowDeleteAudioConfirm}
                           editingItemId={editingSceneItemId}
                           editingContent={editingSceneContent}
                           editingRoleName={editingSceneRoleName}
@@ -3698,6 +3750,37 @@ function ShortplayEntryPage() {
               </button>
               <button
                 onClick={handleConfirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              >
+                删除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 删除确认对话框 - 音频项 */}
+      {deleteAudioItemId !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Icon icon="ri:delete-bin-line" className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">删除确认</h3>
+                <p className="text-sm text-gray-500">确定要删除这条内容吗？删除后无法恢复。</p>
+              </div>
+            </div>
+            <div className="flex space-x-3 justify-end">
+              <button
+                onClick={handleCancelDeleteAudio}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleConfirmDeleteAudio}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 删除
