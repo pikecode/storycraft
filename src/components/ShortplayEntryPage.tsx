@@ -4090,7 +4090,11 @@ function ShortplayEntryPage() {
         width={450}
         centered
         bodyStyle={{ padding: 0 }}
-        closeIcon={previewSource === 'middle' ? <Icon icon="ri:close-line" className="w-5 h-5 text-white hover:text-gray-200" /> : null}
+        closeIcon={previewSource === 'middle' ? (
+          <div className="w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors" style={{ marginRight: '-8px', marginTop: '-8px' }}>
+            <Icon icon="ri:close-line" className="w-5 h-5 text-white" />
+          </div>
+        ) : null}
         styles={{
           content: {
             backgroundColor: 'transparent',
@@ -4112,7 +4116,8 @@ function ShortplayEntryPage() {
             <video
               src={previewUrl}
               controls
-              className="w-full h-auto"
+              className="w-full h-auto min-h-[600px]"
+              style={{ objectFit: 'contain' }}
               autoPlay
             />
           )}
