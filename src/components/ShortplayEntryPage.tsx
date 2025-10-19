@@ -4065,7 +4065,7 @@ function ShortplayEntryPage() {
         width={450}
         centered
         bodyStyle={{ padding: 0 }}
-        closeIcon={null}
+        closeIcon={<Icon icon="ri:close-line" className="w-5 h-5 text-white hover:text-gray-200" />}
         styles={{
           content: {
             backgroundColor: 'transparent',
