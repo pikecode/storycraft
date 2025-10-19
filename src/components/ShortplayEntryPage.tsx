@@ -2075,6 +2075,7 @@ function ShortplayEntryPage() {
   const [previewType, setPreviewType] = useState<'image' | 'video'>('image');
   const [previewFileId, setPreviewFileId] = useState<string>('');
   const [previewFileName, setPreviewFileName] = useState<string>('');
+  const [previewSource, setPreviewSource] = useState<'left' | 'middle' | null>(null); // 弹窗来源：left=左侧列表，middle=中间列表
 
   // 加载视频聊天记录
   const loadVideoChatHistory = async () => {
@@ -3155,6 +3156,7 @@ function ShortplayEntryPage() {
                                                     setPreviewType('image');
                                                     setPreviewFileId(file.fileId);
                                                     setPreviewFileName(file.fileName);
+                                                    setPreviewSource('left');
                                                     setPreviewModalVisible(true);
                                                   }}
                                                   className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
@@ -3251,6 +3253,7 @@ function ShortplayEntryPage() {
                                                     setPreviewType('video');
                                                     setPreviewFileId(file.fileId);
                                                     setPreviewFileName(file.fileName);
+                                                    setPreviewSource('left');
                                                     setPreviewModalVisible(true);
                                                   }}
                                                   className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
@@ -3720,6 +3723,7 @@ function ShortplayEntryPage() {
                   // 判断是否为视频文件
                   const isVideo = /\.(mp4|webm|mov|avi)$/i.test(fileUrl) || /\.(mp4|webm|mov|avi)$/i.test(fileName || '');
                   setPreviewType(isVideo ? 'video' : 'image');
+                  setPreviewSource('middle');
                   setPreviewModalVisible(true);
                 }}
               />
@@ -3752,6 +3756,7 @@ function ShortplayEntryPage() {
                   // 判断是否为视频文件
                   const isVideo = /\.(mp4|webm|mov|avi)$/i.test(fileUrl) || /\.(mp4|webm|mov|avi)$/i.test(fileName || '');
                   setPreviewType(isVideo ? 'video' : 'image');
+                  setPreviewSource('middle');
                   setPreviewModalVisible(true);
                 }}
               />
@@ -4061,11 +4066,31 @@ function ShortplayEntryPage() {
         title={null}
         open={previewModalVisible}
         onCancel={() => setPreviewModalVisible(false)}
-        footer={null}
+        footer={previewSource === 'left' ? (
+          <div className="w-full flex gap-4 p-3">
+            <button
+              onClick={() => setPreviewModalVisible(false)}
+              className="flex-1 px-4 py-2 text-gray-400 bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
+            >
+              关闭
+            </button>
+            <button
+              onClick={() => {
+                if (previewFileId && previewFileName) {
+                  handleCreateStoryboard(previewFileId, previewFileName);
+                  setPreviewModalVisible(false);
+                }
+              }}
+              className="flex-1 px-4 py-2 text-white bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
+            >
+              应用
+            </button>
+          </div>
+        ) : null}
         width={450}
         centered
         bodyStyle={{ padding: 0 }}
-        closeIcon={<Icon icon="ri:close-line" className="w-5 h-5 text-white hover:text-gray-200" />}
+        closeIcon={previewSource === 'middle' ? <Icon icon="ri:close-line" className="w-5 h-5 text-white hover:text-gray-200" /> : null}
         styles={{
           content: {
             backgroundColor: 'transparent',
@@ -4091,25 +4116,27 @@ function ShortplayEntryPage() {
               autoPlay
             />
           )}
-          <div className="w-full flex gap-4 p-3 mt-3">
-            <button
-              onClick={() => setPreviewModalVisible(false)}
-              className="flex-1 px-4 py-2 text-gray-400 bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
-            >
-              关闭
-            </button>
-            <button
-              onClick={() => {
-                if (previewFileId && previewFileName) {
-                  handleCreateStoryboard(previewFileId, previewFileName);
-                  setPreviewModalVisible(false);
-                }
-              }}
-              className="flex-1 px-4 py-2 text-white bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
-            >
-              应用
-            </button>
-          </div>
+          {previewSource === 'left' && (
+            <div className="w-full flex gap-4 p-3 mt-3">
+              <button
+                onClick={() => setPreviewModalVisible(false)}
+                className="flex-1 px-4 py-2 text-gray-400 bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
+              >
+                关闭
+              </button>
+              <button
+                onClick={() => {
+                  if (previewFileId && previewFileName) {
+                    handleCreateStoryboard(previewFileId, previewFileName);
+                    setPreviewModalVisible(false);
+                  }
+                }}
+                className="flex-1 px-4 py-2 text-white bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
+              >
+                应用
+              </button>
+            </div>
+          )}
         </div>
       </Modal>
 
