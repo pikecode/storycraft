@@ -327,7 +327,7 @@ function ShortplayEntryPage() {
     setIsLoadingPreviewVideo(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${STORYAI_API_BASE}/multimedia/video/preview?sceneId=${sceneId}`, {
+      const response = await fetch(`${STORYAI_API_BASE}/multimedia/episode/video/preview?sceneId=${sceneId}`, {
         method: 'POST',
         headers: {
           'X-Prompt-Manager-Token': token || '',
