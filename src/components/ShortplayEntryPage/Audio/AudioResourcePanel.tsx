@@ -84,7 +84,7 @@ export function AudioResourcePanel({
             {(isLoadingVoices || configuredVoices.length > 0) && (
             <div className="flex items-start space-x-2">
               <span className="text-sm font-medium text-gray-700 min-w-fit pt-3">已设置</span>
-              <div className="flex-1 space-y-2.5">
+              <div className="flex-1 space-y-2.5" style={{ maxHeight: '200px', overflowY: 'auto' }}>
                 {isLoadingVoices ? (
                   <div className="flex items-center justify-center text-gray-500">
                     <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
