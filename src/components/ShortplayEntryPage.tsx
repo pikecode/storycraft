@@ -315,6 +315,11 @@ function ShortplayEntryPage() {
 
   // 视频预览
   const handleVideoPreview = async () => {
+    // 防止重复点击
+    if (isLoadingPreviewVideo) {
+      return;
+    }
+
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
     const sceneId = currentSceneData?.sceneId;
@@ -1481,11 +1486,16 @@ function ShortplayEntryPage() {
       onOk: async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`${STORYAI_API_BASE}/voice/delete?voiceId=${voiceId}`, {
+          const response = await fetch(`${STORYAI_API_BASE}/voice/update`, {
             method: 'POST',
             headers: {
+              'Content-Type': 'application/json',
               'X-Prompt-Manager-Token': token || '',
-            }
+            },
+            body: JSON.stringify({
+              voiceId: voiceId,
+              status: 2
+            })
           });
 
           if (response.ok) {
@@ -3435,6 +3445,11 @@ function ShortplayEntryPage() {
               activeTab === 'script' || activeTab === 'audio' ? handleStartAddNewItem : undefined
             }
             onApplyClick={async () => {
+              // 防止重复点击
+              if (isLoadingPreviewVideo) {
+                return;
+              }
+
               try {
                 // 使用中间区域头部下拉选择的 sceneId
                 const sceneId = currentSceneId;
@@ -3485,6 +3500,7 @@ function ShortplayEntryPage() {
                 setIsLoadingPreviewVideo(false);
               }
             }}
+            isLoading={isLoadingPreviewVideo}
           />
 
           {/* 剧本内容区域 */}
@@ -3626,10 +3642,14 @@ function ShortplayEntryPage() {
                                 throw new Error(result.message || '保存失败');
                               }
 
+                              // 获取服务器返回的真实ID
+                              const realItemId = result.data?.id || numItemId;
+
                               const updatedContent = audioContent.map((c: any) =>
                                 c.id === numItemId
                                   ? {
                                       ...c,
+                                      id: realItemId, // 更新为服务器返回的真实ID
                                       content: editingSceneContent,
                                       roleName: editingSceneRoleName,
                                       startTime: startTime,
@@ -3652,7 +3672,7 @@ function ShortplayEntryPage() {
                                       bindings: [
                                         {
                                           voiceId: editingSceneRoleName,
-                                          subtitleId: numItemId
+                                          subtitleId: realItemId
                                         }
                                       ]
                                     })
@@ -3784,7 +3804,7 @@ function ShortplayEntryPage() {
                   type="primary"
                   className="text-xs"
                   onClick={handleVideoPreview}
-                  loading={isGeneratingPreview}
+                  disabled={isLoadingPreviewVideo}
                 >
                   <Icon icon="ri:play-circle-line" className="w-3 h-3 mr-1" />
                   预览
@@ -4093,15 +4113,50 @@ function ShortplayEntryPage() {
                               </button>
 
                               <button
-                                onClick={() => {
-                                  const data = {
-                                    title: questionTitle,
-                                    options: options
-                                  };
-                                  const jsonString = JSON.stringify(data, null, 2);
-                                  console.log('保存的数据:', jsonString);
-                                  toast.success('已保存');
-                                  setIsEditorMode(false);
+                                onClick={async () => {
+                                  try {
+                                    const token = localStorage.getItem('token');
+                                    const storyboardOrder = storyboardItems.length + 1;
+
+                                    const requestData = {
+                                      sceneId: currentSceneId,
+                                      storyboardOrder: storyboardOrder,
+                                      questionInfo: {
+                                        title: questionTitle,
+                                        options: options
+                                      }
+                                    };
+
+                                    console.log('发送请求数据:', requestData);
+
+                                    const response = await fetch(`${STORYAI_API_BASE}/storyboard/special/create`, {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-Prompt-Manager-Token': token || '',
+                                      },
+                                      body: JSON.stringify(requestData)
+                                    });
+
+                                    if (!response.ok) {
+                                      throw new Error(`请求失败: ${response.status}`);
+                                    }
+
+                                    const result = await response.json();
+                                    console.log('保存结果:', result);
+
+                                    if (result.code === 0) {
+                                      toast.success('已保存');
+                                      setIsEditorMode(false);
+                                      setHasVideo(true);
+                                      setLastFrameImage('');
+                                    } else {
+                                      throw new Error(result.message || '保存失败');
+                                    }
+                                  } catch (error) {
+                                    console.error('保存失败:', error);
+                                    toast.error('保存失败：' + (error as Error).message);
+                                  }
                                 }}
                                 className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors"
                               >

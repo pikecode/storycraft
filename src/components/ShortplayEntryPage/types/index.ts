@@ -268,4 +268,5 @@ export interface SectionHeaderProps {
   onOptionsChange?: (options: string[]) => void;
   onAddClick?: () => void;
   onApplyClick?: () => void;
+  isLoading?: boolean; // 应用按钮加载状态
 }

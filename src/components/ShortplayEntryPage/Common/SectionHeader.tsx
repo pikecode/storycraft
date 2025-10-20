@@ -3,7 +3,7 @@ import { Icon } from '@iconify/react';
 import { useI18n } from '../../../contexts/I18nContext';
 import { SectionHeaderProps } from '../types';
 
-export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onSubtitleEdit, onOptionsChange, onAddClick, onApplyClick }: SectionHeaderProps) {
+export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onSubtitleEdit, onOptionsChange, onAddClick, onApplyClick, isLoading }: SectionHeaderProps) {
   const { t } = useI18n();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -186,7 +186,12 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
               </button>
             )}
             {onApplyClick && (
-              <button type="button" onClick={onApplyClick} className={actionButtonClass}>
+              <button
+                type="button"
+                onClick={onApplyClick}
+                disabled={isLoading}
+                className={`${actionButtonClass} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
                 <Icon icon="ri:check-line" className="w-4 h-4" />
                 <span>应用</span>
               </button>
