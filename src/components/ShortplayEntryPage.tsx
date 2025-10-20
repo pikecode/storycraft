@@ -2077,6 +2077,15 @@ function ShortplayEntryPage() {
   const [previewFileName, setPreviewFileName] = useState<string>('');
   const [previewSource, setPreviewSource] = useState<'left' | 'middle' | null>(null); // 弹窗来源：left=左侧列表，middle=中间列表
 
+  // 编辑器状态（题目和选项）
+  const [isEditorMode, setIsEditorMode] = useState<boolean>(false); // 是否进入编辑模式
+  const [questionTitle, setQuestionTitle] = useState<string>(''); // 题目
+  const [options, setOptions] = useState<string[]>([]); // 选项列表
+  const [editingTitle, setEditingTitle] = useState<string>(''); // 正在编辑的题目
+  const [isEditingTitle, setIsEditingTitle] = useState<boolean>(false); // 是否在编辑题目
+  const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null); // 正在编辑的选项索引
+  const [editingOptionText, setEditingOptionText] = useState<string>(''); // 正在编辑的选项文本
+
   // 加载视频聊天记录
   const loadVideoChatHistory = async () => {
     // 获取当前选中场次的sceneId
@@ -3782,7 +3791,33 @@ function ShortplayEntryPage() {
                 </Button>
               </div>
               <div className="flex items-center space-x-2">
-                <Button size="small" type="text" className="text-xs text-blue-500 border border-blue-200 rounded">
+                <Button
+                  size="small"
+                  type="text"
+                  className="text-xs text-blue-500 border border-blue-200 rounded"
+                  onClick={() => {
+                    // 从缓存中获取视频downloadUrl
+                    const cacheKey = `${seriesId}_${currentSceneId}`;
+                    const cachedData = videoCacheMap[cacheKey];
+                    if (cachedData && cachedData.downloadUrl) {
+                      const downloadUrl = cachedData.downloadUrl;
+                      const fileName = cachedData.fileName || 'video.mp4';
+
+                      // 创建a标签触发下载
+                      const link = document.createElement('a');
+                      link.href = downloadUrl;
+                      link.download = fileName;
+                      link.target = '_blank';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+
+                      toast.success('开始下载视频');
+                    } else {
+                      toast.error('暂无可下载的视频，请先点击预览或应用');
+                    }
+                  }}
+                >
                   <Icon icon="ri:download-line" className="w-3 h-3 mr-1" />
                   下载
                 </Button>
@@ -3796,6 +3831,14 @@ function ShortplayEntryPage() {
                     const cachedData = videoCacheMap[cacheKey];
                     if (cachedData && cachedData.lastFrame) {
                       setLastFrameImage(cachedData.lastFrame);
+                      setHasVideo(false);  // 停止显示视频，改为显示图片
+                      setVideoSrc("");  // 清空视频源
+
+                      // 进入编辑模式，初始化题目和选项
+                      setIsEditorMode(true);
+                      setQuestionTitle('面对女友的问题，你应该怎么回答？');
+                      setOptions(['选项1']);
+
                       toast.success('已插入最后一帧图片');
                       console.log('插入lastFrame:', cachedData.lastFrame);
                     } else {
@@ -3912,7 +3955,8 @@ function ShortplayEntryPage() {
                       )}
 
                       <>
-                        {/* 进度条 */}
+                        {/* 进度条 - 编辑模式下隐藏 */}
+                        {hasVideo && !isEditorMode && (
                         <div className="absolute bottom-12 left-4 right-4 z-10">
                             <div className="flex items-center justify-between text-white text-xs mb-1">
                               <span>{timeDisplay}</span>
@@ -3947,6 +3991,136 @@ function ShortplayEntryPage() {
                               ></div>
                             </div>
                           </div>
+                        )}
+
+                        {/* 编辑器蒙层 - 仅在编辑模式下显示 */}
+                        {isEditorMode && (
+                          <div className="absolute inset-0 bg-black/60 flex flex-col justify-end p-3 z-20">
+                            {/* 题目区域 */}
+                            <div className="mb-3">
+                              {isEditingTitle ? (
+                                <input
+                                  type="text"
+                                  autoFocus
+                                  value={editingTitle}
+                                  onChange={(e) => setEditingTitle(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      setQuestionTitle(editingTitle);
+                                      setIsEditingTitle(false);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    setQuestionTitle(editingTitle);
+                                    setIsEditingTitle(false);
+                                  }}
+                                  className="w-full px-3 py-2 bg-white/90 text-black rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="输入题目..."
+                                />
+                              ) : (
+                                <div
+                                  onClick={() => {
+                                    setEditingTitle(questionTitle);
+                                    setIsEditingTitle(true);
+                                  }}
+                                  className="text-white text-sm font-medium px-3 py-2 bg-black/40 rounded cursor-pointer hover:bg-black/60 transition-colors"
+                                >
+                                  {questionTitle || '点击编辑题目'}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* 选项列表 */}
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                              {options.map((option, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                  {editingOptionIndex === index ? (
+                                    <input
+                                      type="text"
+                                      autoFocus
+                                      value={editingOptionText}
+                                      onChange={(e) => setEditingOptionText(e.target.value)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          const newOptions = [...options];
+                                          newOptions[index] = editingOptionText;
+                                          setOptions(newOptions);
+                                          setEditingOptionIndex(null);
+                                        }
+                                      }}
+                                      onBlur={() => {
+                                        const newOptions = [...options];
+                                        newOptions[index] = editingOptionText;
+                                        setOptions(newOptions);
+                                        setEditingOptionIndex(null);
+                                      }}
+                                      className="flex-1 px-3 py-2 bg-white/90 text-black rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  ) : (
+                                    <div
+                                      onClick={() => {
+                                        setEditingOptionIndex(index);
+                                        setEditingOptionText(option);
+                                      }}
+                                      className="flex-1 text-white/90 text-sm cursor-pointer hover:text-white transition-colors"
+                                    >
+                                      {String.fromCharCode(65 + index)}. {option}
+                                    </div>
+                                  )}
+                                  <button
+                                    onClick={() => {
+                                      setOptions(options.filter((_, i) => i !== index));
+                                    }}
+                                    className="text-red-500 hover:text-red-400 transition-colors p-0"
+                                    title="删除选项"
+                                  >
+                                    <Icon icon="ri:delete-bin-line" className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* 新增选项、保存和取消按钮 - 同一行 */}
+                            <div className="mt-3 flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setOptions([...options, `选项${options.length + 1}`]);
+                                }}
+                                className="text-blue-400 hover:text-blue-300 transition-colors"
+                                title="新增选项"
+                              >
+                                <Icon icon="ri:add-line" className="w-4 h-4" />
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  const data = {
+                                    title: questionTitle,
+                                    options: options
+                                  };
+                                  const jsonString = JSON.stringify(data, null, 2);
+                                  console.log('保存的数据:', jsonString);
+                                  toast.success('已保存');
+                                  setIsEditorMode(false);
+                                }}
+                                className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors"
+                              >
+                                保存
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setIsEditorMode(false);
+                                  setHasVideo(true);
+                                  setLastFrameImage('');
+                                }}
+                                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm font-medium transition-colors"
+                              >
+                                取消
+                              </button>
+                            </div>
+                          </div>
+                        )}
 
                           {/* 底部操作栏 */}
                           <div className="absolute bottom-0 left-0 right-0 h-8 bg-black/60 flex items-center justify-around backdrop-blur-sm">
