@@ -325,7 +325,7 @@ function ShortplayEntryPage() {
     const sceneId = currentSceneData?.sceneId;
 
     if (!sceneId && sceneId !== 0) {
-      toast.error('请先选择场次');
+      toast.error(t('shortplayEntry.validation.selectSceneFirst'));
       return;
     }
 
@@ -361,7 +361,7 @@ function ShortplayEntryPage() {
           localStorage.setItem('videoCacheMap', JSON.stringify(newCache));
           console.log(`Saved video data to cache for series ${seriesId}, scene ${sceneId}:`, result.data);
 
-          toast.success('视频预览已加载');
+          toast.success(t('shortplayEntry.messages.success.videoPreviewLoaded'));
         } else {
           throw new Error('返回数据中缺少downloadUrl');
         }
@@ -370,7 +370,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('视频预览失败:', error);
-      toast.error('视频预览失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.videoPreviewFailed', { error: (error as Error).message }));
     } finally {
       setIsLoadingPreviewVideo(false);
     }
@@ -419,7 +419,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('创建分镜板失败:', error);
-      toast.error('应用图片失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.imageApplyFailed', { error: (error as Error).message }));
     }
   };
 
@@ -457,8 +457,8 @@ function ShortplayEntryPage() {
   // 用于跟踪上一次的audioType值
   const prevAudioTypeRef = useRef<'voice' | 'sound'>(audioType);
 
-  // 进度条拖拽状态
-  const [isDragging, setIsDragging] = useState<boolean>(false);
+  // 进度条查找状态 - 使用 isSeeking 避免播放中拖拽进度条冲突
+  const [isSeeking, setIsSeeking] = useState<boolean>(false);
 
   // 监听 videoSrc 变化，自动显示视频
   React.useEffect(() => {
@@ -531,7 +531,7 @@ function ShortplayEntryPage() {
           console.error('更新排序失败:', error);
           // API调用失败时，恢复原来的排序
           setSceneContent(oldItems);
-          toast.error('排序更新失败：' + (error as Error).message);
+          toast.error(t('shortplayEntry.messages.error.sortingFailed', { error: (error as Error).message }));
         }
       }
     }
@@ -573,7 +573,7 @@ function ShortplayEntryPage() {
 
       const result = await response.json();
       if (result.code === 0) {
-        toast.success('分镜板删除成功！');
+        toast.success(t('shortplayEntry.messages.success.storyboardDeleted'));
         // 刷新分镜板列表
         await loadStoryboardList();
       } else {
@@ -581,7 +581,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('删除分镜板失败:', error);
-      toast.error('删除失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.deleteFailed', { error: (error as Error).message }));
     }
   };
 
@@ -632,7 +632,7 @@ function ShortplayEntryPage() {
 
           const result = await response.json();
           if (result.code === 0) {
-            toast.success('分镜板排序已更新！');
+            toast.success(t('shortplayEntry.messages.success.storyboardSorted'));
           } else {
             throw new Error(result.message || '更新排序失败');
           }
@@ -640,7 +640,7 @@ function ShortplayEntryPage() {
           console.error('更新分镜板排序失败:', error);
           // API调用失败时，恢复原来的排序
           setStoryboardItems(oldItems);
-          toast.error('排序更新失败：' + (error as Error).message);
+          toast.error(t('shortplayEntry.messages.error.sortingFailed', { error: (error as Error).message }));
         }
       }
     }
@@ -719,7 +719,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('删除场次内容失败:', error);
-      toast.error('删除失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.deleteFailed', { error: (error as Error).message }));
     }
   };
 
@@ -769,7 +769,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('删除音频项失败:', error);
-      toast.error('删除失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.deleteFailed', { error: (error as Error).message }));
     }
   };
 
@@ -826,7 +826,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('更新场次名称失败:', error);
-      toast.error('场次名称更新失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.sceneNameUpdateFailed', { error: (error as Error).message }));
       return false;
     }
   };
@@ -840,7 +840,7 @@ function ShortplayEntryPage() {
     return minutes <= 59 && seconds <= 59;
   };
 
-  const formatTime = (time: string): string => {
+  const formatTimeInput = (time: string): string => {
     const timeRegex = /^(\d{1,2}):(\d{1,2})$/;
     const match = time.match(timeRegex);
     if (match) {
@@ -983,12 +983,12 @@ function ShortplayEntryPage() {
     const endSeconds = parseInt(editingSceneEndMinutes) * 60 + parseInt(editingSceneEndSeconds);
 
     if (startSeconds >= endSeconds) {
-      toast.error('开始时间必须小于结束时间');
+      toast.error(t('shortplayEntry.validation.startTimeLessThanEnd'));
       return;
     }
 
     if (!editingSceneContent.trim()) {
-      toast.error('请输入内容');
+      toast.error(t('shortplayEntry.validation.enterContent'));
       return;
     }
 
@@ -1095,7 +1095,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('保存场次内容失败:', error);
-      toast.error('保存失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.saveFailed', { error: (error as Error).message }));
     }
   };
 
@@ -1224,7 +1224,7 @@ function ShortplayEntryPage() {
 
       const result = await response.json();
       if (result.code === 0) {
-        toast.success('时间更新成功！');
+        toast.success(t('shortplayEntry.messages.success.timeUpdated'));
         // 刷新分镜板列表
         await loadStoryboardList();
       } else {
@@ -1321,73 +1321,37 @@ function ShortplayEntryPage() {
   };
 
   // 处理进度条拖拽
-  const handleProgressMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const progressBar = event.currentTarget;
-    const rect = progressBar.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const newProgress = (clickX / rect.width) * 100;
-    setProgress(Math.max(0, Math.min(100, newProgress)));
+  // 进度条变化处理
+  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newProgress = parseFloat(e.target.value);
+    setProgress(newProgress);
 
-    // 同步视频时间
     if (videoRef.current && videoRef.current.duration) {
       const newTime = (newProgress / 100) * videoRef.current.duration;
       videoRef.current.currentTime = newTime;
     }
   };
 
-  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
-    setIsDragging(true);
-    handleProgressMove(event);
+  // 拖拽开始
+  const handleProgressMouseDown = () => {
+    setIsSeeking(true);
   };
 
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (isDragging) {
-      handleProgressMove(event);
-    }
+  // 拖拽结束
+  const handleProgressMouseUp = () => {
+    setIsSeeking(false);
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
+  // 触摸开始
+  const handleProgressTouchStart = () => {
+    setIsSeeking(true);
   };
 
-  const handleMouseLeave = () => {
-    setIsDragging(false);
+  // 触摸结束
+  const handleProgressTouchEnd = () => {
+    setIsSeeking(false);
   };
 
-  // 全局鼠标事件监听，支持拖动超出元素范围
-  React.useEffect(() => {
-    if (!isDragging) return;
-
-    const handleGlobalMouseMove = (event: MouseEvent) => {
-      // 查找进度条容器
-      const progressBars = document.querySelectorAll('[data-progress-bar]');
-      if (progressBars.length === 0) return;
-
-      const progressBar = progressBars[0] as HTMLDivElement;
-      const rect = progressBar.getBoundingClientRect();
-      const clickX = event.clientX - rect.left;
-      const newProgress = (clickX / rect.width) * 100;
-      setProgress(Math.max(0, Math.min(100, newProgress)));
-
-      // 同步视频时间
-      if (videoRef.current && videoRef.current.duration) {
-        const newTime = (newProgress / 100) * videoRef.current.duration;
-        videoRef.current.currentTime = newTime;
-      }
-    };
-
-    const handleGlobalMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    document.addEventListener('mousemove', handleGlobalMouseMove);
-    document.addEventListener('mouseup', handleGlobalMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
-    };
-  }, [isDragging]);
 
   // 视频控制函数
   const togglePlay = () => {
@@ -1407,17 +1371,23 @@ function ShortplayEntryPage() {
     setIsPlaying(false);
   };
 
+  // 格式化时间显示函数（支持小时）
+  const formatTime = (time: number): string => {
+    if (!time || isNaN(time)) return '0:00';
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = Math.floor(time % 60);
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   // 计算当前时间
   const videoDuration = videoRef.current?.duration || 0;
   const currentTime = Math.floor((progress / 100) * videoDuration);
-  const minutes = Math.floor(currentTime / 60);
-  const seconds = currentTime % 60;
-  const timeDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-  // 计算总时长显示
-  const totalMinutes = Math.floor(videoDuration / 60);
-  const totalSeconds = Math.floor(videoDuration % 60);
-  const totalTimeDisplay = `${totalMinutes.toString().padStart(2, '0')}:${totalSeconds.toString().padStart(2, '0')}`;
+  const timeDisplay = formatTime(currentTime);
+  const totalTimeDisplay = formatTime(videoDuration);
 
 
   // 获取音色列表
@@ -1514,7 +1484,7 @@ function ShortplayEntryPage() {
           }
         } catch (error) {
           console.error('删除音色失败:', error);
-          toast.error('删除音色失败：' + (error as Error).message);
+          toast.error(t('shortplayEntry.messages.error.voiceDeleteFailed', { error: (error as Error).message }));
         }
       },
     });
@@ -1543,7 +1513,7 @@ function ShortplayEntryPage() {
           const updatedAvailable = await loadVoiceList(2);
           setConfiguredVoices(updatedConfigured);
           setAvailableVoices(updatedAvailable);
-          toast.success('音色应用成功！');
+          toast.success(t('shortplayEntry.messages.success.voiceApplied'));
         } else {
           throw new Error(result.message || '应用音色失败');
         }
@@ -1552,7 +1522,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('应用音色失败:', error);
-      toast.error('应用音色失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.voiceApplyFailed', { error: (error as Error).message }));
     }
   };
 
@@ -1585,7 +1555,7 @@ function ShortplayEntryPage() {
         if (result.code === 0) {
           // 更新成功，刷新音色列表
           await loadAllVoices();
-          toast.success('音色名称更新成功！');
+          toast.success(t('shortplayEntry.messages.success.voiceNameUpdated'));
         } else {
           throw new Error(result.message || '更新音色名称失败');
         }
@@ -1594,7 +1564,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('更新音色名称失败:', error);
-      toast.error('更新音色名称失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.voiceNameUpdateFailed', { error: (error as Error).message }));
     } finally {
       setEditingVoiceId(null);
       setEditingVoiceName('');
@@ -1644,13 +1614,13 @@ function ShortplayEntryPage() {
 
       const result = await response.json();
       if (result.code === 0) {
-        toast.success('音色绑定成功！');
+        toast.success(t('shortplayEntry.messages.success.voiceBound'));
       } else {
         throw new Error(result.message || '音色绑定失败');
       }
     } catch (error) {
       console.error('音色绑定失败:', error);
-      toast.error('音色绑定失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.voiceBindFailed', { error: (error as Error).message }));
     }
   };
 
@@ -1680,17 +1650,17 @@ function ShortplayEntryPage() {
           const audio = new Audio(result.data.audioUrl);
           audio.play().catch((error) => {
             console.error('音频播放失败:', error);
-            toast.error('音频播放失败');
+            toast.error(t('shortplayEntry.messages.success.audioPlaybackFailed'));
           });
         } else {
-          toast.error('音色生成中');
+          toast.error(t('shortplayEntry.messages.success.voiceStillGenerating'));
         }
       } else {
         throw new Error(result.message || '获取音频失败');
       }
     } catch (error) {
       console.error('播放音频失败:', error);
-      toast.error('播放音频失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.audioPlayError', { error: (error as Error).message }));
     }
   };
 
@@ -1742,7 +1712,7 @@ function ShortplayEntryPage() {
     }
 
     if (!bgm.attachmentId) {
-      toast.error('音效文件缺少attachmentId');
+      toast.error(t('shortplayEntry.userErrors.soundMissingAttachmentId'));
       return;
     }
 
@@ -1781,7 +1751,7 @@ function ShortplayEntryPage() {
 
       const result = await response.json();
       if (result.code === 0) {
-        toast.success('音效应用成功！');
+        toast.success(t('shortplayEntry.messages.success.soundApplied'));
         // 刷新音频内容列表
         await loadAudioContent(sceneId);
       } else {
@@ -1789,7 +1759,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('应用音效失败:', error);
-      toast.error('应用音效失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.soundApplyFailed', { error: (error as Error).message }));
     }
   };
 
@@ -1812,7 +1782,7 @@ function ShortplayEntryPage() {
     const endSeconds = parseInt(bgmEditingEndMinutes) * 60 + parseInt(bgmEditingEndSeconds);
 
     if (startSeconds >= endSeconds) {
-      toast.error('开始时间必须小于结束时间');
+      toast.error(t('shortplayEntry.validation.startTimeLessThanEnd'));
       return;
     }
 
@@ -1821,7 +1791,7 @@ function ShortplayEntryPage() {
       const bgmItem = audioContent.find((item: any) => item.id.toString() === bgmId);
 
       if (!bgmItem) {
-        toast.error('未找到该音效');
+        toast.error(t('shortplayEntry.validation.soundNotFound'));
         return;
       }
 
@@ -1925,13 +1895,13 @@ function ShortplayEntryPage() {
         // 刷新图片聊天记录列表
         await loadImageChatHistory();
 
-        toast.success('图片生成完成！');
+        toast.success(t('shortplayEntry.messages.success.imageGenerated'));
       } else {
         throw new Error(result.message || '图片生成失败');
       }
     } catch (error) {
       console.error('图片生成失败:', error);
-      toast.error('图片生成失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.imageGenerationFailed', { error: (error as Error).message }));
     } finally {
       setIsGenerating(false);
       setGenerationStatus('');
@@ -1955,14 +1925,14 @@ function ShortplayEntryPage() {
     try {
       const userStr = localStorage.getItem('user');
       if (!userStr) {
-        toast.error('用户信息不存在，请重新登录');
+        toast.error(t('shortplayEntry.userErrors.userInfoMissing'));
         return;
       }
 
       const user = JSON.parse(userStr);
       const userId = user.userId;
       if (!userId) {
-        toast.error('用户ID不存在，请重新登录');
+        toast.error(t('shortplayEntry.userErrors.userIdMissing'));
         return;
       }
 
@@ -2159,7 +2129,7 @@ function ShortplayEntryPage() {
   // 视频生成API调用
   const handleVideoGenerate = async () => {
     if (!userInput.trim()) {
-      toast.error('请输入生成内容');
+      toast.error(t('shortplayEntry.validation.enterGeneratedContent'));
       return;
     }
 
@@ -2212,7 +2182,7 @@ function ShortplayEntryPage() {
         const fileId = result.data.toString();
         setVideoGenerationFileId(fileId);
 
-        toast.success('视频生成任务已开始！');
+        toast.success(t('shortplayEntry.messages.success.videoGenerationStarted'));
         setGenerationStatus('视频生成中，请稍候...');
 
         // 开始轮询进度
@@ -2222,7 +2192,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('视频生成失败:', error);
-      toast.error('视频生成失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.videoGenerationFailed', { error: (error as Error).message }));
       setGenerationStatus('');
       setIsGenerating(false);
       setIsVideoGenerating(false);
@@ -2293,7 +2263,7 @@ function ShortplayEntryPage() {
         }
       } catch (error) {
         console.error('轮询进度失败:', error);
-        toast.error('视频生成失败：' + (error as Error).message);
+        toast.error(t('shortplayEntry.messages.error.videoGenerationFailed', { error: (error as Error).message }));
         setIsGenerating(false);
         setIsVideoGenerating(false);
         setVideoGenerationFileId(null);
@@ -2328,7 +2298,7 @@ function ShortplayEntryPage() {
       }
 
       if (!userId) {
-        toast.error('用户信息不完整，请重新登录');
+        toast.error(t('shortplayEntry.userErrors.userInfoIncomplete'));
         return;
       }
 
@@ -2367,7 +2337,7 @@ function ShortplayEntryPage() {
       }
     } catch (error) {
       console.error('音效生成失败:', error);
-      toast.error('音效生成失败：' + (error as Error).message);
+      toast.error(t('shortplayEntry.messages.error.soundGenerationFailed', { error: (error as Error).message }));
     } finally {
       setIsGenerating(false);
       setGenerationStatus('');
@@ -2649,7 +2619,7 @@ function ShortplayEntryPage() {
       }
 
       if (!userId) {
-        toast.error('用户信息不完整，请重新登录');
+        toast.error(t('shortplayEntry.userErrors.userInfoIncomplete'));
         return;
       }
 
@@ -2726,7 +2696,7 @@ function ShortplayEntryPage() {
       }
 
       if (!userId) {
-        toast.error('用户信息不完整，请重新登录');
+        toast.error(t('shortplayEntry.userErrors.userInfoIncomplete'));
         return;
       }
 
@@ -2813,7 +2783,7 @@ function ShortplayEntryPage() {
               // 生成失败
               setIsGenerating(false);
               setGenerationStatus('');
-              toast.error('剧本生成失败，请重试');
+              toast.error(t('shortplayEntry.messages.error.videoGenerationRetry'));
               console.error('剧本生成失败，状态为 FAILED');
             } else {
               // 其他状态，可能是失败
@@ -2861,7 +2831,7 @@ function ShortplayEntryPage() {
                     <path d="M34.8333 15.3109C34.7333 15.0213 34.5515 14.767 34.3098 14.5787C34.0681 14.3904 33.7769 14.2762 33.4717 14.2501L24.4625 12.9359L20.425 4.75011C20.2954 4.48241 20.0929 4.25665 19.8409 4.09868C19.5889 3.94072 19.2974 3.85693 19 3.85693C18.7026 3.85693 18.4111 3.94072 18.1591 4.09868C17.9071 4.25665 17.7047 4.48241 17.575 4.75011L13.5375 12.9201L4.52834 14.2501C4.2353 14.2918 3.9598 14.4147 3.73311 14.605C3.50642 14.7953 3.33761 15.0454 3.24584 15.3268C3.16183 15.6018 3.1543 15.8944 3.22403 16.1734C3.29377 16.4523 3.43815 16.707 3.64167 16.9101L10.1808 23.2434L8.59751 32.2368C8.54098 32.5336 8.57058 32.8404 8.6828 33.121C8.79503 33.4015 8.98519 33.6441 9.23084 33.8201C9.47027 33.9913 9.75266 34.0923 10.0463 34.1119C10.34 34.1315 10.6333 34.0688 10.8933 33.9309L19 29.7034L27.075 33.9468C27.2972 34.0721 27.5482 34.1376 27.8033 34.1368C28.1387 34.138 28.4658 34.0326 28.7375 33.8359C28.9832 33.66 29.1733 33.4174 29.2855 33.1368C29.3978 32.8563 29.4274 32.5494 29.3708 32.2526L27.7875 23.2593L34.3267 16.9259C34.5553 16.7323 34.7242 16.4777 34.8139 16.1918C34.9036 15.9059 34.9103 15.6005 34.8333 15.3109ZM25.0958 21.6443C24.9102 21.8239 24.7712 22.0462 24.6912 22.2918C24.6112 22.5374 24.5924 22.7989 24.6367 23.0534L25.7767 29.6876L19.8233 26.5209C19.5943 26.399 19.3387 26.3352 19.0792 26.3352C18.8196 26.3352 18.5641 26.399 18.335 26.5209L12.3817 29.6876L13.5217 23.0534C13.5659 22.7989 13.5472 22.5374 13.4671 22.2918C13.3871 22.0462 13.2482 21.8239 13.0625 21.6443L8.31251 16.8943L14.9783 15.9284C15.2348 15.8928 15.4787 15.7947 15.6885 15.6429C15.8983 15.4911 16.0676 15.2901 16.1817 15.0576L19 9.02511L21.9767 15.0734C22.0907 15.3059 22.2601 15.5069 22.4699 15.6587C22.6797 15.8105 22.9235 15.9086 23.18 15.9443L29.8458 16.9101L25.0958 21.6443Z" fill="white"/>
                   </g>
                 </svg>
-                <span className="text-base font-medium text-gray-900">AI创作</span>
+                <span className="text-base font-medium text-gray-900">{t('shortplayEntry.sidebar.aiCreation')}</span>
               </div>
 
               {/* Ant Design Segmented组件 - 带边框和高度 */}
@@ -2870,10 +2840,10 @@ function ShortplayEntryPage() {
                   value={activeTab}
                   onChange={(value) => setActiveTab(value as 'script' | 'audio' | 'image' | 'video')}
                   options={[
-                    { label: '剧本', value: 'script' },
-                    { label: '音频', value: 'audio' },
-                    { label: '图片', value: 'image' },
-                    { label: '视频', value: 'video' }
+                    { label: t('shortplayEntry.tabs.script'), value: 'script' },
+                    { label: t('shortplayEntry.tabs.audio'), value: 'audio' },
+                    { label: t('shortplayEntry.tabs.image'), value: 'image' },
+                    { label: t('shortplayEntry.tabs.video'), value: 'video' }
                   ]}
                   style={{ width: '100%', border: '1px solid #3E83F6', borderRadius: '29px' }}
                   className="[&.ant-segmented]:!border [&.ant-segmented]:!border-[#3E83F6]! [&.ant-segmented]:!rounded-[29px]! [&_.ant-segmented-item-selected]:!bg-[#3E83F6] [&_.ant-segmented-thumb]:!bg-[#3E83F6] [&_.ant-segmented-item]:!rounded-[28px]"
@@ -2976,7 +2946,7 @@ function ShortplayEntryPage() {
                                     <img src="/img/avatar.png" alt="定制音色" className="w-full h-full object-cover" />
                                   ) : (
                                     <div className="w-full h-full bg-orange-500 flex items-center justify-center">
-                                      <span className="text-xs text-white font-medium">系</span>
+                                      <span className="text-xs text-white font-medium">{t('shortplayEntry.status.systemVoice')}</span>
                                     </div>
                                   )}
                                 </div>
@@ -2990,13 +2960,13 @@ function ShortplayEntryPage() {
                                       }
                                     }}
                                   >
-                                    播放
+                                    {t('shortplayEntry.buttons.play')}
                                   </button>
                                   <button
                                     className="px-1 py-0.5 text-sm border border-blue-500 text-blue-500 rounded hover:bg-blue-50"
                                     onClick={() => handleApplyVoice(voice.voiceId)}
                                   >
-                                    应用
+                                    {t('shortplayEntry.buttons.apply')}
                                   </button>
                                 </div>
                               </div>
@@ -3008,7 +2978,7 @@ function ShortplayEntryPage() {
                           {isLoadingBgm ? (
                             <div className="flex items-center justify-center p-4 text-gray-500">
                               <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
-                              加载中...
+                              {t('shortplayEntry.status.loading')}
                             </div>
                           ) : (
                             bgmList.map((bgm, index) => (
@@ -3018,7 +2988,7 @@ function ShortplayEntryPage() {
                                     <Icon icon="ri:music-2-line" className="w-4 h-4 text-white" />
                                   </div>
                                   <div className="flex-1">
-                                    <div className="text-sm font-medium text-gray-800">{bgm.prompt || bgm.name || bgm.title || '音效文件'}</div>
+                                    <div className="text-sm font-medium text-gray-800">{bgm.prompt || bgm.name || bgm.title || t('shortplayEntry.ui.defaultSoundName')}</div>
                                   </div>
                                   <button
                                     className="px-1 py-0.5 text-sm rounded flex items-center space-x-1"
@@ -3026,14 +2996,14 @@ function ShortplayEntryPage() {
                                     onClick={() => handleApplyBgm(bgm)}
                                   >
                                     <Icon icon="ri:check-line" className="w-3 h-3" />
-                                    <span>应用</span>
+                                    <span>{t('shortplayEntry.buttons.apply')}</span>
                                   </button>
                                 </div>
                                 {bgm.description && (
                                   <div className="text-xs text-gray-500 pl-11">{bgm.description}</div>
                                 )}
                                 <div className="flex items-center space-x-2 pl-11">
-                                    <span className="text-sm text-gray-600">播放位置</span>
+                                    <span className="text-sm text-gray-600">{t('shortplayEntry.preview.playbackLocation')}</span>
                                     {bgmLibraryEditingId === bgm.id ? (
                                       <div className="flex items-center space-x-1">
                                         <TimeRangeInput
@@ -3180,10 +3150,10 @@ function ShortplayEntryPage() {
                                                   }}
                                                   className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
                                                   style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
-                                                  title="查看原图"
+                                                  title={t('shortplayEntry.tooltips.viewOriginal')}
                                                 >
                                                   <Icon icon="ri:external-link-line" className="w-3 h-3" />
-                                                  查看
+                                                  {t('shortplayEntry.preview.view')}
                                                 </button>
                                                 <button
                                                   onClick={() => {
@@ -3191,10 +3161,10 @@ function ShortplayEntryPage() {
                                                   }}
                                                   className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
                                                   style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
-                                                  title="应用此图片"
+                                                  title={t('shortplayEntry.tooltips.applyImage')}
                                                 >
                                                   <Icon icon="ri:check-line" className="w-3 h-3 text-green-400" />
-                                                  应用
+                                                  {t('shortplayEntry.buttons.apply')}
                                                 </button>
                                               </div>
                                             </div>
@@ -3277,10 +3247,10 @@ function ShortplayEntryPage() {
                                                   }}
                                                   className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
                                                   style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
-                                                  title="播放视频"
+                                                  title={t('shortplayEntry.tooltips.playVideo')}
                                                 >
                                                   <Icon icon="ri:play-line" className="w-3 h-3" />
-                                                  查看
+                                                  {t('shortplayEntry.preview.view')}
                                                 </button>
                                                 <button
                                                   onClick={() => {
@@ -3288,10 +3258,10 @@ function ShortplayEntryPage() {
                                                   }}
                                                   className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
                                                   style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
-                                                  title="应用此视频"
+                                                  title={t('shortplayEntry.tooltips.applyVideo')}
                                                 >
                                                   <Icon icon="ri:check-line" className="w-3 h-3 text-green-400" />
-                                                  应用
+                                                  {t('shortplayEntry.buttons.apply')}
                                                 </button>
                                               </div>
                                             </div>
@@ -3489,13 +3459,13 @@ function ShortplayEntryPage() {
                   localStorage.setItem('videoCacheMap', JSON.stringify(newCache));
                   console.log(`Saved video data to cache for series ${seriesId}, scene ${sceneId}:`, result.data);
 
-                  toast.success('视频预览已加载');
+                  toast.success(t('shortplayEntry.messages.success.videoPreviewLoaded'));
                 } else {
                   throw new Error('返回数据中缺少downloadUrl');
                 }
               } catch (error) {
                 console.error('视频预览请求失败:', error);
-                toast.error('视频预览失败：' + (error as Error).message);
+                toast.error(t('shortplayEntry.messages.error.videoPreviewFailed', { error: (error as Error).message }));
               } finally {
                 setIsLoadingPreviewVideo(false);
               }
@@ -3603,7 +3573,7 @@ function ShortplayEntryPage() {
                               const sceneId = currentSceneData?.sceneId;
 
                               if (!sceneId) {
-                                toast.error('场景不存在');
+                                toast.error(t('shortplayEntry.validation.sceneNotFound'));
                                 return;
                               }
 
@@ -3696,7 +3666,7 @@ function ShortplayEntryPage() {
                               setEditingSceneRoleName('');
                             } catch (error) {
                               console.error('保存失败:', error);
-                              toast.error('保存失败：' + (error as Error).message);
+                              toast.error(t('shortplayEntry.messages.error.saveFailed', { error: (error as Error).message }));
                             }
                           }}
                           onCancelContentEdit={() => {
@@ -3807,7 +3777,7 @@ function ShortplayEntryPage() {
                   disabled={isLoadingPreviewVideo}
                 >
                   <Icon icon="ri:play-circle-line" className="w-3 h-3 mr-1" />
-                  预览
+                  {t('shortplayEntry.buttons.preview')}
                 </Button>
               </div>
               <div className="flex items-center space-x-2">
@@ -3832,14 +3802,14 @@ function ShortplayEntryPage() {
                       link.click();
                       document.body.removeChild(link);
 
-                      toast.success('开始下载视频');
+                      toast.success(t('shortplayEntry.messages.success.downloadStarted'));
                     } else {
-                      toast.error('暂无可下载的视频，请先点击预览或应用');
+                      toast.error(t('shortplayEntry.messages.error.noVideoToDownload'));
                     }
                   }}
                 >
                   <Icon icon="ri:download-line" className="w-3 h-3 mr-1" />
-                  下载
+                  {t('shortplayEntry.buttons.download')}
                 </Button>
                 <Button
                   size="small"
@@ -3856,17 +3826,17 @@ function ShortplayEntryPage() {
 
                       // 进入编辑模式，初始化题目和选项
                       setIsEditorMode(true);
-                      setQuestionTitle('面对女友的问题，你应该怎么回答？');
-                      setOptions(['选项1']);
+                      setQuestionTitle('');
+                      setOptions([`${t('shortplayEntry.ui.defaultOptionPrefix')}1`]);
 
-                      toast.success('已插入最后一帧图片');
+                      toast.success(t('shortplayEntry.messages.success.frameInserted'));
                       console.log('插入lastFrame:', cachedData.lastFrame);
                     } else {
-                      toast.error('暂无缓存的最后一帧图片，请先点击预览或应用');
+                      toast.error(t('shortplayEntry.ui.noFrameCacheHint'));
                     }
                   }}
                 >
-                  插入选项
+                  {t('shortplayEntry.buttons.insertOption')}
                 </Button>
               </div>
             </div>
@@ -3894,7 +3864,7 @@ function ShortplayEntryPage() {
                           onClick={togglePlay}
                           onTimeUpdate={(e) => {
                             const video = e.currentTarget;
-                            if (video.duration && !isDragging) {
+                            if (video.duration && !isSeeking) {
                               setProgress((video.currentTime / video.duration) * 100);
 
                               // 根据当前播放时间高亮对应的列表项
@@ -3954,7 +3924,7 @@ function ShortplayEntryPage() {
                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
                           <div className="flex flex-col items-center">
                             <Icon icon="ri:loader-4-line" className="w-8 h-8 text-white animate-spin mb-2" />
-                            <div className="text-white text-sm">生成中...</div>
+                            <div className="text-white text-sm">{t('shortplayEntry.ui.creatingPreview')}</div>
                           </div>
                         </div>
                       )}
@@ -3975,40 +3945,37 @@ function ShortplayEntryPage() {
                       )}
 
                       <>
-                        {/* 进度条 - 编辑模式下隐藏 */}
+                        {/* 进度条 - 编辑模式下隐藏 - 应用 react-project CSS 样式 */}
                         {hasVideo && !isEditorMode && (
                         <div className="absolute bottom-12 left-4 right-4 z-10">
-                            <div className="flex items-center justify-between text-white text-xs mb-1">
-                              <span>{timeDisplay}</span>
-                              <span>{totalTimeDisplay}</span>
+                            <div className="time-display mb-2">
+                              <span className="current-time">{timeDisplay}</span>
+                              <span className="separator">/</span>
+                              <span className="duration">{totalTimeDisplay}</span>
                             </div>
-                            <div className="relative">
+                            <div
+                              data-progress-bar
+                              onMouseDown={handleProgressMouseDown}
+                              onMouseUp={handleProgressMouseUp}
+                              onTouchStart={handleProgressTouchStart}
+                              onTouchEnd={handleProgressTouchEnd}
+                            >
+                              {/* 进度条填充效果 - 渐变色 + 阴影 */}
                               <div
-                                data-progress-bar
-                                className="w-full h-1 bg-white/30 rounded-full cursor-pointer select-none"
-                                onMouseDown={handleMouseDown}
-                                onMouseMove={handleMouseMove}
-                                onMouseUp={handleMouseUp}
-                                onMouseLeave={handleMouseLeave}
-                              >
-                                <div
-                                  className="h-1 bg-white rounded-full relative"
-                                  style={{ width: `${progress}%` }}
-                                >
-                                  <div
-                                    className={`absolute right-0 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg cursor-grab ${isDragging ? 'cursor-grabbing scale-110' : 'hover:scale-110'} transition-transform duration-150`}
-                                    onMouseDown={handleMouseDown}
-                                  ></div>
-                                </div>
-                              </div>
-                              {/* 不可见的拖拽区域，增加交互面积 */}
-                              <div
-                                className="absolute -top-2 -bottom-2 left-0 right-0 cursor-pointer"
-                                onMouseDown={handleMouseDown}
-                                onMouseMove={handleMouseMove}
-                                onMouseUp={handleMouseUp}
-                                onMouseLeave={handleMouseLeave}
+                                className="progress-bar-fill"
+                                style={{ width: `${progress}%` }}
                               ></div>
+                              {/* 进度条 slider - 支持 Chrome/Firefox/Safari */}
+                              <input
+                                type="range"
+                                className="progress-slider"
+                                min="0"
+                                max="100"
+                                value={progress}
+                                onChange={handleProgressChange}
+                                onMouseDown={handleProgressMouseDown}
+                                onTouchStart={handleProgressTouchStart}
+                              />
                             </div>
                           </div>
                         )}
@@ -4035,7 +4002,7 @@ function ShortplayEntryPage() {
                                     setIsEditingTitle(false);
                                   }}
                                   className="w-full px-3 py-2 bg-white/90 text-black rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="输入题目..."
+                                  placeholder={t('shortplayEntry.ui.inputTitlePlaceholder')}
                                 />
                               ) : (
                                 <div
@@ -4045,7 +4012,7 @@ function ShortplayEntryPage() {
                                   }}
                                   className="text-white text-sm font-medium px-3 py-2 bg-black/40 rounded cursor-pointer hover:bg-black/60 transition-colors"
                                 >
-                                  {questionTitle || '点击编辑题目'}
+                                  {questionTitle || t('shortplayEntry.ui.editTitleHint')}
                                 </div>
                               )}
                             </div>
@@ -4092,7 +4059,7 @@ function ShortplayEntryPage() {
                                       setOptions(options.filter((_, i) => i !== index));
                                     }}
                                     className="text-red-500 hover:text-red-400 transition-colors p-0"
-                                    title="删除选项"
+                                    title={t('shortplayEntry.tooltips.deleteOption')}
                                   >
                                     <Icon icon="ri:delete-bin-line" className="w-4 h-4" />
                                   </button>
@@ -4104,10 +4071,10 @@ function ShortplayEntryPage() {
                             <div className="mt-3 flex items-center gap-2">
                               <button
                                 onClick={() => {
-                                  setOptions([...options, `选项${options.length + 1}`]);
+                                  setOptions([...options, `${t('shortplayEntry.ui.defaultOptionPrefix')}${options.length + 1}`]);
                                 }}
                                 className="text-blue-400 hover:text-blue-300 transition-colors"
-                                title="新增选项"
+                                title={t('shortplayEntry.buttons.addOption')}
                               >
                                 <Icon icon="ri:add-line" className="w-4 h-4" />
                               </button>
@@ -4146,7 +4113,7 @@ function ShortplayEntryPage() {
                                     console.log('保存结果:', result);
 
                                     if (result.code === 0) {
-                                      toast.success('已保存');
+                                      toast.success(t('shortplayEntry.messages.success.saved'));
                                       setIsEditorMode(false);
                                       setHasVideo(true);
                                       setLastFrameImage('');
@@ -4155,12 +4122,12 @@ function ShortplayEntryPage() {
                                     }
                                   } catch (error) {
                                     console.error('保存失败:', error);
-                                    toast.error('保存失败：' + (error as Error).message);
+                                    toast.error(t('shortplayEntry.messages.error.saveFailed', { error: (error as Error).message }));
                                   }
                                 }}
                                 className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors"
                               >
-                                保存
+                                {t('shortplayEntry.buttons.save')}
                               </button>
 
                               <button
@@ -4171,7 +4138,7 @@ function ShortplayEntryPage() {
                                 }}
                                 className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm font-medium transition-colors"
                               >
-                                取消
+                                {t('shortplayEntry.buttons.cancel')}
                               </button>
                             </div>
                           </div>
@@ -4180,10 +4147,10 @@ function ShortplayEntryPage() {
                           {/* 底部操作栏 */}
                           <div className="absolute bottom-0 left-0 right-0 h-8 bg-black/60 flex items-center justify-around backdrop-blur-sm">
                             <div className="text-center">
-                              <div className="text-white text-sm">叙梦</div>
+                              <div className="text-white text-sm">{t('shortplayEntry.navigation.appName')}</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-white text-sm">我的</div>
+                              <div className="text-white text-sm">{t('shortplayEntry.navigation.myProfile')}</div>
                             </div>
                           </div>
                         </>
@@ -4206,8 +4173,8 @@ function ShortplayEntryPage() {
                 <Icon icon="ri:delete-bin-line" className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-900">删除确认</h3>
-                <p className="text-sm text-gray-500">确定要删除这条内容吗？删除后无法恢复。</p>
+                <h3 className="text-lg font-medium text-gray-900">{t('shortplayEntry.dialogs.deleteConfirm.title')}</h3>
+                <p className="text-sm text-gray-500">{t('shortplayEntry.dialogs.deleteConfirm.message')}</p>
               </div>
             </div>
             <div className="flex space-x-3 justify-end">
@@ -4215,13 +4182,13 @@ function ShortplayEntryPage() {
                 onClick={handleCancelDelete}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >
-                取消
+                {t('shortplayEntry.dialogs.deleteConfirm.cancel')}
               </button>
               <button
                 onClick={handleConfirmDelete}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
-                删除
+                {t('shortplayEntry.dialogs.deleteConfirm.delete')}
               </button>
             </div>
           </div>
@@ -4237,8 +4204,8 @@ function ShortplayEntryPage() {
                 <Icon icon="ri:delete-bin-line" className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-900">删除确认</h3>
-                <p className="text-sm text-gray-500">确定要删除这条内容吗？删除后无法恢复。</p>
+                <h3 className="text-lg font-medium text-gray-900">{t('shortplayEntry.dialogs.deleteConfirm.title')}</h3>
+                <p className="text-sm text-gray-500">{t('shortplayEntry.dialogs.deleteConfirm.message')}</p>
               </div>
             </div>
             <div className="flex space-x-3 justify-end">
@@ -4246,13 +4213,13 @@ function ShortplayEntryPage() {
                 onClick={handleCancelDeleteAudio}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >
-                取消
+                {t('shortplayEntry.dialogs.deleteConfirm.cancel')}
               </button>
               <button
                 onClick={handleConfirmDeleteAudio}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
-                删除
+                {t('shortplayEntry.dialogs.deleteConfirm.delete')}
               </button>
             </div>
           </div>
@@ -4268,8 +4235,8 @@ function ShortplayEntryPage() {
                 <Icon icon="ri:delete-bin-line" className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-900">删除确认</h3>
-                <p className="text-sm text-gray-500">确定要删除这个分镜板吗？删除后无法恢复。</p>
+                <h3 className="text-lg font-medium text-gray-900">{t('shortplayEntry.dialogs.deleteConfirm.title')}</h3>
+                <p className="text-sm text-gray-500">{t('shortplayEntry.dialogs.deleteConfirm.message')}</p>
               </div>
             </div>
             <div className="flex space-x-3 justify-end">
@@ -4277,13 +4244,13 @@ function ShortplayEntryPage() {
                 onClick={() => setDeleteStoryboardId(null)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >
-                取消
+                {t('shortplayEntry.dialogs.deleteConfirm.cancel')}
               </button>
               <button
                 onClick={handleConfirmDeleteStoryboard}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
-                删除
+                {t('shortplayEntry.dialogs.deleteConfirm.delete')}
               </button>
             </div>
           </div>
@@ -4301,7 +4268,7 @@ function ShortplayEntryPage() {
               onClick={() => setPreviewModalVisible(false)}
               className="flex-1 px-4 py-2 text-gray-400 bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
             >
-              关闭
+              {t('shortplayEntry.preview.close')}
             </button>
             <button
               onClick={() => {
@@ -4312,7 +4279,7 @@ function ShortplayEntryPage() {
               }}
               className="flex-1 px-4 py-2 text-white bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
             >
-              应用
+              {t('shortplayEntry.buttons.apply')}
             </button>
           </div>
         ) : null}
@@ -4356,7 +4323,7 @@ function ShortplayEntryPage() {
                 onClick={() => setPreviewModalVisible(false)}
                 className="flex-1 px-4 py-2 text-gray-400 bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
               >
-                关闭
+                {t('shortplayEntry.preview.close')}
               </button>
               <button
                 onClick={() => {
@@ -4367,7 +4334,7 @@ function ShortplayEntryPage() {
                 }}
                 className="flex-1 px-4 py-2 text-white bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
               >
-                应用
+                {t('shortplayEntry.buttons.apply')}
               </button>
             </div>
           )}

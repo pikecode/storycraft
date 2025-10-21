@@ -182,7 +182,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                 className={actionButtonClass}
               >
                 <Icon icon="ri:add-circle-line" className="w-4 h-4" />
-                <span>添加</span>
+                <span>{t('shortplayEntry.buttons.addOption')}</span>
               </button>
             )}
             {onApplyClick && (
@@ -193,7 +193,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                 className={`${actionButtonClass} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <Icon icon="ri:check-line" className="w-4 h-4" />
-                <span>应用</span>
+                <span>{t('shortplayEntry.buttons.apply')}</span>
               </button>
             )}
           </div>

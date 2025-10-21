@@ -574,6 +574,11 @@ export const jaJP = {
       voiceType: '音声タイプ',
       male: '男性の声',
       female: '女性の声',
+      voice: '音声',
+      sound: 'サウンド',
+      configured: '構成済み',
+      listen: 'リッスン',
+      deleteVoice: '削除',
     },
     image: {
       backgroundType: '背景タイプ',
@@ -613,6 +618,178 @@ export const jaJP = {
         name: '修仙恋愛記',
         description: '修仙背景の恋愛物語',
       },
+    },
+
+    // ボタンテキスト
+    buttons: {
+      play: '再生',
+      pause: '一時停止',
+      apply: '適用',
+      preview: 'プレビュー',
+      download: 'ダウンロード',
+      insertOption: 'オプションを挿入',
+      addOption: 'オプションを追加',
+      save: '保存',
+      cancel: 'キャンセル',
+      delete: '削除',
+      viewOriginal: 'オリジナルを表示',
+      playVideo: 'ビデオを再生',
+    },
+
+    // ステータスプロンプト
+    status: {
+      loading: '読み込み中...',
+      generating: '生成中...',
+      defaultVoiceName: 'この音声',
+      defaultSoundName: '音効',
+      defaultImageAlt: '生成された画像',
+      lastFrameAlt: '最後のフレーム',
+      customizeVoice: '音声をカスタマイズ',
+      systemVoice: 'システム',
+    },
+
+    // 検証エラー
+    validation: {
+      selectSceneFirst: 'まずシーンを選択してください',
+      startTimeLessThanEnd: '開始時刻は終了時刻より小さい必要があります',
+      enterContent: 'コンテンツを入力してください',
+      enterGeneratedContent: '生成されたコンテンツを入力してください',
+      soundNotFound: '音効が見つかりません',
+      sceneNotFound: 'シーンが存在しません',
+    },
+
+    // ユーザーエラー
+    userErrors: {
+      userInfoMissing: 'ユーザー情報が存在しません。再度ログインしてください',
+      userIdMissing: 'ユーザーIDが存在しません。再度ログインしてください',
+      userInfoIncomplete: 'ユーザー情報が不完全です。再度ログインしてください',
+      parseUserInfoFailed: 'ユーザー情報の解析に失敗しました',
+      soundMissingAttachmentId: '音効ファイルにattachmentIdがありません',
+    },
+
+    // 成功メッセージ
+    messages: {
+      success: {
+        storyboardDeleted: 'ストーリーボード削除成功！',
+        deleted: '削除成功！',
+        storyboardSorted: 'ストーリーボード並び替え更新！',
+        timeUpdated: '時間更新成功！',
+        videoPreviewLoaded: 'ビデオプレビュー読み込み完了',
+        voiceApplied: '音声適用成功！',
+        voiceNameUpdated: '音声名更新成功！',
+        voiceBound: '音声バインド成功！',
+        soundApplied: '音効適用成功！',
+        imageGenerated: '画像生成完了！',
+        videoGenerationStarted: 'ビデオ生成タスク開始！',
+        videoGenerated: 'ビデオ生成成功！',
+        scriptGenerated: '脚本生成完了！',
+        downloadStarted: 'ビデオダウンロード開始',
+        frameInserted: '最後のフレーム画像を挿入',
+        saved: '保存しました',
+        audioPlaybackFailed: 'オーディオ再生失敗',
+        voiceStillGenerating: '音声はまだ生成中',
+      },
+
+      // エラーメッセージ
+      error: {
+        sortingFailed: '並び替え更新失敗：{error}',
+        deleteFailed: '削除失敗：{error}',
+        sceneNameUpdateFailed: 'シーン名更新失敗：{error}',
+        saveFailed: '保存失敗：{error}',
+        voiceDeleteFailed: '音声削除失敗：{error}',
+        voiceApplyFailed: '音声適用失敗：{error}',
+        voiceNameUpdateFailed: '音声名更新失敗：{error}',
+        voiceBindFailed: '音声バインド失敗：{error}',
+        audioPlayError: 'オーディオ再生失敗：{error}',
+        imageApplyFailed: '画像適用失敗：{error}',
+        imageGenerationFailed: '画像生成失敗：{error}',
+        videoPreviewFailed: 'ビデオプレビュー失敗：{error}',
+        soundApplyFailed: '音効適用失敗：{error}',
+        videoGenerationFailed: 'ビデオ生成失敗：{error}',
+        videoGenerationRetry: 'ビデオ生成失敗、再試行してください',
+        noVideoToDownload: 'ダウンロード可能なビデオがありません。まずプレビューまたは適用をクリックしてください',
+        noFrameCache: 'キャッシュされた最後のフレーム画像がありません。まずプレビューまたは適用をクリックしてください',
+        soundGenerationFailed: '音効生成失敗：{error}',
+        updateFailed: '更新失敗',
+      }
+    },
+
+    // ダイアログテキスト
+    dialogs: {
+      deleteConfirm: {
+        title: '削除確認',
+        message: 'このコンテンツを削除してもよろしいですか？削除後は回復できません。',
+        delete: '削除',
+        cancel: 'キャンセル',
+      }
+    },
+
+    // ツールチップテキスト
+    tooltips: {
+      viewOriginal: 'オリジナルを表示',
+      applyImage: 'この画像を適用',
+      playVideo: 'ビデオを再生',
+      applyVideo: 'このビデオを適用',
+      deleteOption: 'オプションを削除',
+    },
+
+    // エディターテキスト
+    editor: {
+      editTitle: 'クリックしてタイトルを編集',
+      titlePlaceholder: 'タイトルを入力してください...',
+      defaultOption: 'オプション{number}',
+      editOption: 'オプションを編集',
+    },
+
+    // タイプラベル
+    types: {
+      scene: 'シーン',
+      dialog: 'ダイアログ',
+      sound: 'サウンド',
+      scenarioLabel: 'シナリオ',
+      typeLabel: 'タイプ',
+    },
+
+    // サイドバー
+    sidebar: {
+      aiCreation: 'AI作成',
+    },
+
+    // ヘッダーとフッターナビゲーション
+    navigation: {
+      appName: 'ストーリーテイルス',
+      myProfile: 'マイ',
+    },
+
+    // プレビューとコンテンツ関連
+    preview: {
+      close: '閉じる',
+      edit: '編集',
+      view: '表示',
+      apply: '適用',
+      delete: '削除',
+      playbackLocation: '再生位置',
+    },
+
+    // コンテンツタイプ
+    contentTypes: {
+      sceneScript: 'シーン台本',
+      characterDialogue: 'キャラクター台詞',
+    },
+
+    // その他のUI文本
+    ui: {
+      noFrameCacheHint: 'キャッシュされた最後のフレーム画像がありません。まずプレビューまたは適用をクリックしてください',
+      noVideoDownloadHint: 'ダウンロード可能なビデオがありません。まずプレビューまたは適用をクリックしてください',
+      creatingPreview: '生成中...',
+      editTitleHint: 'クリックしてタイトルを編集',
+      inputTitlePlaceholder: 'タイトルを入力...',
+      defaultOptionPrefix: 'オプション',
+      defaultSoundName: '音効ファイル',
+      generatedImageAlt: '生成画像',
+      lastFrameAlt: '最後のフレーム',
+      customizeVoiceLabel: '音声をカスタマイズ',
+      systemVoiceLabel: 'システム',
     },
   },
 
