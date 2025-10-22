@@ -353,12 +353,37 @@ function ShortplayEntryPage() {
       console.log('视频预览请求成功:', result);
 
       if (result.code === 0) {
-        // 获取下载地址并更新视频源
+        // 获取下载地址并更新视频源（带鉴权回退为 Blob URL）
         if (result.data?.downloadUrl) {
           const downloadUrl = result.data.downloadUrl;
           console.log('设置videoSrc:', downloadUrl);
-          setVideoSrc(downloadUrl);
-          setHasVideo(true);
+
+          try {
+            const probe = await fetch(downloadUrl, { method: 'HEAD' }).catch(() => null);
+            if (probe && probe.ok) {
+              setVideoSrc(downloadUrl);
+              setHasVideo(true);
+            } else {
+              throw new Error('Direct URL not accessible');
+            }
+          } catch (e) {
+            try {
+              const token = localStorage.getItem('token');
+              const res = await fetch(downloadUrl, {
+                method: 'GET',
+                headers: { 'X-Prompt-Manager-Token': token || '' },
+              });
+              if (!res.ok) throw new Error(`下载失败: ${res.status}`);
+              const blob = await res.blob();
+              const objectUrl = URL.createObjectURL(blob);
+              setVideoSrc(objectUrl);
+              setHasVideo(true);
+            } catch (blobErr) {
+              console.error('获取视频失败:', blobErr);
+              toast.error(t('shortplayEntry.messages.error.videoPreviewFailed', { error: (blobErr as Error).message }));
+              setHasVideo(false);
+            }
+          }
 
           // 保存完整的返回数据到缓存（使用seriesId和sceneId组合作为key）
           const cacheKey = `${seriesId}_${sceneId}`;
@@ -3480,8 +3505,35 @@ function ShortplayEntryPage() {
                 if (result.data?.downloadUrl) {
                   const downloadUrl = result.data.downloadUrl;
                   console.log('设置videoSrc:', downloadUrl);
-                  setVideoSrc(downloadUrl);
-                  setHasVideo(true);
+
+                  // 尝试直接使用URL播放；若失败（需要鉴权/CORS），则回退为 Blob URL
+                  try {
+                    // 先做一次 HEAD/GET 探测，若 200/206 则直接用直链
+                    const probe = await fetch(downloadUrl, { method: 'HEAD' }).catch(() => null);
+                    if (probe && probe.ok) {
+                      setVideoSrc(downloadUrl);
+                      setHasVideo(true);
+                    } else {
+                      throw new Error('Direct URL not accessible, fallback to blob');
+                    }
+                  } catch (e) {
+                    try {
+                      const token = localStorage.getItem('token');
+                      const res = await fetch(downloadUrl, {
+                        method: 'GET',
+                        headers: { 'X-Prompt-Manager-Token': token || '' },
+                      });
+                      if (!res.ok) throw new Error(`下载失败: ${res.status}`);
+                      const blob = await res.blob();
+                      const objectUrl = URL.createObjectURL(blob);
+                      setVideoSrc(objectUrl);
+                      setHasVideo(true);
+                    } catch (blobErr) {
+                      console.error('获取视频失败:', blobErr);
+                      toast.error(t('shortplayEntry.messages.error.videoPreviewFailed', { error: (blobErr as Error).message }));
+                      setHasVideo(false);
+                    }
+                  }
 
                   // 保存完整的返回数据到缓存（使用seriesId和sceneId组合作为key）
                   const cacheKey = `${seriesId}_${sceneId}`;
@@ -3847,13 +3899,13 @@ function ShortplayEntryPage() {
                     {/* 视频播放内容（使用 PhoneVideoPlayer，仅为体验播放效果） */}
                     <div className="absolute inset-0 pointer-events-auto">
                       <PhoneVideoPlayer
-                        key={videoSrc || 'empty'}
-                        src={videoSrc}
+                        key={'direct-top-1761117851267'}
+                        src={"http://18.181.192.140/storyai/file/download?fileId=320&fileName=1761117851267.mp4"}
                         poster={lastFrameImage || undefined}
-                        autoplay={true}
+                        autoplay={false}
                         showControls={true}
                         loop={false}
-                        muted={true}
+                        muted={false}
                         playsInline={true}
                         variant="iphone14"
                         edgeToEdge={true}
@@ -3916,11 +3968,11 @@ function ShortplayEntryPage() {
           {/* 独立的 PhoneVideoPlayer（无干扰对比测试用） */}
           <div className="p-2.5 border-t border-gray-200">
             <PhoneVideoPlayer
-              key={(videoSrc || 'empty') + '-standalone'}
-              src={videoSrc || 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'}
+              key={'direct-standalone-1761117851267'}
+              src={"http://18.181.192.140/storyai/file/download?fileId=320&fileName=1761117851267.mp4"}
               poster={lastFrameImage || undefined}
-              autoplay={true}
-              muted={true}
+              autoplay={false}
+              muted={false}
               playsInline={true}
               showControls={true}
               loop={false}

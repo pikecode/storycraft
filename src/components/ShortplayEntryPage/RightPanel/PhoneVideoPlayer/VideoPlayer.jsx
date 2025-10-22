@@ -214,7 +214,17 @@ export function VideoPlayer({
     const onVideoError = (event) => {
       setIsPlaying(false)
       setHasError(true)
-      onError?.(event?.target?.error || event)
+      const err = event?.target?.error || event
+      // 控制台输出更详细错误，便于排查（CORS/HTTP/解码）
+      try {
+        // eslint-disable-next-line no-console
+        console.error('[VideoPlayer] onError', err, {
+          networkState: v.networkState,
+          readyState: v.readyState,
+          src: v.currentSrc,
+        })
+      } catch (_) {}
+      onError?.(err)
     }
 
     v.addEventListener('play', onVideoPlay)
@@ -311,7 +321,6 @@ export function VideoPlayer({
     >
       <div className="video-player-wrapper">
         <video
-          crossOrigin="anonymous"
           ref={videoRef}
           className="video-player-video"
           poster={poster}
