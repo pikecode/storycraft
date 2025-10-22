@@ -42,6 +42,12 @@ import type { ScriptCardProps } from './ShortplayEntryPage/types';
 // 导入工具函数
 import { formatMillisecondsToTime } from './ShortplayEntryPage/utils/formatTime';
 
+// 右侧面板拆分组件（头部 / 播放器 / 插入选项编辑蒙层）
+import RightPanelHeader from './ShortplayEntryPage/RightPanel/RightPanelHeader';
+// 替换原 RightPanelPlayer 为外部的手机视频播放器组件
+import PhoneVideoPlayer from './ShortplayEntryPage/RightPanel/PhoneVideoPlayer';
+import InteractiveQuestionOverlay from './ShortplayEntryPage/RightPanel/InteractiveQuestionOverlay';
+
 // 一键创作API基础路径
 const STORYAI_API_BASE = '/episode-api/storyai';
 
@@ -1388,6 +1394,32 @@ function ShortplayEntryPage() {
   const currentTime = Math.floor((progress / 100) * videoDuration);
   const timeDisplay = formatTime(currentTime);
   const totalTimeDisplay = formatTime(videoDuration);
+
+  // 播放器 onTimeUpdate：更新进度与高亮（供 RightPanelPlayer 调用）
+  const handlePlayerTimeUpdate = (currentTimeSec: number, durationSec: number) => {
+    if (durationSec && !isSeeking) {
+      setProgress((currentTimeSec / durationSec) * 100);
+
+      const currentTimeMs = currentTimeSec * 1000;
+      const isTimeInRange = (item: any) => {
+        let startTime = item.startTime ?? 0;
+        let endTime = item.endTime ?? 0;
+        if (typeof startTime === 'string') startTime = parseInt(startTime);
+        if (typeof endTime === 'string') endTime = parseInt(endTime);
+        if (startTime > 0 && startTime < 1000) startTime = startTime * 1000;
+        if (endTime > 0 && endTime < 1000) endTime = endTime * 1000;
+        return currentTimeMs >= startTime && currentTimeMs < endTime;
+      };
+
+      let itemToHighlight: any = null;
+      if ((activeTab === 'script' || activeTab === 'audio') && sceneContent && sceneContent.length) {
+        itemToHighlight = sceneContent.find((i: any) => isTimeInRange(i));
+      } else if ((activeTab === 'image' || activeTab === 'video') && storyboardItems && storyboardItems.length) {
+        itemToHighlight = storyboardItems.find((i: any) => isTimeInRange(i));
+      }
+      setHighlightedItemId(itemToHighlight?.id || null);
+    }
+  };
 
 
   // 获取音色列表
@@ -2816,7 +2848,6 @@ function ShortplayEntryPage() {
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="flex flex-grow overflow-hidden">
-        <>
           {/* 左侧面板 - 一键创作 (均分) */}
           <div className="flex-1 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
           {/* 顶部Logo和标题区 */}
@@ -3765,82 +3796,42 @@ function ShortplayEntryPage() {
 
         {/* 右侧面板 - 手机预览区域 (固定宽度340px) */}
         <div className="bg-gray-100 flex flex-col overflow-hidden" style={{ width: '340px' }}>
-          {/* 预览头部 */}
-          <div className="p-3 border-b border-gray-200 bg-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Button
-                  size="small"
-                  type="primary"
-                  className="text-xs"
-                  onClick={handleVideoPreview}
-                  disabled={isLoadingPreviewVideo}
-                >
-                  <Icon icon="ri:play-circle-line" className="w-3 h-3 mr-1" />
-                  {t('shortplayEntry.buttons.preview')}
-                </Button>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  size="small"
-                  type="text"
-                  className="text-xs text-blue-500 border border-blue-200 rounded"
-                  onClick={() => {
-                    // 从缓存中获取视频downloadUrl
-                    const cacheKey = `${seriesId}_${currentSceneId}`;
-                    const cachedData = videoCacheMap[cacheKey];
-                    if (cachedData && cachedData.downloadUrl) {
-                      const downloadUrl = cachedData.downloadUrl;
-                      const fileName = cachedData.fileName || 'video.mp4';
-
-                      // 创建a标签触发下载
-                      const link = document.createElement('a');
-                      link.href = downloadUrl;
-                      link.download = fileName;
-                      link.target = '_blank';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-
-                      toast.success(t('shortplayEntry.messages.success.downloadStarted'));
-                    } else {
-                      toast.error(t('shortplayEntry.messages.error.noVideoToDownload'));
-                    }
-                  }}
-                >
-                  <Icon icon="ri:download-line" className="w-3 h-3 mr-1" />
-                  {t('shortplayEntry.buttons.download')}
-                </Button>
-                <Button
-                  size="small"
-                  type="text"
-                  className="text-xs text-blue-500 border border-blue-200 rounded"
-                  onClick={() => {
-                    // 从缓存中获取lastFrame
-                    const cacheKey = `${seriesId}_${currentSceneId}`;
-                    const cachedData = videoCacheMap[cacheKey];
-                    if (cachedData && cachedData.lastFrame) {
-                      setLastFrameImage(cachedData.lastFrame);
-                      setHasVideo(false);  // 停止显示视频，改为显示图片
-                      setVideoSrc("");  // 清空视频源
-
-                      // 进入编辑模式，初始化题目和选项
-                      setIsEditorMode(true);
-                      setQuestionTitle('');
-                      setOptions([`${t('shortplayEntry.ui.defaultOptionPrefix')}1`]);
-
-                      toast.success(t('shortplayEntry.messages.success.frameInserted'));
-                      console.log('插入lastFrame:', cachedData.lastFrame);
-                    } else {
-                      toast.error(t('shortplayEntry.ui.noFrameCacheHint'));
-                    }
-                  }}
-                >
-                  {t('shortplayEntry.buttons.insertOption')}
-                </Button>
-              </div>
-            </div>
-          </div>
+          <RightPanelHeader
+            disabled={isLoadingPreviewVideo}
+            onPreview={handleVideoPreview}
+            onDownload={() => {
+              const cacheKey = `${seriesId}_${currentSceneId}`;
+              const cachedData: any = (videoCacheMap as any)[cacheKey];
+              if (cachedData && cachedData.downloadUrl) {
+                const downloadUrl = cachedData.downloadUrl;
+                const fileName = cachedData.fileName || 'video.mp4';
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = fileName;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                toast.success(t('shortplayEntry.messages.success.downloadStarted'));
+              } else {
+                toast.error(t('shortplayEntry.messages.error.noVideoToDownload'));
+              }
+            }}
+            onInsertOption={() => {
+              const cacheKey = `${seriesId}_${currentSceneId}`;
+              const cachedData: any = (videoCacheMap as any)[cacheKey];
+              if (cachedData && cachedData.lastFrame) {
+                setLastFrameImage(cachedData.lastFrame);
+                // 不清空视频源，避免占位符；保持当前视频画面作为背景
+                setIsEditorMode(true);
+                setQuestionTitle('');
+                setOptions([`${t('shortplayEntry.ui.defaultOptionPrefix')}1`]);
+                toast.success(t('shortplayEntry.messages.success.frameInserted'));
+              } else {
+                toast.error(t('shortplayEntry.ui.noFrameCacheHint'));
+              }
+            }}
+          />
 
           {/* 手机预览容器 */}
           <div className="flex-grow overflow-auto min-h-0 p-2.5">
@@ -3853,73 +3844,30 @@ function ShortplayEntryPage() {
                     {/* 刘海屏设计 */}
                     <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-full z-10"></div>
 
-                    {/* 视频播放内容 */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      {hasVideo ? (
-                        /* 真实视频播放 */
-                        <video
-                          ref={videoRef}
-                          src={videoSrc}
-                          className="w-full h-full object-cover"
-                          onClick={togglePlay}
-                          onTimeUpdate={(e) => {
-                            const video = e.currentTarget;
-                            if (video.duration && !isSeeking) {
-                              setProgress((video.currentTime / video.duration) * 100);
+                    {/* 视频播放内容（使用 PhoneVideoPlayer，仅为体验播放效果） */}
+                    <div className="absolute inset-0 pointer-events-auto">
+                      <PhoneVideoPlayer
+                        key={videoSrc || 'empty'}
+                        src={videoSrc}
+                        poster={lastFrameImage || undefined}
+                        autoplay={true}
+                        showControls={true}
+                        loop={false}
+                        muted={true}
+                        playsInline={true}
+                        variant="iphone14"
+                        edgeToEdge={true}
+                        showNotch={false}
+                        showBottomBar={true}
+                        bottomBarLabels={[t('shortplayEntry.navigation.appName'), t('shortplayEntry.navigation.myProfile')]}
+                        bottomBarActiveIndex={0}
+                        bottomBarPosition="overlay"
+                        progressPlayedColor="#3b82f6"
+                        progressBufferedColor="#64748b"
+                        progressTrackColor="#1f2937"
+                      />
 
-                              // 根据当前播放时间高亮对应的列表项
-                              const currentTimeMs = video.currentTime * 1000;
-                              let itemToHighlight = null;
-
-                              // 辅助函数：处理时间格式并进行比较
-                              const isTimeInRange = (item: any): boolean => {
-                                let startTime = item.startTime || 0;
-                                let endTime = item.endTime || 0;
-
-                                // 如果时间小于 1000，可能是秒，转换为毫秒
-                                if (startTime > 0 && startTime < 1000) {
-                                  startTime = startTime * 1000;
-                                }
-                                if (endTime > 0 && endTime < 1000) {
-                                  endTime = endTime * 1000;
-                                }
-
-                                return currentTimeMs >= startTime && currentTimeMs < endTime;
-                              };
-
-                              // 根据当前 tab 查找对应的列表
-                              if (activeTab === 'script' && sceneContent && sceneContent.length > 0) {
-                                // 在脚本列表中查找对应的项
-                                itemToHighlight = sceneContent.find((item: any) => isTimeInRange(item));
-                              } else if (activeTab === 'audio' && sceneContent && sceneContent.length > 0) {
-                                // 在音频列表中查找对应的项
-                                itemToHighlight = sceneContent.find((item: any) => isTimeInRange(item));
-                              } else if (activeTab === 'image' && storyboardItems && storyboardItems.length > 0) {
-                                // 在图片列表中查找对应的项
-                                itemToHighlight = storyboardItems.find((item: any) => isTimeInRange(item));
-                              } else if (activeTab === 'video' && storyboardItems && storyboardItems.length > 0) {
-                                // 在分镜板列表中查找对应的项
-                                itemToHighlight = storyboardItems.find((item: any) => isTimeInRange(item));
-                              }
-
-                              setHighlightedItemId(itemToHighlight?.id || null);
-                            }
-                          }}
-                          onLoadedMetadata={handleVideoLoaded}
-                        />
-                      ) : lastFrameImage ? (
-                        // 显示最后一帧图片
-                        <img
-                          src={lastFrameImage}
-                          alt="最后一帧"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        // 默认黑色背景
-                        <div className="w-full h-full bg-black"></div>
-                      )}
-
-                      {/* 加载中覆盖层 */}
+                      {/* 加载中覆盖层（可选） */}
                       {isLoadingPreviewVideo && (
                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
                           <div className="flex flex-col items-center">
@@ -3928,240 +3876,66 @@ function ShortplayEntryPage() {
                           </div>
                         </div>
                       )}
-
-                      {/* 播放控制按钮 */}
-                      {hasVideo && (
-                        <div className="absolute inset-0 flex items-center justify-center z-10">
-                          <button
-                            onClick={togglePlay}
-                            className="bg-black/50 text-white rounded-full p-4 hover:bg-black/70 transition-all transform hover:scale-110"
-                          >
-                            <Icon
-                              icon={isPlaying ? "ri:pause-fill" : "ri:play-fill"}
-                              className="w-8 h-8"
-                            />
-                          </button>
-                        </div>
-                      )}
-
-                      <>
-                        {/* 进度条 - 编辑模式下隐藏 - 应用 react-project CSS 样式 */}
-                        {hasVideo && !isEditorMode && (
-                        <div className="absolute bottom-12 left-4 right-4 z-10">
-                            <div className="time-display mb-2">
-                              <span className="current-time">{timeDisplay}</span>
-                              <span className="separator">/</span>
-                              <span className="duration">{totalTimeDisplay}</span>
-                            </div>
-                            <div
-                              data-progress-bar
-                              onMouseDown={handleProgressMouseDown}
-                              onMouseUp={handleProgressMouseUp}
-                              onTouchStart={handleProgressTouchStart}
-                              onTouchEnd={handleProgressTouchEnd}
-                            >
-                              {/* 进度条填充效果 - 渐变色 + 阴影 */}
-                              <div
-                                className="progress-bar-fill"
-                                style={{ width: `${progress}%` }}
-                              ></div>
-                              {/* 进度条 slider - 支持 Chrome/Firefox/Safari */}
-                              <input
-                                type="range"
-                                className="progress-slider"
-                                min="0"
-                                max="100"
-                                value={progress}
-                                onChange={handleProgressChange}
-                                onMouseDown={handleProgressMouseDown}
-                                onTouchStart={handleProgressTouchStart}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* 编辑器蒙层 - 仅在编辑模式下显示 */}
-                        {isEditorMode && (
-                          <div className="absolute inset-0 bg-black/60 flex flex-col justify-end p-3 z-20">
-                            {/* 题目区域 */}
-                            <div className="mb-3">
-                              {isEditingTitle ? (
-                                <input
-                                  type="text"
-                                  autoFocus
-                                  value={editingTitle}
-                                  onChange={(e) => setEditingTitle(e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      setQuestionTitle(editingTitle);
-                                      setIsEditingTitle(false);
-                                    }
-                                  }}
-                                  onBlur={() => {
-                                    setQuestionTitle(editingTitle);
-                                    setIsEditingTitle(false);
-                                  }}
-                                  className="w-full px-3 py-2 bg-white/90 text-black rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder={t('shortplayEntry.ui.inputTitlePlaceholder')}
-                                />
-                              ) : (
-                                <div
-                                  onClick={() => {
-                                    setEditingTitle(questionTitle);
-                                    setIsEditingTitle(true);
-                                  }}
-                                  className="text-white text-sm font-medium px-3 py-2 bg-black/40 rounded cursor-pointer hover:bg-black/60 transition-colors"
-                                >
-                                  {questionTitle || t('shortplayEntry.ui.editTitleHint')}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* 选项列表 */}
-                            <div className="space-y-2 max-h-40 overflow-y-auto">
-                              {options.map((option, index) => (
-                                <div key={index} className="flex items-center gap-2">
-                                  {editingOptionIndex === index ? (
-                                    <input
-                                      type="text"
-                                      autoFocus
-                                      value={editingOptionText}
-                                      onChange={(e) => setEditingOptionText(e.target.value)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          const newOptions = [...options];
-                                          newOptions[index] = editingOptionText;
-                                          setOptions(newOptions);
-                                          setEditingOptionIndex(null);
-                                        }
-                                      }}
-                                      onBlur={() => {
-                                        const newOptions = [...options];
-                                        newOptions[index] = editingOptionText;
-                                        setOptions(newOptions);
-                                        setEditingOptionIndex(null);
-                                      }}
-                                      className="flex-1 px-3 py-2 bg-white/90 text-black rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                  ) : (
-                                    <div
-                                      onClick={() => {
-                                        setEditingOptionIndex(index);
-                                        setEditingOptionText(option);
-                                      }}
-                                      className="flex-1 text-white/90 text-sm cursor-pointer hover:text-white transition-colors"
-                                    >
-                                      {String.fromCharCode(65 + index)}. {option}
-                                    </div>
-                                  )}
-                                  <button
-                                    onClick={() => {
-                                      setOptions(options.filter((_, i) => i !== index));
-                                    }}
-                                    className="text-red-500 hover:text-red-400 transition-colors p-0"
-                                    title={t('shortplayEntry.tooltips.deleteOption')}
-                                  >
-                                    <Icon icon="ri:delete-bin-line" className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-
-                            {/* 新增选项、保存和取消按钮 - 同一行 */}
-                            <div className="mt-3 flex items-center gap-2">
-                              <button
-                                onClick={() => {
-                                  setOptions([...options, `${t('shortplayEntry.ui.defaultOptionPrefix')}${options.length + 1}`]);
-                                }}
-                                className="text-blue-400 hover:text-blue-300 transition-colors"
-                                title={t('shortplayEntry.buttons.addOption')}
-                              >
-                                <Icon icon="ri:add-line" className="w-4 h-4" />
-                              </button>
-
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const token = localStorage.getItem('token');
-                                    const storyboardOrder = storyboardItems.length + 1;
-
-                                    const requestData = {
-                                      sceneId: currentSceneId,
-                                      storyboardOrder: storyboardOrder,
-                                      questionInfo: {
-                                        title: questionTitle,
-                                        options: options
-                                      }
-                                    };
-
-                                    console.log('发送请求数据:', requestData);
-
-                                    const response = await fetch(`${STORYAI_API_BASE}/storyboard/special/create`, {
-                                      method: 'POST',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-Prompt-Manager-Token': token || '',
-                                      },
-                                      body: JSON.stringify(requestData)
-                                    });
-
-                                    if (!response.ok) {
-                                      throw new Error(`请求失败: ${response.status}`);
-                                    }
-
-                                    const result = await response.json();
-                                    console.log('保存结果:', result);
-
-                                    if (result.code === 0) {
-                                      toast.success(t('shortplayEntry.messages.success.saved'));
-                                      setIsEditorMode(false);
-                                      setHasVideo(true);
-                                      setLastFrameImage('');
-                                    } else {
-                                      throw new Error(result.message || '保存失败');
-                                    }
-                                  } catch (error) {
-                                    console.error('保存失败:', error);
-                                    toast.error(t('shortplayEntry.messages.error.saveFailed', { error: (error as Error).message }));
-                                  }
-                                }}
-                                className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors"
-                              >
-                                {t('shortplayEntry.buttons.save')}
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setIsEditorMode(false);
-                                  setHasVideo(true);
-                                  setLastFrameImage('');
-                                }}
-                                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm font-medium transition-colors"
-                              >
-                                {t('shortplayEntry.buttons.cancel')}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                          {/* 底部操作栏 */}
-                          <div className="absolute bottom-0 left-0 right-0 h-8 bg-black/60 flex items-center justify-around backdrop-blur-sm">
-                            <div className="text-center">
-                              <div className="text-white text-sm">{t('shortplayEntry.navigation.appName')}</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-white text-sm">{t('shortplayEntry.navigation.myProfile')}</div>
-                            </div>
-                          </div>
-                        </>
-                      </div>
                     </div>
+
+                    {/* 为了单纯测试播放器，暂时不显示插入选项编辑蒙层 */}
+                    {false && (
+                      <InteractiveQuestionOverlay
+                        open={isEditorMode}
+                        questionTitle={questionTitle}
+                        options={options}
+                        isEditingTitle={isEditingTitle}
+                        editingTitle={editingTitle}
+                        onTitleClick={() => { setEditingTitle(questionTitle); setIsEditingTitle(true); }}
+                        onTitleChange={(v) => setEditingTitle(v)}
+                        onTitleCommit={() => { setQuestionTitle(editingTitle); setIsEditingTitle(false); }}
+                        editingOptionIndex={editingOptionIndex}
+                        editingOptionText={editingOptionText}
+                        onOptionClick={(index, current) => { setEditingOptionIndex(index); setEditingOptionText(current); }}
+                        onOptionChange={(v) => setEditingOptionText(v)}
+                        onOptionCommit={(index) => {
+                          const newOptions = [...options];
+                          newOptions[index] = editingOptionText;
+                          setOptions(newOptions);
+                          setEditingOptionIndex(null);
+                        }}
+                        onOptionDelete={(index) => { setOptions(options.filter((_, i) => i !== index)); }}
+                        onAddOption={() => { setOptions([...options, `${t('shortplayEntry.ui.defaultOptionPrefix')}${options.length + 1}`]); }}
+                        onSave={async () => {}}
+                        onCancel={() => { setIsEditorMode(false); setHasVideo(true); setLastFrameImage(''); }}
+                      />
+                    )}
+
+                    {/* 底部操作栏由 PhoneVideoPlayer 提供（overlay 模式） */}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </>
+
+          {/* 独立的 PhoneVideoPlayer（无干扰对比测试用） */}
+          <div className="p-2.5 border-t border-gray-200">
+            <PhoneVideoPlayer
+              key={(videoSrc || 'empty') + '-standalone'}
+              src={videoSrc || 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'}
+              poster={lastFrameImage || undefined}
+              autoplay={true}
+              muted={true}
+              playsInline={true}
+              showControls={true}
+              loop={false}
+              variant="iphone14"
+              edgeToEdge={true}
+              showNotch={false}
+              showBottomBar={true}
+              bottomBarLabels={[t('shortplayEntry.navigation.appName'), t('shortplayEntry.navigation.myProfile')]}
+              bottomBarActiveIndex={0}
+              bottomBarPosition="overlay"
+              progressPlayedColor="#3b82f6"
+              progressBufferedColor="#64748b"
+              progressTrackColor="#1f2937"
+            />
+          </div>
       </div>
 
       {/* 删除确认对话框 - 场次内容 */}
@@ -4348,7 +4122,7 @@ function ShortplayEntryPage() {
           <div
             className="fixed inset-0 z-40"
             onClick={() => setShowTypeSelector(false)}
-          />
+          ></div>
           {/* Popover 弹窗 */}
           <div
             className="fixed bg-white rounded-md shadow-lg overflow-hidden z-50"
@@ -4375,6 +4149,7 @@ function ShortplayEntryPage() {
           </div>
         </>
       )}
+    </div>
     </div>
   );
 }

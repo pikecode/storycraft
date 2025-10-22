@@ -1,0 +1,245 @@
+/* PhoneFrame Component - Mobile Phone Mockup */
+
+
+.phone-frame.light .phone-frame-notch {
+  background: #f5f5f5;
+}
+
+.phone-frame.light .phone-frame-button {
+  background: #d0d0d0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1), inset 1px 0 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Animation for page load */
+@keyframes phone-frame-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.phone-frame-outer {
+  animation: phone-frame-appear 0.4s ease-out;
+}
+.phone-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at top, rgba(22, 26, 38, 0.48), transparent 60%);
+  user-select: none;
+}
+
+.phone-frame-outer {
+  position: relative;
+  width: 352px;
+  height: 760px;
+  background: linear-gradient(145deg, #090b11 0%, #151b26 40%, #05070b 100%);
+  border-radius: 54px;
+  box-shadow:
+    0 42px 64px rgba(6, 8, 12, 0.7),
+    inset 0 2px 6px rgba(255, 255, 255, 0.1),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+
+.phone-frame-outer::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border-radius: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.phone-frame-outer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 54px;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.08), transparent 45%);
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+/* Screen content area */
+.phone-frame-screen {
+  position: absolute;
+  inset: 14px;
+  border-radius: 42px;
+  background: #000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.6);
+}
+
+/* Dynamic Island */
+.phone-frame-notch {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 40px;
+  background: linear-gradient(180deg, #020205 0%, #060812 100%);
+  border-radius: 22px;
+  z-index: 10;
+  box-shadow:
+    0 12px 26px rgba(3, 4, 8, 0.65),
+    inset 0 1px 3px rgba(255, 255, 255, 0.08);
+}
+
+.phone-frame-notch::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 18px;
+  width: 34px;
+  height: 20px;
+  border-radius: 12px;
+  background: rgba(20, 24, 34, 0.6);
+  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.08);
+}
+
+.phone-frame-notch::after {
+  content: '';
+  position: absolute;
+  top: 9px;
+  right: 18px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(90, 110, 160, 0.45), #04060c 70%);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Content area */
+.phone-frame-content {
+  position: absolute;
+  inset: 0;
+  padding-top: 54px;
+  padding-bottom: 44px;
+  padding-left: 6px;
+  padding-right: 6px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Home Indicator */
+.phone-frame-home-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  width: 136px;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.45);
+  z-index: 12;
+}
+
+/* Side Buttons */
+.phone-frame-button {
+  position: absolute;
+  right: -10px;
+  width: 4px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(40, 42, 52, 0.95), rgba(12, 14, 20, 0.95));
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.phone-frame-button-top {
+  top: 112px;
+  height: 60px;
+}
+
+.phone-frame-button-middle {
+  top: 200px;
+  height: 88px;
+}
+
+.phone-frame-button-bottom {
+  top: 336px;
+  height: 68px;
+}
+
+/* iPhone 14/15 Variant scaling */
+.phone-frame.iphone14 .phone-frame-outer,
+.phone-frame.iphone15 .phone-frame-outer {
+  width: 352px;
+  height: 760px;
+}
+
+/* Responsive scaling */
+@media (max-width: 768px) {
+  .phone-frame {
+    padding: 18px;
+  }
+
+  .phone-frame-outer {
+    width: 324px;
+    height: 700px;
+    border-radius: 50px;
+  }
+
+  .phone-frame-screen {
+    border-radius: 42px;
+  }
+
+  .phone-frame-notch {
+    top: 22px;
+    width: 122px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 520px) {
+  .phone-frame {
+    padding: 14px;
+  }
+
+  .phone-frame-outer {
+    width: 296px;
+    height: 642px;
+    border-radius: 48px;
+  }
+
+  .phone-frame-screen {
+    border-radius: 40px;
+  }
+
+  .phone-frame-notch {
+    top: 20px;
+    width: 114px;
+    height: 34px;
+  }
+
+  .phone-frame-home-indicator {
+    bottom: 18px;
+    width: 120px;
+  }
+}
+
+/* Optional light variant */
+.phone-frame.light .phone-frame-outer {
+  background: linear-gradient(145deg, #f4f4f6 0%, #d9dce5 40%, #c0c5d4 100%);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 42px 64px rgba(10, 16, 42, 0.25),
+    inset 0 2px 6px rgba(255, 255, 255, 0.4),
+    inset 0 -4px 12px rgba(135, 142, 170, 0.45);
+}
+
+.phone-frame.light .phone-frame-notch {
+  background: linear-gradient(180deg, #1a1d2a 0%, #070915 100%);
+}
+
