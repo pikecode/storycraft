@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
+import toast from 'react-hot-toast';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SortableStoryboardItemProps } from '../types';
 import { formatMillisecondsToTime } from '../utils/formatTime';
 import { TimeRangeInput } from '../Common/TimeRangeInput';
+import { useI18n } from '../../../contexts/I18nContext';
+
+const STORYAI_API_BASE = '/episode-api/storyai';
 
 export function SortableStoryboardItem({
   item,
@@ -26,6 +30,44 @@ export function SortableStoryboardItem({
   onPreview,
   isHighlighted,
 }: SortableStoryboardItemProps) {
+  const { t } = useI18n();
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  const handleRegenerateStoryboard = async () => {
+    try {
+      setIsRegenerating(true);
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${STORYAI_API_BASE}/storyboard/regenerate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Prompt-Manager-Token': token || '',
+        },
+        body: JSON.stringify({
+          storyboardId: item.id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.code === 0) {
+        toast.success('分镜板重新生成成功！');
+      } else {
+        throw new Error(result.message || '重新生成分镜板失败');
+      }
+    } catch (error) {
+      console.error('重新生成分镜板失败:', error);
+      toast.error('重新生成分镜板失败：' + (error as Error).message);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   const {
     attributes,
     listeners,
@@ -74,8 +116,16 @@ export function SortableStoryboardItem({
           >
             <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
           </div>
-          <button className="p-1 hover:bg-gray-100 rounded">
-            <Icon icon="ri:add-circle-line" className="w-4 h-4 text-gray-400" />
+          <button
+            className="p-1 hover:bg-gray-100 rounded"
+            onClick={handleRegenerateStoryboard}
+            disabled={isRegenerating}
+            title="重新生成分镜板"
+          >
+            <Icon
+              icon="ri:add-circle-line"
+              className={`w-4 h-4 ${isRegenerating ? 'text-gray-300 animate-spin' : 'text-gray-400'}`}
+            />
           </button>
           <button
             className="p-1 hover:bg-gray-100 rounded"
