@@ -232,6 +232,7 @@ export interface SortableStoryboardItemProps {
   onDeleteItem: (itemId: string) => void;
   TimeRangeInput: React.ComponentType<any>;
   onPreview?: (fileUrl: string, fileName?: string) => void;
+  onRefreshList?: () => Promise<void>;
   isHighlighted?: boolean;
 }
 
@@ -255,6 +256,7 @@ export interface StoryboardListProps {
   onDeleteItem: (itemId: string) => void;
   TimeRangeInput: React.ComponentType<any>;
   onPreview?: (fileUrl: string, fileName?: string) => void;
+  onRefreshList?: () => Promise<void>;
   highlightedItemId?: string | number | null;
 }
 

@@ -3713,6 +3713,7 @@ function ShortplayEntryPage() {
                 onDragEnd={handleStoryboardDragEnd}
                 onDeleteItem={handleShowDeleteStoryboardConfirm}
                 TimeRangeInput={TimeRangeInput}
+                onRefreshList={loadStoryboardList}
                 highlightedItemId={highlightedItemId}
                 onPreview={(fileUrl, fileName) => {
                   setPreviewUrl(fileUrl);
@@ -3746,6 +3747,7 @@ function ShortplayEntryPage() {
                 onDragEnd={handleStoryboardDragEnd}
                 onDeleteItem={handleShowDeleteStoryboardConfirm}
                 TimeRangeInput={TimeRangeInput}
+                onRefreshList={loadStoryboardList}
                 highlightedItemId={highlightedItemId}
                 onPreview={(fileUrl, fileName) => {
                   setPreviewUrl(fileUrl);

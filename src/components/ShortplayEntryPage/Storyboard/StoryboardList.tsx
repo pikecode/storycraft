@@ -25,6 +25,7 @@ export function StoryboardList({
   onDeleteItem,
   TimeRangeInput,
   onPreview,
+  onRefreshList,
   highlightedItemId,
 }: StoryboardListProps) {
   return (
@@ -64,6 +65,7 @@ export function StoryboardList({
                 onDeleteItem={onDeleteItem}
                 TimeRangeInput={TimeRangeInput}
                 onPreview={onPreview}
+                onRefreshList={onRefreshList}
                 isHighlighted={highlightedItemId === item.id}
               />
             ))

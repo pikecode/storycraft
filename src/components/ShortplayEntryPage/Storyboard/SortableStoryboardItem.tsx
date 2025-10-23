@@ -28,6 +28,7 @@ export function SortableStoryboardItem({
   onDeleteItem,
   TimeRangeInput: TimeRangeInputComponent,
   onPreview,
+  onRefreshList,
   isHighlighted,
 }: SortableStoryboardItemProps) {
   const { t } = useI18n();
@@ -57,6 +58,10 @@ export function SortableStoryboardItem({
 
       if (result.code === 0) {
         toast.success('分镜板重新生成成功！');
+        // 刷新列表数据
+        if (onRefreshList) {
+          await onRefreshList();
+        }
       } else {
         throw new Error(result.message || '重新生成分镜板失败');
       }
