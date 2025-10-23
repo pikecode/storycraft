@@ -29,7 +29,7 @@
   position: absolute;
   top: 50%;
   left: 0;
-  height: 8px;
+  height: 5px;
   background: linear-gradient(90deg, #3b82f6, #1e40af);
   border-radius: 6px;
   transition: width 0.05s linear;
@@ -59,7 +59,7 @@
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
-  height: 8px;
+  height: 5px;
   background: linear-gradient(to right, #1f2937 0%, #374151 50%, #1f2937 100%);
   border-radius: 6px;
   border: none;
@@ -69,21 +69,21 @@
 .progress-slider::-webkit-slider-thumb {
   appearance: none;
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #3b82f6 0%, #1e40af 100%);
   cursor: grab;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6), 0 0 8px rgba(59, 130, 246, 0.3);
-  border: 2px solid #fff;
-  margin-top: -4px;
+  border: 1px solid #fff;
+  margin-top: -3px;
   transition: all 0.2s ease;
 }
 
 .progress-slider::-webkit-slider-thumb:hover {
-  width: 20px;
-  height: 20px;
-  margin-top: -6px;
+  width: 6px;
+  height: 18px;
+  margin-top: -5px;
   cursor: grab;
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.8), 0 0 12px rgba(59, 130, 246, 0.5);
   transform: scale(1.1);
@@ -99,31 +99,31 @@
   background: linear-gradient(to right, #1f2937 0%, #374151 50%, #1f2937 100%);
   border: none;
   border-radius: 6px;
-  height: 8px;
+  height: 5px;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .progress-slider::-moz-range-progress {
   background: linear-gradient(90deg, #3b82f6, #1e40af);
   border-radius: 6px;
-  height: 8px;
+  height: 5px;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
 }
 
 .progress-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #3b82f6 0%, #1e40af 100%);
   cursor: grab;
-  border: 2px solid #fff;
+  border: 1px solid #fff;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6), 0 0 8px rgba(59, 130, 246, 0.3);
   transition: all 0.2s ease;
 }
 
 .progress-slider::-moz-range-thumb:hover {
-  width: 20px;
-  height: 20px;
+  width: 6px;
+  height: 18px;
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.8), 0 0 12px rgba(59, 130, 246, 0.5);
   transform: scale(1.1);
 }

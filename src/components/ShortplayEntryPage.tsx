@@ -63,6 +63,7 @@ function ShortplayEntryPage() {
   const [audioModel, setAudioModel] = useState<string>('minmax'); // 音频tab模型
   const [progress, setProgress] = useState<number>(0); // 进度百分比
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isHoveringVideo, setIsHoveringVideo] = useState<boolean>(false);
   const [hasVideo, setHasVideo] = useState<boolean>(false); // 默认有视频
   const [userInput, setUserInput] = useState<string>(''); // 用户输入内容
   const [isGenerating, setIsGenerating] = useState<boolean>(false); // 生成状态
@@ -3851,7 +3852,11 @@ function ShortplayEntryPage() {
                     <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-full z-10"></div>
 
                     {/* 视频播放内容 */}
-                    <div className="absolute inset-0 overflow-hidden">
+                    <div
+                      className="absolute inset-0 overflow-hidden"
+                      onMouseEnter={() => setIsHoveringVideo(true)}
+                      onMouseLeave={() => setIsHoveringVideo(false)}
+                    >
                       {hasVideo ? (
                         /* 真实视频播放 */
                         <video
@@ -3927,8 +3932,8 @@ function ShortplayEntryPage() {
                       )}
 
                       {/* 播放控制按钮 */}
-                      {hasVideo && (
-                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                      {hasVideo && (!isPlaying || isHoveringVideo) && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10 transition-opacity duration-300">
                           <button
                             onClick={togglePlay}
                             className="bg-black/50 text-white rounded-full p-4 hover:bg-black/70 transition-all transform hover:scale-110"
