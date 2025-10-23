@@ -218,7 +218,7 @@ export function BottomInputArea({
                 </div>
               </div>
 
-              <div className="relative w-20">
+              {/* <div className="relative w-20">
                 <select
                   value={videoLength}
                   onChange={(e) => onVideoLengthChange?.(e.target.value)}
@@ -240,7 +240,7 @@ export function BottomInputArea({
                     <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -286,11 +286,11 @@ export function BottomInputArea({
           <div className="mb-3">
             <div className="flex space-x-2">
               {/* 模型选择 */}
-              <div className="relative flex-1 min-w-fit max-w-xs">
+              <div className="relative w-50">
                 <select
                   value={videoModel || availableVideoModels[0].value}
                   onChange={(e) => onVideoModelChange?.(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
+                  className="w-200 h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
                   {availableVideoModels.map((model) => (
                     <option key={model.value} value={model.value}>
@@ -306,7 +306,7 @@ export function BottomInputArea({
               </div>
 
               {/* 分辨率 */}
-              <div className="relative w-28">
+              {/* <div className="relative w-28">
                 <select
                   value={resolution}
                   onChange={(e) => onResolutionChange?.(e.target.value)}
@@ -322,10 +322,10 @@ export function BottomInputArea({
                     <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-              </div>
+              </div> */}
 
               {/* 宽高比 */}
-              <div className="relative w-28">
+              {/* <div className="relative w-28">
                 <select
                   value={videoLength}
                   onChange={(e) => onVideoLengthChange?.(e.target.value)}
@@ -345,16 +345,15 @@ export function BottomInputArea({
                     <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-              </div>
+              </div> */}
 
               {/* 持续时间（秒）*/}
-              <div className="relative w-24">
+              <div className="relative w-14">
                 <select
                   value={singleGenerate || '5s'}
                   onChange={(e) => onSingleGenerateChange?.(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                >
-                  <option value="1s">1s</option>
+                  className="w-100 h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
+                > 
                   <option value="2s">2s</option>
                   <option value="3s">3s</option>
                   <option value="4s">4s</option>
@@ -363,17 +362,7 @@ export function BottomInputArea({
                   <option value="7s">7s</option>
                   <option value="8s">8s</option>
                   <option value="9s">9s</option>
-                  <option value="10s">10s</option>
-                  <option value="11s">11s</option>
-                  <option value="12s">12s</option>
-                  <option value="13s">13s</option>
-                  <option value="14s">14s</option>
-                  <option value="15s">15s</option>
-                  <option value="16s">16s</option>
-                  <option value="17s">17s</option>
-                  <option value="18s">18s</option>
-                  <option value="19s">19s</option>
-                  <option value="20s">20s</option>
+                  <option value="10s">10s</option> 
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
