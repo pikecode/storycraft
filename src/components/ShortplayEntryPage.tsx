@@ -3103,25 +3103,20 @@ function ShortplayEntryPage() {
                         </div>
                       ) : imageChatHistory.length > 0 ? (
                         <div className="space-y-4">
-                          {imageChatHistory.map((message, messageIndex) => (
-                            <div key={`message-${messageIndex}`} className={`flex items-start ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'} gap-2`}>
-                              {message.type === 'USER_QUESTION' ? null : (
-                                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-                                  <Icon icon="ri:user-fill" className="w-3.5 h-3.5 text-gray-600" />
-                                </div>
-                              )}
-                              <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none'}`}>
-                                {message.type === 'USER_QUESTION' ? (
-                                  // 用户问题 - 显示content
-                                  <div className="text-sm text-gray-800">
-                                    {message.content}
-                                  </div>
-                                ) : message.type === 'AI_ANSWER' ? (
+                          {imageChatHistory
+                            .filter((message: any) => message.type === 'AI_ANSWER')
+                            .map((message, messageIndex) => (
+                            <div key={`message-${messageIndex}`} className="flex items-start justify-start gap-2">
+                              <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                                <Icon icon="ri:user-fill" className="w-3.5 h-3.5 text-gray-600" />
+                              </div>
+                              <div className="max-w-2xl rounded-2xl rounded-tl-none">
+                                {message.type === 'AI_ANSWER' ? (
                                   // AI回答 - 显示files中的图片，横向展示
                                   <div>
                                     {message.content && (
                                       <div className="text-sm text-gray-700 mb-2">
-                                        {message.content}
+                                        {message.userPrompt}
                                       </div>
                                     )}
                                     {message.files && message.files.length > 0 && (
@@ -3194,25 +3189,20 @@ function ShortplayEntryPage() {
                         </div>
                       ) : videoChatHistory.length > 0 ? (
                         <div className="space-y-4">
-                          {videoChatHistory.map((message, messageIndex) => (
-                            <div key={`message-${messageIndex}`} className={`flex items-start ${message.type === 'USER_QUESTION' ? 'justify-end' : 'justify-start'} gap-2`}>
-                              {message.type === 'USER_QUESTION' ? null : (
-                                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-                                  <Icon icon="ri:user-fill" className="w-3.5 h-3.5 text-gray-600" />
-                                </div>
-                              )}
-                              <div className={`max-w-2xl ${message.type === 'USER_QUESTION' ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none'}`}>
-                                {message.type === 'USER_QUESTION' ? (
-                                  // 用户问题 - 显示content
-                                  <div className="text-sm text-gray-800">
-                                    {message.content}
-                                  </div>
-                                ) : message.type === 'AI_ANSWER' ? (
+                          {videoChatHistory
+                            .filter((message: any) => message.type === 'AI_ANSWER')
+                            .map((message, messageIndex) => (
+                            <div key={`message-${messageIndex}`} className="flex items-start justify-start gap-2">
+                              <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                                <Icon icon="ri:user-fill" className="w-3.5 h-3.5 text-gray-600" />
+                              </div>
+                              <div className="max-w-2xl rounded-2xl rounded-tl-none">
+                                {message.type === 'AI_ANSWER' ? (
                                   // AI回答 - 显示files中的视频，横向展示
                                   <div>
                                     {message.content && (
                                       <div className="text-sm text-gray-700 mb-2">
-                                        {message.content}
+                                        {message.userPrompt}
                                       </div>
                                     )}
                                     {message.files && message.files.length > 0 && (
