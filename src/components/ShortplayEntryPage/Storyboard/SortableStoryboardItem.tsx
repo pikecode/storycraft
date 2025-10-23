@@ -184,7 +184,7 @@ export function SortableStoryboardItem({
         {/* 上面一行：userPrompt 内容，高度自适应 */}
         <div className="flex-1 min-w-0 overflow-hidden mb-2">
           <div className="text-sm text-gray-800 leading-relaxed line-clamp-3">
-            {item.description}
+            {item.userPrompt}
           </div>
         </div>
 

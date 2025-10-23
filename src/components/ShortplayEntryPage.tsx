@@ -377,7 +377,7 @@ function ShortplayEntryPage() {
   };
 
   // 创建分镜板
-  const handleCreateStoryboard = async (fileId: string, fileName: string) => {
+  const handleCreateStoryboard = async (fileId: string, fileName: string, userPrompt?: string) => {
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
     const sceneId = currentSceneData?.sceneId;
@@ -393,17 +393,24 @@ function ShortplayEntryPage() {
       // 计算下一个排序号 (当前列表长度 + 1)
       const storyboardOrder = storyboardItems.length + 1;
 
+      const requestBody: any = {
+        sceneId: sceneId,
+        storyboardOrder: storyboardOrder,
+        fileId: fileId
+      };
+
+      // 如果提供了userPrompt，添加到请求体
+      if (userPrompt) {
+        requestBody.userPrompt = userPrompt;
+      }
+
       const response = await fetch(`${STORYAI_API_BASE}/storyboard/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Prompt-Manager-Token': token || '',
         },
-        body: JSON.stringify({
-          sceneId: sceneId,
-          storyboardOrder: storyboardOrder,
-          fileId: fileId
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -3152,7 +3159,7 @@ function ShortplayEntryPage() {
                                                 </button>
                                                 <button
                                                   onClick={() => {
-                                                    handleCreateStoryboard(file.fileId, file.fileName);
+                                                    handleCreateStoryboard(file.fileId, file.fileName, message.userPrompt);
                                                   }}
                                                   className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
                                                   style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
@@ -3244,7 +3251,7 @@ function ShortplayEntryPage() {
                                                 </button>
                                                 <button
                                                   onClick={() => {
-                                                    handleCreateStoryboard(file.fileId, file.fileName);
+                                                    handleCreateStoryboard(file.fileId, file.fileName, message.userPrompt);
                                                   }}
                                                   className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
                                                   style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
