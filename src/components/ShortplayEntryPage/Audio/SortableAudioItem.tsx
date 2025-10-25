@@ -93,18 +93,21 @@ export function SortableAudioItem({
               </div>
             )}
             {audioType === 'voice' ? (
-              <div style={{ position: 'relative', display: 'inline-block' }}>
+              <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 <select
                   ref={editSelectRef}
                   style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: '24px',
-                    height: '24px',
-                    opacity: 0,
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'none',
+                    padding: '4px 6px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    background: 'transparent',
                     cursor: 'pointer',
-                    zIndex: 10
+                    fontSize: '0.875rem',
+                    color: 'inherit',
+                    minWidth: '80px'
                   }}
                   value={editingRoleName || ''}
                   onChange={(e) => {
@@ -122,8 +125,8 @@ export function SortableAudioItem({
                 </select>
                 <Icon
                   icon="ri:arrow-down-s-line"
-                  className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
-                  style={{ pointerEvents: 'none' }}
+                  className="w-3 h-3 text-gray-400 cursor-pointer hover:text-blue-500"
+                  style={{ pointerEvents: 'none', marginLeft: '-20px' }}
                 />
               </div>
             ) : (
@@ -200,20 +203,22 @@ export function SortableAudioItem({
           </div>
           {item.type === 'voice' && (
             <div
-              style={{ position: 'relative', display: 'inline-block' }}
-              onClick={() => displaySelectRef.current?.click()}
+              style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
             >
               <select
                 ref={displaySelectRef}
                 style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  width: '100%',
-                  height: '100%',
-                  opacity: 0,
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none',
+                  padding: '4px 6px',
+                  border: 'none',
+                  background: 'transparent',
                   cursor: 'pointer',
-                  zIndex: 10
+                  fontSize: '0.875rem',
+                  color: 'inherit',
+                  minWidth: '60px',
+                  maxWidth: '80px'
                 }}
                 onChange={(e) => {
                   const voiceId = e.target.value;
@@ -235,7 +240,8 @@ export function SortableAudioItem({
               </select>
               <Icon
                 icon="ri:arrow-down-s-line"
-                className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
+                className="w-3 h-3 text-gray-400 cursor-pointer hover:text-blue-500"
+                style={{ pointerEvents: 'none', marginLeft: '-20px' }}
               />
             </div>
           )}
