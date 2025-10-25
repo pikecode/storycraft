@@ -109,21 +109,25 @@ export function SortableAudioItem({
                     color: 'inherit',
                     minWidth: '80px'
                   }}
-                  value={editingRoleName || ''}
+                  defaultValue=""
                   onChange={(e) => {
                     const voiceId = e.target.value;
+                    if (!voiceId) return;
                     const selectedVoice = configuredVoices.find(v => v.voiceId === voiceId);
                     onEditingRoleNameChange?.(selectedVoice?.voiceName || voiceId);
+                    // 重置下拉菜单，不显示选中状态
+                    if (editSelectRef.current) {
+                      editSelectRef.current.value = '';
+                    }
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {configuredVoices
-                    .filter((voice) => voice.voiceName !== editingRoleName)
-                    .map((voice) => (
-                      <option key={voice.voiceId} value={voice.voiceId}>
-                        {voice.voiceName}
-                      </option>
-                    ))}
+                  <option value="" disabled hidden>--</option>
+                  {configuredVoices.map((voice) => (
+                    <option key={voice.voiceId} value={voice.voiceId}>
+                      {voice.voiceName}
+                    </option>
+                  ))}
                 </select>
                 <Icon
                   icon="ri:arrow-down-s-line"
@@ -222,8 +226,10 @@ export function SortableAudioItem({
                   minWidth: '60px',
                   maxWidth: '80px'
                 }}
+                defaultValue=""
                 onChange={(e) => {
                   const voiceId = e.target.value;
+                  if (!voiceId) return;
                   const selectedVoice = configuredVoices.find(v => v.voiceId === voiceId);
                   // 立即更新前端显示的角色名称
                   if (selectedVoice) {
@@ -231,16 +237,19 @@ export function SortableAudioItem({
                   }
                   // 异步请求后端绑定音色
                   onVoiceSelect?.(item.id, voiceId);
+                  // 重置下拉菜单，不显示选中状态
+                  if (displaySelectRef.current) {
+                    displaySelectRef.current.value = '';
+                  }
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                {configuredVoices
-                  .filter((voice) => voice.voiceName !== displaySpeaker)
-                  .map((voice) => (
-                    <option key={voice.voiceId} value={voice.voiceId}>
-                      {voice.voiceName}
-                    </option>
-                  ))}
+                <option value="" disabled hidden>--</option>
+                {configuredVoices.map((voice) => (
+                  <option key={voice.voiceId} value={voice.voiceId}>
+                    {voice.voiceName}
+                  </option>
+                ))}
               </select>
               <Icon
                 icon="ri:arrow-down-s-line"
