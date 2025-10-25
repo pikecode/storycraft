@@ -55,12 +55,12 @@ export function SortableAudioItem({
   }, [item.speaker]);
 
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform) || undefined,
-    transition: transition || undefined,
+    transform: CSS.Transform.toString(transform),
+    transition,
     opacity: isDragging ? 0.5 : 1,
     // 防止拖动时字体变形
-    WebkitFontSmoothing: 'antialiased' as any,
-    MozOsxFontSmoothing: 'grayscale' as any,
+    WebkitFontSmoothing: 'antialiased',
+    MozOsxFontSmoothing: 'grayscale',
     // 强制硬件加速，避免亚像素渲染问题
     willChange: isDragging ? 'transform' : 'auto',
     // 确保像素完美渲染
@@ -93,36 +93,39 @@ export function SortableAudioItem({
               </div>
             )}
             {audioType === 'voice' ? (
-              <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ position: 'relative', display: 'inline-block' }}>
                 <select
                   ref={editSelectRef}
                   style={{
-                    appearance: 'none',
-                    WebkitAppearance: 'none',
-                    MozAppearance: 'none',
-                    padding: '4px 6px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '4px',
-                    background: 'transparent',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: '24px',
+                    height: '24px',
+                    opacity: 0,
                     cursor: 'pointer',
-                    fontSize: '0.875rem',
-                    color: 'inherit',
-                    minWidth: '80px'
+                    zIndex: 10
                   }}
-                  defaultValue=""
+                  value={editingRoleName || ''}
                   onChange={(e) => {
                     const voiceId = e.target.value;
-                    if (!voiceId) return;
                     const selectedVoice = configuredVoices.find(v => v.voiceId === voiceId);
                     onEditingRoleNameChange?.(selectedVoice?.voiceName || voiceId);
-                    // 重置下拉菜单，不显示选中状态
+                    // 重置select，防止相同选项无法再次触发change
+                    setTimeout(() => {
+                      if (editSelectRef.current) {
+                        editSelectRef.current.value = '';
+                      }
+                    }, 0);
+                  }}
+                  onClick={(e) => {
+                    // 点击时重置值，确保change事件能触发
                     if (editSelectRef.current) {
                       editSelectRef.current.value = '';
                     }
+                    e.stopPropagation();
                   }}
-                  onClick={(e) => e.stopPropagation()}
                 >
-                  <option value="" disabled hidden>--</option>
                   {configuredVoices.map((voice) => (
                     <option key={voice.voiceId} value={voice.voiceId}>
                       {voice.voiceName}
@@ -131,8 +134,8 @@ export function SortableAudioItem({
                 </select>
                 <Icon
                   icon="ri:arrow-down-s-line"
-                  className="w-3 h-3 text-gray-400 cursor-pointer hover:text-blue-500"
-                  style={{ pointerEvents: 'none', marginLeft: '-20px' }}
+                  className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
+                  style={{ pointerEvents: 'none' }}
                 />
               </div>
             ) : (
@@ -208,28 +211,21 @@ export function SortableAudioItem({
             </Tooltip>
           </div>
           {item.type === 'voice' && (
-            <div
-              style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-            >
+            <div style={{ position: 'relative', display: 'inline-block' }}>
               <select
                 ref={displaySelectRef}
                 style={{
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                  MozAppearance: 'none',
-                  padding: '4px 6px',
-                  border: 'none',
-                  background: 'transparent',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: '24px',
+                  height: '24px',
+                  opacity: 0,
                   cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  color: 'inherit',
-                  minWidth: '60px',
-                  maxWidth: '80px'
+                  zIndex: 10
                 }}
-                defaultValue=""
                 onChange={(e) => {
                   const voiceId = e.target.value;
-                  if (!voiceId) return;
                   const selectedVoice = configuredVoices.find(v => v.voiceId === voiceId);
                   // 立即更新前端显示的角色名称
                   if (selectedVoice) {
@@ -237,14 +233,21 @@ export function SortableAudioItem({
                   }
                   // 异步请求后端绑定音色
                   onVoiceSelect?.(item.id, voiceId);
-                  // 重置下拉菜单，不显示选中状态
+                  // 重置select，防止相同选项无法再次触发change
+                  setTimeout(() => {
+                    if (displaySelectRef.current) {
+                      displaySelectRef.current.value = '';
+                    }
+                  }, 0);
+                }}
+                onClick={(e) => {
+                  // 点击时重置值，确保change事件能触发
                   if (displaySelectRef.current) {
                     displaySelectRef.current.value = '';
                   }
+                  e.stopPropagation();
                 }}
-                onClick={(e) => e.stopPropagation()}
               >
-                <option value="" disabled hidden>--</option>
                 {configuredVoices.map((voice) => (
                   <option key={voice.voiceId} value={voice.voiceId}>
                     {voice.voiceName}
@@ -253,8 +256,8 @@ export function SortableAudioItem({
               </select>
               <Icon
                 icon="ri:arrow-down-s-line"
-                className="w-3 h-3 text-gray-400 cursor-pointer hover:text-blue-500"
-                style={{ pointerEvents: 'none', marginLeft: '-20px' }}
+                className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
+                style={{ pointerEvents: 'none' }}
               />
             </div>
           )}
