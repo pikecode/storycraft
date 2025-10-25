@@ -117,11 +117,13 @@ export function SortableAudioItem({
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {configuredVoices.map((voice) => (
-                    <option key={voice.voiceId} value={voice.voiceId}>
-                      {voice.voiceName}
-                    </option>
-                  ))}
+                  {configuredVoices
+                    .filter((voice) => voice.voiceName !== editingRoleName)
+                    .map((voice) => (
+                      <option key={voice.voiceId} value={voice.voiceId}>
+                        {voice.voiceName}
+                      </option>
+                    ))}
                 </select>
                 <Icon
                   icon="ri:arrow-down-s-line"
@@ -232,11 +234,13 @@ export function SortableAudioItem({
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                {configuredVoices.map((voice) => (
-                  <option key={voice.voiceId} value={voice.voiceId}>
-                    {voice.voiceName}
-                  </option>
-                ))}
+                {configuredVoices
+                  .filter((voice) => voice.voiceName !== displaySpeaker)
+                  .map((voice) => (
+                    <option key={voice.voiceId} value={voice.voiceId}>
+                      {voice.voiceName}
+                    </option>
+                  ))}
               </select>
               <Icon
                 icon="ri:arrow-down-s-line"
