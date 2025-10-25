@@ -112,11 +112,16 @@ export function SortableAudioItem({
                   value={editingRoleName || ''}
                   onChange={(e) => {
                     const voiceId = e.target.value;
+                    if (!voiceId) {
+                      onEditingRoleNameChange?.('');
+                      return;
+                    }
                     const selectedVoice = configuredVoices.find(v => v.voiceId === voiceId);
                     onEditingRoleNameChange?.(selectedVoice?.voiceName || voiceId);
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
+                  <option value="">选择音色</option>
                   {configuredVoices.map((voice) => (
                     <option key={voice.voiceId} value={voice.voiceId}>
                       {voice.voiceName}
@@ -220,8 +225,10 @@ export function SortableAudioItem({
                   minWidth: '60px',
                   maxWidth: '80px'
                 }}
+                defaultValue=""
                 onChange={(e) => {
                   const voiceId = e.target.value;
+                  if (!voiceId) return;
                   const selectedVoice = configuredVoices.find(v => v.voiceId === voiceId);
                   // 立即更新前端显示的角色名称
                   if (selectedVoice) {
@@ -232,6 +239,7 @@ export function SortableAudioItem({
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
+                <option value="">选择音色</option>
                 {configuredVoices.map((voice) => (
                   <option key={voice.voiceId} value={voice.voiceId}>
                     {voice.voiceName}
