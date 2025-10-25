@@ -110,8 +110,8 @@ export interface BottomInputAreaProps {
   onVideoLengthChange?: (length: string) => void;
   resolution?: string;
   onResolutionChange?: (res: string) => void;
-  singleGenerate?: boolean;
-  onSingleGenerateChange?: (single: boolean) => void;
+  singleGenerate?: string;
+  onSingleGenerateChange?: (single: string) => void;
   videoModel?: string;
   onVideoModelChange?: (model: string) => void;
   uploadedImagesCount?: number;

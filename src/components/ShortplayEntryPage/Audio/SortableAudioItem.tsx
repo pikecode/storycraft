@@ -54,18 +54,18 @@ export function SortableAudioItem({
     setDisplaySpeaker(item.speaker);
   }, [item.speaker]);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform) || undefined,
+    transition: transition || undefined,
     opacity: isDragging ? 0.5 : 1,
     // 防止拖动时字体变形
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
+    WebkitFontSmoothing: 'antialiased' as any,
+    MozOsxFontSmoothing: 'grayscale' as any,
     // 强制硬件加速，避免亚像素渲染问题
     willChange: isDragging ? 'transform' : 'auto',
     // 确保像素完美渲染
-    backfaceVisibility: 'hidden',
-    transformStyle: 'preserve-3d',
+    backfaceVisibility: 'hidden' as any,
+    transformStyle: 'preserve-3d' as any,
     // 防止拖动时卡片伸缩
     width: isDragging ? '100%' : 'auto',
     zIndex: isDragging ? 1000 : 'auto',
@@ -199,15 +199,18 @@ export function SortableAudioItem({
             </Tooltip>
           </div>
           {item.type === 'voice' && (
-            <div style={{ position: 'relative', display: 'inline-block' }}>
+            <div
+              style={{ position: 'relative', display: 'inline-block' }}
+              onClick={() => displaySelectRef.current?.click()}
+            >
               <select
                 ref={displaySelectRef}
                 style={{
                   position: 'absolute',
                   left: 0,
                   top: 0,
-                  width: '24px',
-                  height: '24px',
+                  width: '100%',
+                  height: '100%',
                   opacity: 0,
                   cursor: 'pointer',
                   zIndex: 10
@@ -233,7 +236,6 @@ export function SortableAudioItem({
               <Icon
                 icon="ri:arrow-down-s-line"
                 className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
-                style={{ pointerEvents: 'none' }}
               />
             </div>
           )}
@@ -289,21 +291,23 @@ export function SortableAudioItem({
               <span>{item.timeRange}</span>
             </div>
           )}
-          <Icon
-            icon="ri:play-circle-line"
-            className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
-            onClick={() => onPlayAudio?.(item.id)}
-            title="播放音频"
-          />
+          <Tooltip title="播放音频">
+            <Icon
+              icon="ri:play-circle-line"
+              className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-500"
+              onClick={() => onPlayAudio?.(item.id)}
+            />
+          </Tooltip>
           <div {...listeners} className="cursor-move">
             <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400 cursor-grab" />
           </div>
-          <Icon
-            icon="ri:delete-bin-line"
-            className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
-            onClick={() => onShowDeleteConfirm?.(parseInt(item.id))}
-            title="删除"
-          />
+          <Tooltip title="删除">
+            <Icon
+              icon="ri:delete-bin-line"
+              className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
+              onClick={() => onShowDeleteConfirm?.(parseInt(item.id))}
+            />
+          </Tooltip>
         </div>
       </div>
       )}

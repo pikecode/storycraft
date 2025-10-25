@@ -82,15 +82,15 @@ export function SortableStoryboardItem({
     isDragging,
   } = useSortable({ id: item.id.toString() });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform) || undefined,
+    transition: transition || undefined,
     opacity: isDragging ? 0.5 : 1,
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
+    WebkitFontSmoothing: 'antialiased' as any,
+    MozOsxFontSmoothing: 'grayscale' as any,
     willChange: isDragging ? 'transform' : 'auto',
-    backfaceVisibility: 'hidden',
-    transformStyle: 'preserve-3d',
+    backfaceVisibility: 'hidden' as any,
+    transformStyle: 'preserve-3d' as any,
     width: isDragging ? '100%' : 'auto',
     zIndex: isDragging ? 1000 : 'auto',
   };

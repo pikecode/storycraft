@@ -553,7 +553,7 @@ export const enUS = {
     title: 'Short Play Creation',
     tabs: {
       script: 'Script',
-      audio: 'Scene',
+      audio: 'Audio',
       image: 'Image',
       video: 'Video',
     },

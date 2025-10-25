@@ -553,7 +553,7 @@ export const jaJP = {
     title: 'ショートプレイ作成',
     tabs: {
       script: '台本',
-      audio: 'シーン',
+      audio: '音声',
       image: '画像',
       video: '動画',
     },

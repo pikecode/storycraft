@@ -91,7 +91,7 @@ function ShortplayEntryPage() {
   const [popoverPosition, setPopoverPosition] = useState<{ top: number; left: number } | null>(null);
 
   // 视频缓存：存储每个场景的视频 URL (sceneId -> videoUrl)
-  const [videoCacheMap, setVideoCacheMap] = useState<Record<string, string>>({});
+  const [videoCacheMap, setVideoCacheMap] = useState<Record<string, any>>({});
 
   // 剧本卡片数据状态
   const [scriptCards, setScriptCards] = useState<ScriptCardProps[]>([]);
@@ -1399,7 +1399,7 @@ function ShortplayEntryPage() {
 
 
   // 获取音色列表
-  const loadVoiceList = async (status: number) => {
+  const loadVoiceList = async (status: number, voiceSeriesId?: number) => {
     try {
       const userStr = localStorage.getItem('user');
       if (!userStr) return [];
@@ -1409,6 +1409,9 @@ function ShortplayEntryPage() {
       if (!userId) return [];
 
       const token = localStorage.getItem('token');
+      // 使用传入的 seriesId，如果没有则使用当前的 currentSeriesId
+      const apiSeriesId = voiceSeriesId || seriesId;
+
       const response = await fetch(`${STORYAI_API_BASE}/voice/list`, {
         method: 'POST',
         headers: {
@@ -1416,7 +1419,7 @@ function ShortplayEntryPage() {
           'X-Prompt-Manager-Token': token || '',
         },
         body: JSON.stringify({
-          seriesId: seriesId,
+          seriesId: apiSeriesId,
           status: status
         })
       });
@@ -3557,7 +3560,7 @@ function ShortplayEntryPage() {
                           onEditingContentChange={setEditingSceneContent}
                           onEditingRoleNameChange={setEditingSceneRoleName}
                           onStartEditContent={(itemId, content, roleName) => {
-                            setEditingSceneItemId(itemId);
+                            setEditingSceneItemId(parseInt(itemId.toString(), 10));
                             setEditingSceneContent(content);
                             setEditingSceneRoleName(roleName || '');
                             setEditingSceneStartMinutes(editingSceneStartMinutes || '00');

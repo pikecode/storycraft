@@ -38,15 +38,15 @@ export function SortableScriptItem({
     isDragging,
   } = useSortable({ id: item.id.toString() });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform) || undefined,
+    transition: transition || undefined,
     opacity: isDragging ? 0.5 : 1,
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
+    WebkitFontSmoothing: 'antialiased' as any,
+    MozOsxFontSmoothing: 'grayscale' as any,
     willChange: isDragging ? 'transform' : 'auto',
-    backfaceVisibility: 'hidden',
-    transformStyle: 'preserve-3d',
+    backfaceVisibility: 'hidden' as any,
+    transformStyle: 'preserve-3d' as any,
     width: isDragging ? '100%' : 'auto',
     zIndex: isDragging ? 1000 : 'auto',
   };
@@ -123,12 +123,13 @@ export function SortableScriptItem({
               <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
             </div>
             {/* 删除按钮 */}
-            <Icon
-              icon="ri:delete-bin-line"
-              className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
-              onClick={() => onShowDeleteConfirm(item.id)}
-              title="删除"
-            />
+            <div title="删除">
+              <Icon
+                icon="ri:delete-bin-line"
+                className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
+                onClick={() => onShowDeleteConfirm(item.id)}
+              />
+            </div>
           </div>
 
           {/* 内容区域 */}

@@ -555,7 +555,7 @@ export const zhCN = {
     title: '短剧创作',
     tabs: {
       script: '剧本',
-      audio: '场次',
+      audio: '音频',
       image: '图片',
       video: '视频',
     },

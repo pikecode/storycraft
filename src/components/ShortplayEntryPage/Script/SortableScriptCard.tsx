@@ -16,18 +16,18 @@ export function SortableScriptCard({ item }: SortableScriptCardProps) {
     isDragging,
   } = useSortable({ id: item.id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform) || undefined,
+    transition: transition || undefined,
     opacity: isDragging ? 0.5 : 1,
     // 防止拖动时字体变形
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
+    WebkitFontSmoothing: 'antialiased' as any,
+    MozOsxFontSmoothing: 'grayscale' as any,
     // 强制硬件加速，避免亚像素渲染问题
     willChange: isDragging ? 'transform' : 'auto',
     // 确保像素完美渲染
-    backfaceVisibility: 'hidden',
-    transformStyle: 'preserve-3d',
+    backfaceVisibility: 'hidden' as any,
+    transformStyle: 'preserve-3d' as any,
     // 防止拖动时卡片伸缩
     width: isDragging ? '100%' : 'auto',
     zIndex: isDragging ? 1000 : 'auto',

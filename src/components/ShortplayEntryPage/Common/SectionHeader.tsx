@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
+import { Tooltip } from 'antd';
 import { useI18n } from '../../../contexts/I18nContext';
 import { SectionHeaderProps } from '../types';
 
@@ -126,12 +127,13 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                   >
                     {subtitle}
                   </span>
-                  <Icon
-                    icon="ri:arrow-down-s-line"
-                    className={`w-4 h-4 cursor-pointer hover:text-blue-500 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-                    onClick={handleArrowClick}
-                    title={t('shortplayEntry.scenes.selectPresetScene')}
-                  />
+                  <Tooltip title={t('shortplayEntry.scenes.selectPresetScene')}>
+                    <Icon
+                      icon="ri:arrow-down-s-line"
+                      className={`w-4 h-4 cursor-pointer hover:text-blue-500 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                      onClick={handleArrowClick}
+                    />
+                  </Tooltip>
                 </div>
               )}
 

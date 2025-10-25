@@ -27,7 +27,7 @@ export function BottomInputArea({
   onVideoLengthChange,
   resolution = "1080p",
   onResolutionChange,
-  singleGenerate = false,
+  singleGenerate = '5s',
   onSingleGenerateChange,
   videoModel = 'doubao-seedance-1.0-lite-text',
   onVideoModelChange,

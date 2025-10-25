@@ -148,7 +148,7 @@ export const useScriptGeneration = () => {
 
               setIsGenerating(false);
               toast.success('剧本生成完成！');
-              return ''; // 清空输入
+              return; // 清空输入
             } else if (status === 'PROCESSING') {
               // 继续轮询
               setGenerationStatus('正在生成剧本内容...');
