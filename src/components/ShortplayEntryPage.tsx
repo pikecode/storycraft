@@ -138,6 +138,9 @@ function ShortplayEntryPage() {
   // 标记是否已经初始化过 currentSceneId（用于避免重复设置）
   const isCurrentSceneIdInitialized = useRef<boolean>(false);
 
+  // 用于生成新增项目的临时 ID（负数）
+  const newItemIdCounter = useRef<number>(-1);
+
   // 监听音量变化，更新所有 audio 元素
   // 初始化：从 localStorage 加载视频缓存
   React.useEffect(() => {
@@ -1147,8 +1150,12 @@ function ShortplayEntryPage() {
 
   // 创建新项 - 按照选择的类型
   const handleCreateNewItem = (type: number) => {
+    // 生成递减的负数 ID，用于区分新增项目
+    const newId = newItemIdCounter.current;
+    newItemIdCounter.current--;
+
     const newItem = {
-      id: Date.now(), // 临时ID
+      id: newId, // 新增项目使用负数 ID
       type: type, // 按照选择的类型
       content: '',
       roleName: type === 2 ? '' : undefined, // 对话类型时有角色名
@@ -3560,13 +3567,33 @@ function ShortplayEntryPage() {
                           onEditingContentChange={setEditingSceneContent}
                           onEditingRoleNameChange={setEditingSceneRoleName}
                           onStartEditContent={(itemId, content, roleName) => {
-                            setEditingSceneItemId(parseInt(itemId.toString(), 10));
+                            const numItemId = parseInt(itemId.toString(), 10);
+                            const editItem = audioContent.find((c: any) => c.id === numItemId);
+
+                            setEditingSceneItemId(numItemId);
                             setEditingSceneContent(content);
                             setEditingSceneRoleName(roleName || '');
-                            setEditingSceneStartMinutes(editingSceneStartMinutes || '00');
-                            setEditingSceneStartSeconds(editingSceneStartSeconds || '00');
-                            setEditingSceneEndMinutes(editingSceneEndMinutes || '00');
-                            setEditingSceneEndSeconds(editingSceneEndSeconds || '05');
+
+                            // 从项目的时间数据中计算分钟和秒
+                            if (editItem) {
+                              const startTotalSeconds = Math.floor((editItem.startTime || 0) / 1000);
+                              const endTotalSeconds = Math.floor((editItem.endTime || 5000) / 1000);
+
+                              const startMinutes = Math.floor(startTotalSeconds / 60);
+                              const startSeconds = startTotalSeconds % 60;
+                              const endMinutes = Math.floor(endTotalSeconds / 60);
+                              const endSeconds = endTotalSeconds % 60;
+
+                              setEditingSceneStartMinutes(String(startMinutes).padStart(2, '0'));
+                              setEditingSceneStartSeconds(String(startSeconds).padStart(2, '0'));
+                              setEditingSceneEndMinutes(String(endMinutes).padStart(2, '0'));
+                              setEditingSceneEndSeconds(String(endSeconds).padStart(2, '0'));
+                            } else {
+                              setEditingSceneStartMinutes('00');
+                              setEditingSceneStartSeconds('00');
+                              setEditingSceneEndMinutes('00');
+                              setEditingSceneEndSeconds('05');
+                            }
                           }}
                           onSaveContentEdit={async (itemId) => {
                             try {
@@ -3586,22 +3613,32 @@ function ShortplayEntryPage() {
                               const endTime = (parseInt(editingSceneEndMinutes || '0') * 60 + parseInt(editingSceneEndSeconds || '0')) * 1000;
                               const orderNum = audioContent.findIndex((c: any) => c.id === numItemId) + 1;
 
+                              // 根据 id 判断是新增还是编辑（负数 id 为新增项目）
+                              const isNewItem = numItemId < 0;
+
                               const token = localStorage.getItem('token');
+                              const requestBody: any = {
+                                type: item.type,
+                                content: editingSceneContent,
+                                startTime: startTime,
+                                endTime: endTime
+                              };
+
+                              // 新增时添加sceneId和orderNum，编辑时添加id
+                              if (isNewItem) {
+                                requestBody.sceneId = sceneId;
+                                requestBody.orderNum = orderNum;
+                              } else {
+                                requestBody.id = numItemId;
+                              }
+
                               const response = await fetch(`${STORYAI_API_BASE}/scene/content`, {
-                                method: 'POST',
+                                method: isNewItem ? 'POST' : 'PUT',
                                 headers: {
                                   'Content-Type': 'application/json',
                                   'X-Prompt-Manager-Token': token || '',
                                 },
-                                body: JSON.stringify({
-                                  sceneId: sceneId,
-                                  type: item.type,
-                                  content: editingSceneContent,
-                                  orderNum: orderNum,
-                                  fileId: item.fileId || itemId.toString(),
-                                  startTime: startTime,
-                                  endTime: endTime
-                                })
+                                body: JSON.stringify(requestBody)
                               });
 
                               if (!response.ok) {
@@ -3676,18 +3713,18 @@ function ShortplayEntryPage() {
                             setEditingSceneRoleName('');
                           }}
                           isHighlighted={highlightedItemId === item.id}
-                          editingTimeId={bgmEditingTimeId}
-                          editingStartMinutes={bgmEditingStartMinutes}
-                          editingStartSeconds={bgmEditingStartSeconds}
-                          editingEndMinutes={bgmEditingEndMinutes}
-                          editingEndSeconds={bgmEditingEndSeconds}
-                          onEditingStartMinutesChange={setBgmEditingStartMinutes}
-                          onEditingStartSecondsChange={setBgmEditingStartSeconds}
-                          onEditingEndMinutesChange={setBgmEditingEndMinutes}
-                          onEditingEndSecondsChange={setBgmEditingEndSeconds}
-                          onStartEditTime={handleBgmStartEditTime}
-                          onSaveTimeEdit={handleBgmSaveTimeEdit}
-                          onCancelTimeEdit={handleBgmCancelTimeEdit}
+                          editingTimeId={editingSceneItemId === item.id ? editingSceneItemId : bgmEditingTimeId}
+                          editingStartMinutes={editingSceneItemId === item.id ? editingSceneStartMinutes : bgmEditingStartMinutes}
+                          editingStartSeconds={editingSceneItemId === item.id ? editingSceneStartSeconds : bgmEditingStartSeconds}
+                          editingEndMinutes={editingSceneItemId === item.id ? editingSceneEndMinutes : bgmEditingEndMinutes}
+                          editingEndSeconds={editingSceneItemId === item.id ? editingSceneEndSeconds : bgmEditingEndSeconds}
+                          onEditingStartMinutesChange={editingSceneItemId === item.id ? setEditingSceneStartMinutes : setBgmEditingStartMinutes}
+                          onEditingStartSecondsChange={editingSceneItemId === item.id ? setEditingSceneStartSeconds : setBgmEditingStartSeconds}
+                          onEditingEndMinutesChange={editingSceneItemId === item.id ? setEditingSceneEndMinutes : setBgmEditingEndMinutes}
+                          onEditingEndSecondsChange={editingSceneItemId === item.id ? setEditingSceneEndSeconds : setBgmEditingEndSeconds}
+                          onStartEditTime={editingSceneItemId === item.id ? undefined : handleBgmStartEditTime}
+                          onSaveTimeEdit={editingSceneItemId === item.id ? undefined : handleBgmSaveTimeEdit}
+                          onCancelTimeEdit={editingSceneItemId === item.id ? undefined : handleBgmCancelTimeEdit}
                         />
                       ))
                     ) : null}
