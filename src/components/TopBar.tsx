@@ -86,7 +86,7 @@ const TopBar: React.FC = () => {
                 >
                     <HomeOutlined className="text-xl text-gray-600" />
                 </button>
-                <span className="text-xl font-bold tracking-wide select-none">Storycraft</span>
+                <span className="text-xl font-bold tracking-wide select-none">AiActor</span>
             </div>
             <div className="flex items-center space-x-3">
                 <Dropdown overlay={languageMenu} trigger={['click']} placement="bottomRight">
