@@ -48,14 +48,14 @@ export function SortableScriptCard({ item }: SortableScriptCardProps) {
           <div
             {...listeners}
             className="cursor-grab active:cursor-grabbing mt-1 p-1 hover:bg-gray-100 rounded"
-            title={t('shortplayEntry.dragSort.title')}
+            title={t('aiactoroEntry.dragSort.title')}
           >
             <Icon icon="ri:drag-move-2-line" className="w-4 h-4 text-gray-400" />
           </div>
 
           <div className="flex-1">
             <div className={`text-sm mb-2 font-medium ${item.descriptionColor || 'text-blue-600'}`}>
-              {t('shortplayEntry.dragSort.scriptDescription')}{item.description}
+              {t('aiactoroEntry.dragSort.scriptDescription')}{item.description}
             </div>
             <div className="space-y-3">
               {item.dialogues.map((dialogue, index) => (

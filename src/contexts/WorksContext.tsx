@@ -175,16 +175,15 @@ export const WorksProvider: React.FC<WorksProviderProps> = ({ children }) => {
     };
 
     // 当认证状态改变时，自动加载作品列表
+    // 已禁用：不再自动加载作品列表
     useEffect(() => {
         console.log('WorksContext useEffect触发 - isAuthenticated:', isAuthenticated);
-        if (isAuthenticated) {
-            console.log('认证状态为true，调用loadWorks');
-            loadWorks();
-        } else {
+        if (!isAuthenticated) {
             console.log('认证状态为false，清空作品列表');
             setWorks([]);
             setCurrentWork(null);
         }
+        // 不再自动调用 loadWorks()，只在用户显式操作时加载
     }, [isAuthenticated]);
 
     const value: WorksContextType = {

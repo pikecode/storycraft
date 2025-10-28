@@ -123,11 +123,11 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                   <span
                     className="cursor-pointer hover:text-gray-800 transition-colors"
                     onClick={handleTextClick}
-                    title={t('shortplayEntry.scenes.editSceneName')}
+                    title={t('aiactoroEntry.scenes.editSceneName')}
                   >
                     {subtitle}
                   </span>
-                  <Tooltip title={t('shortplayEntry.scenes.selectPresetScene')}>
+                  <Tooltip title={t('aiactoroEntry.scenes.selectPresetScene')}>
                     <Icon
                       icon="ri:arrow-down-s-line"
                       className={`w-4 h-4 cursor-pointer hover:text-blue-500 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
@@ -151,7 +151,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                         }
                       }}
                       onDoubleClick={(e) => handleOptionDoubleClick(index, option, e)}
-                      title={t('shortplayEntry.scenes.clickToSelectDoubleClickToEdit')}
+                      title={t('aiactoroEntry.scenes.clickToSelectDoubleClickToEdit')}
                     >
                       {editingOptionIndex === index ? (
                         <input
@@ -184,7 +184,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                 className={actionButtonClass}
               >
                 <Icon icon="ri:add-circle-line" className="w-4 h-4" />
-                <span>{t('shortplayEntry.buttons.addOption')}</span>
+                <span>{t('aiactoroEntry.buttons.addOption')}</span>
               </button>
             )}
             {onApplyClick && (
@@ -195,7 +195,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                 className={`${actionButtonClass} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <Icon icon="ri:check-line" className="w-4 h-4" />
-                <span>{t('shortplayEntry.buttons.apply')}</span>
+                <span>{t('aiactoroEntry.buttons.apply')}</span>
               </button>
             )}
           </div>

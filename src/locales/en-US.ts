@@ -549,7 +549,7 @@ export const enUS = {
   },
 
   // Short Play Entry Page
-  shortplayEntry: {
+  aiactoroEntry: {
     title: 'Short Play Creation',
     tabs: {
       script: 'Script',

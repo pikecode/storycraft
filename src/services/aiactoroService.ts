@@ -1,5 +1,5 @@
 /**
- * Shortplay API Service
+ * AIActor API Service
  * 一键创作相关的API调用服务
  */
 

@@ -1,9 +1,8 @@
-import SuperinputPage from './SuperinputPage';
+import AIActorEntryPage from './AIActorEntryPage';
 
 function HomePage() {
-  return (
-    <SuperinputPage />
-  );
+  // 直接渲染一键创作页面
+  return <AIActorEntryPage />;
 }
 
 export default HomePage; 

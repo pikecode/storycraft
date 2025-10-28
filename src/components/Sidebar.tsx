@@ -779,7 +779,7 @@ const Sidebar: React.FC = () => {
         <div className="font-bold text-lg mt-6 mb-2 flex justify-between items-center hover:bg-blue-50 p-2 rounded-md">
           <span
             className="cursor-pointer flex items-center w-full"
-            onClick={() => navigate('/app/shortplay-entry')}
+            onClick={() => navigate('/app/aiacotor-entry')}
           >
             <div className="bg-blue-500 rounded-lg p-2 mr-3">
               <Icon icon="ri:magic-line" className="w-5 h-5 text-white" />

@@ -1,9 +1,9 @@
 /**
- * Shortplay Utility Functions
+ * AIActor Utility Functions
  * 一键创作相关的工具函数
  */
 
-import type { TimeRange } from '../types/shortplay';
+import type { TimeRange } from '../types/aiacotor';
 
 /**
  * 解析时间范围字符串

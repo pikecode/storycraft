@@ -1,5 +1,5 @@
 /**
- * Shortplay Type Definitions
+ * AIActor Type Definitions
  * 一键创作相关的类型定义
  */
 

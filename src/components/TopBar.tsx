@@ -11,21 +11,6 @@ const TopBar: React.FC = () => {
     const { language, setLanguage, t, canChangeLanguage } = useI18n();
     const [userMenuVisible, setUserMenuVisible] = useState(false);
 
-    // 获取会员状态显示文本
-    const getMemberStatusText = () => {
-        if (!isAuthenticated || !user) {
-            return t('topbar.vip');
-        }
-
-        const planText = user.user_plan === 'free' 
-            ? t('vip.freePlan')
-            : user.user_plan === 'chinese' 
-            ? t('vip.chinesePlan')
-            : t('vip.multilingualPlan');
-        
-        return `${planText} (${user.user_point || '0'}${t('topbar.points')})`;
-    };
-
     // 当用户登录状态改变时刷新用户信息
     React.useEffect(() => {
         if (isAuthenticated) {
@@ -95,7 +80,7 @@ const TopBar: React.FC = () => {
         <div className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-50">
             <div className="flex items-center space-x-3">
                 <button
-                    onClick={() => navigate('/app/home')}
+                    onClick={() => navigate('/app/aiacotor-entry')}
                     className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                     title={t('topbar.home')}
                 >
@@ -111,12 +96,6 @@ const TopBar: React.FC = () => {
                         <DownOutlined className="ml-1 text-xs" />
                     </button>
                 </Dropdown>
-                <button
-                    onClick={() => navigate('/app/vip')}
-                    className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded-md hover:bg-blue-200 flex items-center"
-                >
-                    <CrownOutlined className="mr-1" />{getMemberStatusText()}
-                </button>
                 {isAuthenticated && user ? (
                     <Dropdown overlay={userMenu} trigger={['click']} onVisibleChange={setUserMenuVisible}>
                         <div className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 cursor-pointer">

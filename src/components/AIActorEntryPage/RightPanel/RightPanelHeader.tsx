@@ -32,7 +32,7 @@ export const RightPanelHeader: React.FC<RightPanelHeaderProps> = ({
             disabled={disabled}
           >
             <Icon icon="ri:play-circle-line" className="w-3 h-3 mr-1" />
-            {t('shortplayEntry.buttons.preview')}
+            {t('aiactoroEntry.buttons.preview')}
           </Button>
         </div>
         <div className="flex items-center space-x-2">
@@ -43,7 +43,7 @@ export const RightPanelHeader: React.FC<RightPanelHeaderProps> = ({
             onClick={onDownload}
           >
             <Icon icon="ri:download-line" className="w-3 h-3 mr-1" />
-            {t('shortplayEntry.buttons.download')}
+            {t('aiactoroEntry.buttons.download')}
           </Button>
           <Button
             size="small"
@@ -51,7 +51,7 @@ export const RightPanelHeader: React.FC<RightPanelHeaderProps> = ({
             className="text-xs text-blue-500 border border-blue-200 rounded"
             onClick={onInsertOption}
           >
-            {t('shortplayEntry.buttons.insertOption')}
+            {t('aiactoroEntry.buttons.insertOption')}
           </Button>
         </div>
       </div>

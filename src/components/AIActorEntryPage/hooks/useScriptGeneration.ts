@@ -51,7 +51,7 @@ export const useScriptGeneration = () => {
     setSelectedScene: (scene: string) => void
   ) => {
     if (!userInput.trim()) {
-      toast.error(t('shortplayEntry.input.description'));
+      toast.error(t('aiactoroEntry.input.description'));
       return;
     }
 
@@ -69,7 +69,7 @@ export const useScriptGeneration = () => {
           const user = JSON.parse(userStr);
           userId = user.userId || "";
         } catch (error) {
-          console.warn(t('shortplayEntry.input.userInfoParseError'), error);
+          console.warn(t('aiactoroEntry.input.userInfoParseError'), error);
         }
       }
 
@@ -181,8 +181,8 @@ export const useScriptGeneration = () => {
       return userInput; // 不清空输入，等待生成完成
 
     } catch (error) {
-      console.error(t('shortplayEntry.input.generateFailed') + ':', error);
-      toast.error(t('shortplayEntry.input.generateFailed') + ': ' + (error as Error).message);
+      console.error(t('aiactoroEntry.input.generateFailed') + ':', error);
+      toast.error(t('aiactoroEntry.input.generateFailed') + ': ' + (error as Error).message);
       setIsGenerating(false);
       setGenerationStatus('');
       return userInput;
@@ -194,7 +194,7 @@ export const useScriptGeneration = () => {
    */
   const handleImageGenerate = async (userInput: string, sceneId: number | null, t: any) => {
     if (!userInput.trim()) {
-      toast.error(t('shortplayEntry.input.description'));
+      toast.error(t('aiactoroEntry.input.description'));
       return;
     }
 
@@ -251,7 +251,7 @@ export const useScriptGeneration = () => {
    */
   const handleBgmGenerate = async (userInput: string, t: any) => {
     if (!userInput.trim()) {
-      toast.error(t('shortplayEntry.input.description'));
+      toast.error(t('aiactoroEntry.input.description'));
       return;
     }
 
@@ -266,7 +266,7 @@ export const useScriptGeneration = () => {
           const user = JSON.parse(userStr);
           userId = user.userId || "";
         } catch (error) {
-          console.warn(t('shortplayEntry.input.userInfoParseError'), error);
+          console.warn(t('aiactoroEntry.input.userInfoParseError'), error);
         }
       }
 
@@ -318,7 +318,7 @@ export const useScriptGeneration = () => {
    */
   const handleAudioGenerate = async (userInput: string, t: any, loadAllVoices: () => Promise<void>) => {
     if (!userInput.trim()) {
-      toast.error(t('shortplayEntry.input.description'));
+      toast.error(t('aiactoroEntry.input.description'));
       return;
     }
 
@@ -333,7 +333,7 @@ export const useScriptGeneration = () => {
           const user = JSON.parse(userStr);
           userId = user.userId || "";
         } catch (error) {
-          console.warn(t('shortplayEntry.input.userInfoParseError'), error);
+          console.warn(t('aiactoroEntry.input.userInfoParseError'), error);
         }
       }
 

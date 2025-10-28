@@ -132,7 +132,7 @@ export function AudioBottomPanel({
                 : 'bg-blue-500 hover:bg-blue-600'
             }`}
           >
-            {isGenerating ? t('shortplayEntry.generation.generating') : '一键生成'}
+            {isGenerating ? t('aiactoroEntry.generation.generating') : '一键生成'}
           </button>
         </div>
       </div>

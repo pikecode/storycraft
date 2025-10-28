@@ -20,7 +20,7 @@ import ProfilePage from './components/ProfilePage'
 import PaymentPage from './components/PaymentPage'
 import PaymentSuccessPage from './components/PaymentSuccessPage'
 import ProtectedRoute from './components/ProtectedRoute'
-import ShortplayEntryPage from './components/ShortplayEntryPage'
+import AIActorEntryPage from './components/AIActorEntryPage'
 import PromptConfigPage from './components/PromptConfigPage'
 
 // 临时页面组件，显示"正在加班加点更新中"
@@ -48,11 +48,11 @@ const router = createHashRouter([
     children: [
       {
         path: 'home',
-        element: <HomePage />
+        element: <AIActorEntryPage />
       },
       {
-        path: 'shortplay-entry',
-        element: <ShortplayEntryPage />
+        path: 'aiacotor-entry',
+        element: <AIActorEntryPage />
       },
       {
         path: 'editor',

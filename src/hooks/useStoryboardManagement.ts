@@ -7,8 +7,8 @@ import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { arrayMove } from '@dnd-kit/sortable';
 import type { DragEndEvent } from '@dnd-kit/core';
-import type { StoryboardItem } from '../types/shortplay';
-import * as shortplayService from '../services/shortplayService';
+import type { StoryboardItem } from '../types/aiacotor';
+import * as aiactoroService from '../services/aiactoroService';
 
 export const useStoryboardManagement = () => {
   // 分镜板数据
@@ -34,7 +34,7 @@ export const useStoryboardManagement = () => {
 
     setIsLoadingStoryboard(true);
     try {
-      const result = await shortplayService.getStoryboardList(sceneId);
+      const result = await aiactoroService.getStoryboardList(sceneId);
 
       if (result.code === 0 && result.data) {
         setStoryboardItems(result.data || []);
@@ -63,7 +63,7 @@ export const useStoryboardManagement = () => {
     try {
       const storyboardOrder = storyboardItems.length + 1;
 
-      const result = await shortplayService.createStoryboard({
+      const result = await aiactoroService.createStoryboard({
         sceneId,
         storyboardOrder,
         fileId
@@ -86,7 +86,7 @@ export const useStoryboardManagement = () => {
    */
   const handleDeleteStoryboard = useCallback(async (itemId: string, sceneId: number) => {
     try {
-      const result = await shortplayService.deleteStoryboard(itemId);
+      const result = await aiactoroService.deleteStoryboard(itemId);
 
       if (result.code === 0) {
         toast.success('分镜板删除成功！');
@@ -132,7 +132,7 @@ export const useStoryboardManagement = () => {
       const startTimeMs = (startMinutes * 60 + startSeconds) * 1000;
       const endTimeMs = (endMinutes * 60 + endSeconds) * 1000;
 
-      const result = await shortplayService.updateStoryboard({
+      const result = await aiactoroService.updateStoryboard({
         id: parseInt(itemId),
         startTime: startTimeMs,
         endTime: endTimeMs
@@ -188,7 +188,7 @@ export const useStoryboardManagement = () => {
           const movedItem = oldItems[oldIndex];
           const newStoryboardOrder = newIndex + 1;
 
-          const result = await shortplayService.updateStoryboard({
+          const result = await aiactoroService.updateStoryboard({
             id: parseInt(movedItem.id.toString()),
             storyboardOrder: newStoryboardOrder
           });

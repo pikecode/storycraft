@@ -70,8 +70,8 @@ export function AudioResourcePanel({
             onChange={(e) => onAudioTypeChange(e.target.value as 'voice' | 'sound')}
             className="w-full h-9 pr-8 text-sm rounded-lg bg-transparent focus:outline-none appearance-none"
           >
-            <option value="voice">{t('shortplayEntry.audio.voice')}</option>
-            <option value="sound">{t('shortplayEntry.audio.sound')}</option>
+            <option value="voice">{t('aiactoroEntry.audio.voice')}</option>
+            <option value="sound">{t('aiactoroEntry.audio.sound')}</option>
           </select>
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -85,12 +85,12 @@ export function AudioResourcePanel({
             {/* 已设置的配音人员 */}
             {(isLoadingVoices || configuredVoices.length > 0) && (
             <div className="flex items-start space-x-2">
-              <span className="text-sm font-medium text-gray-700 min-w-fit pt-3">{t('shortplayEntry.audio.configured')}</span>
+              <span className="text-sm font-medium text-gray-700 min-w-fit pt-3">{t('aiactoroEntry.audio.configured')}</span>
               <div className="flex-1 space-y-2.5" style={{ maxHeight: '200px', overflowY: 'auto' }}>
                 {isLoadingVoices ? (
                   <div className="flex items-center justify-center text-gray-500">
                     <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
-                    {t('shortplayEntry.status.loading')}
+                    {t('aiactoroEntry.status.loading')}
                   </div>
                 ) : (
                   configuredVoices
@@ -145,14 +145,14 @@ export function AudioResourcePanel({
                             }}
                           >
                             <Icon icon="ri:play-circle-line" className="w-3 h-3" />
-                            <span>{t('shortplayEntry.audio.listen')}</span>
+                            <span>{t('aiactoroEntry.audio.listen')}</span>
                           </button>
                           <button
                             className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100 flex items-center space-x-1"
                             onClick={() => onDeleteVoice?.(voice.voiceId)}
                           >
                             <Icon icon="ri:delete-bin-line" className="w-3 h-3" />
-                            <span>{t('shortplayEntry.audio.deleteVoice')}</span>
+                            <span>{t('aiactoroEntry.audio.deleteVoice')}</span>
                           </button>
                         </div>
                       </div>

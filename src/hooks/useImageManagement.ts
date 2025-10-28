@@ -5,9 +5,9 @@
 
 import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import type { ChatHistoryItem } from '../types/shortplay';
-import * as shortplayService from '../services/shortplayService';
-import { extractFilesFromChatHistory } from '../utils/shortplayUtils';
+import type { ChatHistoryItem } from '../types/aiacotor';
+import * as aiactoroService from '../services/aiactoroService';
+import { extractFilesFromChatHistory } from '../utils/aiactoroUtils';
 
 export const useImageManagement = () => {
   // 图片聊天记录数据
@@ -30,7 +30,7 @@ export const useImageManagement = () => {
 
     setIsLoadingImageHistory(true);
     try {
-      const result = await shortplayService.queryChatHistory({
+      const result = await aiactoroService.queryChatHistory({
         sceneId: sceneId.toString(),
         chatScene: 'IMAGE',
         type: 'AI_ANSWER',
@@ -71,7 +71,7 @@ export const useImageManagement = () => {
     setGenerationStatus('正在生成图片...');
 
     try {
-      const result = await shortplayService.generateImage(sceneId, userInput.trim());
+      const result = await aiactoroService.generateImage(sceneId, userInput.trim());
 
       if (result.code === 0) {
         setGenerationStatus('生成完成！');

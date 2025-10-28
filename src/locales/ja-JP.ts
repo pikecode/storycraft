@@ -549,7 +549,7 @@ export const jaJP = {
   },
 
   // ショートプレイ作成ページ
-  shortplayEntry: {
+  aiactoroEntry: {
     title: 'ショートプレイ作成',
     tabs: {
       script: '台本',

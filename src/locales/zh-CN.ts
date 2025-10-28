@@ -551,7 +551,7 @@ export const zhCN = {
   },
 
   // 短剧创作页面
-  shortplayEntry: {
+  aiactoroEntry: {
     title: '短剧创作',
     tabs: {
       script: '剧本',

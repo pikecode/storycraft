@@ -60,8 +60,8 @@ const SuperinputPage: React.FC = () => {
 
                         {/* Card 2: 短剧剧本创作 */}
                         <div
-                            className={`w-full max-w-[320px] bg-white p-6 rounded-lg border transition-shadow cursor-pointer hover:shadow-lg ${selectedCard === 'shortplay' ? 'border-2 border-blue-500 shadow-lg' : 'border-gray-200'}`}
-                            onClick={() => { setSelectedCard('shortplay'); navigate('/app/shortplay-entry'); }}
+                            className={`w-full max-w-[320px] bg-white p-6 rounded-lg border transition-shadow cursor-pointer hover:shadow-lg ${selectedCard === 'aiacotor' ? 'border-2 border-blue-500 shadow-lg' : 'border-gray-200'}`}
+                            onClick={() => { setSelectedCard('aiacotor'); navigate('/app/aiacotor-entry'); }}
                         >
                             <Icon icon="ph:video" className="w-8 h-8 text-green-500 mb-3" />
                             <h3 className="font-semibold text-lg mb-1">{t('home.shortPlayCreation')}</h3>

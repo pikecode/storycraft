@@ -5,8 +5,8 @@
 
 import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import type { VoiceData, AudioType } from '../types/shortplay';
-import * as shortplayService from '../services/shortplayService';
+import type { VoiceData, AudioType } from '../types/aiacotor';
+import * as aiactoroService from '../services/aiactoroService';
 
 export const useVoiceManagement = () => {
   // 音色数据
@@ -30,7 +30,7 @@ export const useVoiceManagement = () => {
    */
   const loadVoiceList = useCallback(async (status: number) => {
     try {
-      return await shortplayService.getVoiceList(status);
+      return await aiactoroService.getVoiceList(status);
     } catch (error) {
       console.error('获取音色列表失败:', error);
       return [];
@@ -62,7 +62,7 @@ export const useVoiceManagement = () => {
    */
   const handleApplyVoice = useCallback(async (voiceId: string) => {
     try {
-      const result = await shortplayService.updateVoice({
+      const result = await aiactoroService.updateVoice({
         voiceId,
         status: 1
       });
@@ -95,7 +95,7 @@ export const useVoiceManagement = () => {
     if (!editingVoiceId || !editingVoiceName.trim()) return;
 
     try {
-      const result = await shortplayService.updateVoice({
+      const result = await aiactoroService.updateVoice({
         voiceId: editingVoiceId,
         voiceName: editingVoiceName.trim()
       });
@@ -130,7 +130,7 @@ export const useVoiceManagement = () => {
     if (!voiceId) return;
 
     try {
-      const result = await shortplayService.batchBindVoice([
+      const result = await aiactoroService.batchBindVoice([
         {
           voiceId,
           subtitleId: parseInt(subtitleId)
@@ -153,7 +153,7 @@ export const useVoiceManagement = () => {
    */
   const handleVoiceDesign = useCallback(async (prompt: string) => {
     try {
-      const result = await shortplayService.designVoice(prompt);
+      const result = await aiactoroService.designVoice(prompt);
 
       if (result.code === 0) {
         await loadAllVoices();

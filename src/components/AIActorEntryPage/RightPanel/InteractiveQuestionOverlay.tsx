@@ -67,14 +67,14 @@ export const InteractiveQuestionOverlay: React.FC<InteractiveQuestionOverlayProp
             }}
             onBlur={onTitleCommit}
             className="w-full px-3 py-2 bg-white/90 text-black rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder={t('shortplayEntry.ui.inputTitlePlaceholder')}
+            placeholder={t('aiactoroEntry.ui.inputTitlePlaceholder')}
           />
         ) : (
           <div
             onClick={onTitleClick}
             className="text-white text-sm font-medium px-3 py-2 bg-black/40 rounded cursor-pointer hover:bg-black/60 transition-colors"
           >
-            {questionTitle || t('shortplayEntry.ui.editTitleHint')}
+            {questionTitle || t('aiactoroEntry.ui.editTitleHint')}
           </div>
         )}
       </div>
@@ -106,7 +106,7 @@ export const InteractiveQuestionOverlay: React.FC<InteractiveQuestionOverlayProp
             <button
               onClick={() => onOptionDelete(index)}
               className="text-red-500 hover:text-red-400 transition-colors p-0"
-              title={t('shortplayEntry.tooltips.deleteOption')}
+              title={t('aiactoroEntry.tooltips.deleteOption')}
             >
               <Icon icon="ri:delete-bin-line" className="w-4 h-4" />
             </button>
@@ -119,7 +119,7 @@ export const InteractiveQuestionOverlay: React.FC<InteractiveQuestionOverlayProp
         <button
           onClick={onAddOption}
           className="text-blue-400 hover:text-blue-300 transition-colors"
-          title={t('shortplayEntry.buttons.addOption')}
+          title={t('aiactoroEntry.buttons.addOption')}
         >
           <Icon icon="ri:add-line" className="w-4 h-4" />
         </button>
@@ -128,14 +128,14 @@ export const InteractiveQuestionOverlay: React.FC<InteractiveQuestionOverlayProp
           onClick={onSave}
           className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors"
         >
-          {t('shortplayEntry.buttons.save')}
+          {t('aiactoroEntry.buttons.save')}
         </button>
 
         <button
           onClick={onCancel}
           className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm font-medium transition-colors"
         >
-          {t('shortplayEntry.buttons.cancel')}
+          {t('aiactoroEntry.buttons.cancel')}
         </button>
       </div>
     </div>

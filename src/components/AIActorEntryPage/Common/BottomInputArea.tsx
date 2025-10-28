@@ -42,7 +42,7 @@ export function BottomInputArea({
   const { t } = useI18n();
 
   // Use translated placeholder if not provided
-  const finalPlaceholder = placeholder || t('shortplayEntry.input.placeholder');
+  const finalPlaceholder = placeholder || t('aiactoroEntry.input.placeholder');
 
   // 计算可用的视频生成模型
   const getAvailableVideoModels = () => {
@@ -130,7 +130,7 @@ export function BottomInputArea({
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               )}
-              <span>{isGenerating ? t('shortplayEntry.generation.generating') : t('shortplayEntry.generation.oneClickGenerate')}</span>
+              <span>{isGenerating ? t('aiactoroEntry.generation.generating') : t('aiactoroEntry.generation.oneClickGenerate')}</span>
             </button>
           </div>
         </>
@@ -161,8 +161,8 @@ export function BottomInputArea({
                   onChange={(e) => onVoiceTypeChange?.(e.target.value)}
                   className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
-                  <option value="male">{t('shortplayEntry.audio.male')}</option>
-                  <option value="female">{t('shortplayEntry.audio.female')}</option>
+                  <option value="male">{t('aiactoroEntry.audio.male')}</option>
+                  <option value="female">{t('aiactoroEntry.audio.female')}</option>
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -191,7 +191,7 @@ export function BottomInputArea({
                   : 'bg-blue-500 hover:bg-blue-600'
               }`}
             >
-              {isGenerating ? t('shortplayEntry.generation.generating') : '一键生成'}
+              {isGenerating ? t('aiactoroEntry.generation.generating') : '一键生成'}
             </button>
           </div>
         </>
@@ -275,7 +275,7 @@ export function BottomInputArea({
                   : 'bg-blue-500 hover:bg-blue-600'
               }`}
             >
-              {isGenerating ? t('shortplayEntry.generation.generating') : t('shortplayEntry.generation.oneClickGenerate')}
+              {isGenerating ? t('aiactoroEntry.generation.generating') : t('aiactoroEntry.generation.oneClickGenerate')}
             </button>
           </div>
         </>
@@ -454,7 +454,7 @@ export function BottomInputArea({
                   : 'bg-blue-500 hover:bg-blue-600'
               }`}
             >
-              {isGenerating ? t('shortplayEntry.generation.generating') : t('shortplayEntry.generation.oneClickGenerate')}
+              {isGenerating ? t('aiactoroEntry.generation.generating') : t('aiactoroEntry.generation.oneClickGenerate')}
             </button>
           </div>
 
