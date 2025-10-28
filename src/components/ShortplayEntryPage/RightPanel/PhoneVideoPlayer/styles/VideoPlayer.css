@@ -1,0 +1,401 @@
+/* VideoPlayer Component - Styled to match premium mobile UI */
+
+.video-player {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #04060a;
+  border-radius: 0;
+  overflow: visible; /* 允许进度条在 edge-to-edge 模式下下探到视频区域之外 */
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+  color: #fff;
+  z-index: 5; /* 提升整体层级，确保进度条可覆盖底部栏（仍低于 phone-frame 的 home-indicator） */
+  /* 进度条颜色变量：可通过父级覆盖以适配主题 */
+  --vp-played: #ffffff; /* 已播放 */
+  --vp-buffered: rgba(255, 255, 255, 0.38); /* 已缓冲 */
+  --vp-track: rgba(255, 255, 255, 0.14); /* 未播放（轨道） */
+  /* 进度条拇指（thumb）样式变量：支持矩形/圆形 */
+  --vp-thumb-size: 18px; /* 兼容旧写法（正方形尺寸） */
+  --vp-thumb-width: 6px; /* 竖条默认宽度 */
+  --vp-thumb-height: 20px; /* 竖条默认高度 */
+  --vp-thumb-radius: 3px; /* 竖条圆角 */
+  --vp-thumb-bg: var(--vp-played); /* 竖条默认用已播放色 */
+  --vp-thumb-border: none;
+  --vp-thumb-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Video Container */
+.video-player-wrapper {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  background: #04060a;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-player-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #04060a;
+}
+
+.video-player-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 6, 10, 0.75) 0%,
+    rgba(4, 6, 10, 0.25) 28%,
+    rgba(4, 6, 10, 0.3) 72%,
+    rgba(4, 6, 10, 0.82) 100%
+  );
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.video-player:hover .video-player-wrapper::after,
+.video-player:focus-within .video-player-wrapper::after {
+  opacity: 0.35;
+}
+
+/* Subtitle Overlay */
+.video-player-subtitle {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  padding: 0 16px;
+  z-index: 5;
+  font-size: clamp(14px, 3.3vw, 18px);
+  color: #fff;
+  font-weight: 600;
+  text-shadow: 0 6px 28px rgba(0, 0, 0, 0.65);
+  line-height: 1.45;
+  max-width: calc(100% - 64px);
+  word-wrap: break-word;
+  animation: subtitleFade 0.35s ease-out;
+}
+
+.video-player-subtitle span {
+  display: inline-block;
+  padding: 12px 20px;
+  border-radius: 18px;
+  background: rgba(16, 20, 30, 0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 24px 40px rgba(6, 8, 16, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+@keyframes subtitleFade {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Controls Overlay */
+.video-player-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 4;
+}
+
+.video-player-overlay.visible {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Play Button */
+.video-player-play-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08); /* 半透明玻璃质感 */
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #fff;
+  font-size: 0; /* 使用 SVG 图标，不依赖字体大小，避免文字导致的形变 */
+  line-height: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.45),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.08);
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.video-player-play-btn .video-player-icon {
+  width: 28px;
+  height: 28px;
+  display: block;
+  fill: currentColor;
+}
+
+.video-player-play-btn:hover {
+  transform: scale(1.06);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 16px 28px rgba(0, 0, 0, 0.5),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.12);
+}
+
+.video-player-play-btn:active {
+  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* 纯图标风格：移除圆形背景，仅保留图标与轻微投影 */
+.video-player-play-btn.icon {
+  background: none;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  text-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+}
+
+.video-player-play-btn.icon .video-player-icon {
+  width: 44px;
+  height: 44px;
+}
+
+.video-player-play-btn.icon:hover {
+  transform: scale(1.04);
+}
+
+.video-player-play-btn.icon:active {
+  transform: scale(0.98);
+}
+
+/* 纯图标风格时，整体遮罩更轻一些，避免过度压暗视频 */
+.video-player-overlay.icon-variant.visible {
+  background: rgba(0, 0, 0, 0.16);
+}
+
+/* Progress Container */
+.video-player-progress-container {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  width: calc(100% - 56px);
+  max-width: 360px;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 14; /* 提高层级，避免被底部栏或其他元素遮挡 */
+}
+
+/* Progress Bar */
+.video-player-progress-bar-wrapper {
+  position: relative;
+  height: 28px; /* 略收窄整体高度，让视觉更轻盈 */
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0 2px; /* 收窄左右内边距 */
+}
+
+.video-player-progress-bar-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 4px; /* 更贴近移动端系统进度条厚度 */
+  border-radius: 999px;
+  background: var(--vp-played);
+  pointer-events: none;
+  transform: translateY(-50%);
+  z-index: 1;
+  box-shadow: 0 2px 10px rgba(255, 255, 255, 0.35);
+  transition: width 0.2s ease; /* 进度变化更顺滑 */
+}
+
+/* 缓冲进度（在轨道与播放进度之间） */
+.video-player-buffered-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--vp-buffered);
+  transform: translateY(-50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.video-player-progress-slider {
+  position: relative;
+  width: 100%;
+  height: 28px; /* 提升命中区域，但不影响可视轨道厚度 */
+  cursor: pointer;
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  -webkit-appearance: none;
+  z-index: 2;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y; /* 允许竖向滚动，减少和拖拽冲突 */
+}
+
+.video-player-progress-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px; /* 更细的轨道 */
+  background: var(--vp-track);
+  border-radius: 999px;
+  border: none;
+}
+
+.video-player-progress-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: var(--vp-thumb-width, var(--vp-thumb-size));
+  height: var(--vp-thumb-height, var(--vp-thumb-size));
+  border-radius: var(--vp-thumb-radius);
+  background: var(--vp-thumb-bg);
+  cursor: pointer;
+  border: var(--vp-thumb-border);
+  box-shadow: var(--vp-thumb-shadow);
+  margin-top: calc((var(--vp-thumb-height, var(--vp-thumb-size)) - 4px) / -2); /* (thumb - track)/2 */
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.video-player-progress-slider::-webkit-slider-thumb:active { transform: scaleY(1.08); }
+
+.video-player-progress-slider::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: var(--vp-track);
+  border-radius: 999px;
+  border: none;
+}
+
+.video-player-progress-slider::-moz-range-progress {
+  background: var(--vp-played);
+  border-radius: 999px;
+  height: 4px;
+}
+
+.video-player-progress-slider::-moz-range-thumb {
+  width: var(--vp-thumb-width, var(--vp-thumb-size));
+  height: var(--vp-thumb-height, var(--vp-thumb-size));
+  border-radius: var(--vp-thumb-radius);
+  background: var(--vp-thumb-bg);
+  border: var(--vp-thumb-border);
+  box-shadow: var(--vp-thumb-shadow);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.video-player-progress-slider::-moz-range-thumb:active { transform: scaleY(1.08); }
+
+/* Time Display */
+.video-player-time-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.78rem;
+  font-family: 'Monaco', 'Courier New', monospace;
+  letter-spacing: 0.08em;
+}
+
+.video-player-separator {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Title Display */
+.video-player-title {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(12, 16, 24, 0.5);
+  border-radius: 16px;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  z-index: 6; /* 位于进度条层级之上，避免被遮挡 */
+}
+
+/* Accessibility */
+.video-player-play-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 4px;
+}
+
+.video-player-progress-slider:focus-visible {
+  outline: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 720px) {
+  .video-player-progress-container {
+    width: calc(100% - 48px);
+    bottom: 48px;
+  }
+
+  .video-player-subtitle {
+    bottom: 120px;
+    max-width: calc(100% - 48px);
+  }
+}
+
+@media (max-width: 520px) {
+  .video-player-progress-container {
+    width: calc(100% - 36px);
+    bottom: 40px;
+  }
+
+  .video-player-subtitle {
+    bottom: 104px;
+    max-width: calc(100% - 34px);
+  }
+
+  .video-player-play-btn {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+  }
+}
+
