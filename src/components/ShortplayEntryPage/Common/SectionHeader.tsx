@@ -184,7 +184,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                 className={actionButtonClass}
               >
                 <Icon icon="ri:add-circle-line" className="w-4 h-4" />
-                <span>{t('shortplayEntry.buttons.addOption')}</span>
+                <span>新增</span>
               </button>
             )}
             {onApplyClick && (
