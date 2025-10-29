@@ -91,8 +91,8 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
     "flex items-center space-x-1 px-1 py-0.5 text-sm font-normal text-gray-700 border border-blue-400 rounded hover:border-blue-500 hover:text-blue-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200";
 
   return (
-    <div className="p-4 bg-white border-b border-gray-100">
-      <div className="flex items-center justify-between">
+    <div className="bg-white border-b border-gray-100 flex items-center" style={{ height: '64px', paddingLeft: '16px', paddingRight: '16px' }}>
+      <div className="flex items-center justify-between w-full">
         <div className="flex items-center space-x-3">
           <svg width="40" height="36" viewBox="0 0 56 51" fill="none" xmlns="http://www.w3.org/2000/svg">
             {/* 边框 */}

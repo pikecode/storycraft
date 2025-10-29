@@ -501,14 +501,23 @@ function ShortplayEntryPage() {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldItems = sceneContent;
+      // 根据当前 tab 选择对应的数据源
+      const isAudioTab = activeTab === 'audio';
+      const oldItems = isAudioTab ? audioContent : sceneContent;
+
       const oldIndex = oldItems.findIndex((item) => item.id.toString() === active.id);
       const newIndex = oldItems.findIndex((item) => item.id.toString() === over.id);
 
       if (oldIndex !== -1 && newIndex !== -1) {
         // 先更新本地状态
         const newItems = arrayMove(oldItems, oldIndex, newIndex);
-        setSceneContent(newItems);
+
+        // 根据 tab 类型更新相应的状态
+        if (isAudioTab) {
+          setAudioContent(newItems);
+        } else {
+          setSceneContent(newItems);
+        }
 
         // 调用API更新排序
         try {
@@ -541,7 +550,11 @@ function ShortplayEntryPage() {
         } catch (error) {
           console.error('更新排序失败:', error);
           // API调用失败时，恢复原来的排序
-          setSceneContent(oldItems);
+          if (isAudioTab) {
+            setAudioContent(oldItems);
+          } else {
+            setSceneContent(oldItems);
+          }
           toast.error(t('shortplayEntry.messages.error.sortingFailed', { error: (error as Error).message }));
         }
       }
@@ -2838,8 +2851,8 @@ function ShortplayEntryPage() {
           {/* 左侧面板 - 一键创作 (均分) */}
           <div className="flex-1 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
           {/* 顶部Logo和标题区 */}
-          <div className="p-4 bg-white">
-            <div className="flex items-center justify-between">
+          <div className="bg-white flex items-center" style={{ height: '64px', paddingLeft: '16px', paddingRight: '16px' }}>
+            <div className="flex items-center justify-between w-full">
               <div className="flex items-center space-x-2">
                 <svg width="40" height="36" viewBox="0 0 56 51" fill="none" xmlns="http://www.w3.org/2000/svg">
                   {/* 边框 */}
@@ -3806,8 +3819,8 @@ function ShortplayEntryPage() {
         {/* 右侧面板 - 手机预览区域 (固定宽度340px) */}
         <div className="bg-gray-100 flex flex-col overflow-hidden" style={{ width: '340px' }}>
           {/* 预览头部 */}
-          <div className="p-3 border-b border-gray-200 bg-white">
-            <div className="flex items-center justify-between">
+          <div className="border-b border-gray-200 bg-white flex items-center" style={{ height: '64px' }}>
+            <div className="flex items-center justify-between w-full px-4">
               <div className="flex items-center space-x-2">
                 <Button
                   size="small"
