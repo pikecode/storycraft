@@ -1881,22 +1881,40 @@ function AIActorEntryPage() {
     try {
       const token = localStorage.getItem('token');
 
-      // 将时间格式 "1s", "2s" 等转换为毫秒
-      const durationSeconds = parseInt(videoLength.replace('s', ''));
-      const durationMillis = durationSeconds * 1000;
+      // 判断是否有上传的图片
+      const hasUploadedImages = uploadedImages && uploadedImages.length > 0;
+      let endpoint: string;
+      let requestBody: any;
 
-      const response = await fetch(`${STORYAI_API_BASE}/ai/image/generate`, {
+      if (hasUploadedImages) {
+        // 有上传图片 - 使用 image2image 接口
+        endpoint = `${STORYAI_API_BASE}/ai/image2image`;
+        const sourceFileIds = uploadedImages.map(img => img.fileId);
+        requestBody = {
+          llmName: imageModel,
+          sceneId: sceneId,
+          sourceFileIds: sourceFileIds,
+          userInput: userInput.trim()
+        };
+      } else {
+        // 无上传图片 - 使用原有的 image/generate 接口
+        endpoint = `${STORYAI_API_BASE}/ai/image/generate`;
+        requestBody = {
+          sceneId: sceneId,
+          userInput: userInput.trim(),
+          llmName: imageModel
+        };
+      }
+
+      console.log('图片生成请求:', { endpoint, requestBody });
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Prompt-Manager-Token': token || '',
         },
-        body: JSON.stringify({
-          sceneId: sceneId,
-          userInput: userInput.trim(),
-          llmName: imageModel,
-          durationMillis: durationMillis
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -1909,6 +1927,11 @@ function AIActorEntryPage() {
       if (result.code === 0) {
         setGenerationStatus('生成完成！');
         setUserInput(''); // 清空输入
+
+        // 清空上传的图片（生成完成后）
+        if (hasUploadedImages) {
+          setUploadedImages([]);
+        }
 
         // 刷新图片聊天记录列表
         await loadImageChatHistory();
