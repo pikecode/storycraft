@@ -43,10 +43,11 @@ const TopBar: React.FC = () => {
             <Menu.Item key="profile" onClick={() => navigate('/app/profile')}>
                 <UserOutlined /> {t('topbar.profile')}
             </Menu.Item>
-            <Menu.Item key="vip" onClick={() => navigate('/app/vip')}>
+            {/* 会员中心 - 已隐藏 */}
+            {/* <Menu.Item key="vip" onClick={() => navigate('/app/vip')}>
                 <CrownOutlined /> {t('topbar.memberCenter')}
             </Menu.Item>
-            <Menu.Divider />
+            <Menu.Divider /> */}
             <Menu.Item key="logout" onClick={handleLogout}>
                 <LogoutOutlined /> {t('topbar.logout')}
             </Menu.Item>
@@ -111,12 +112,13 @@ const TopBar: React.FC = () => {
                         <DownOutlined className="ml-1 text-xs" />
                     </button>
                 </Dropdown>
-                <button
+                {/* 会员入口 - 已隐藏 */}
+                {/* <button
                     onClick={() => navigate('/app/vip')}
                     className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded-md hover:bg-blue-200 flex items-center"
                 >
                     <CrownOutlined className="mr-1" />{getMemberStatusText()}
-                </button>
+                </button> */}
                 {isAuthenticated && user ? (
                     <Dropdown overlay={userMenu} trigger={['click']} onVisibleChange={setUserMenuVisible}>
                         <div className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 cursor-pointer">

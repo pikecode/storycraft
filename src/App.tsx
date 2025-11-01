@@ -12,8 +12,8 @@ const App: React.FC = () => {
         {/* 全局顶栏 */}
         <TopBar />
         <div className="flex flex-1 min-h-0 h-[calc(100vh-64px)]">
-          {/* 固定左侧边栏 */}
-          <Sidebar />
+          {/* 固定左侧边栏 - 已隐藏 */}
+          {/* <Sidebar /> */}
           {/* 主内容区域 */}
           <div className="flex-1 min-h-0">
             <Outlet />
