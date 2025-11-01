@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { userService } from '../services/userService';
 import { useI18n } from '../contexts/I18nContext';
+import AuthService from '../services/authService';
 
 const { Title, Text } = Typography;
 
@@ -50,12 +51,6 @@ const RegisterPage = () => {
             return;
         }
 
-        // 验证用户名格式（小写字母开头，5-32个字符，可包含数字、下划线、减号）
-        if (!/^[a-z][0-9a-z_-]{5,31}$/.test(name)) {
-            message.error('用户名需以小写字母开头，5-32个字符，只能包含小写字母、数字、下划线或减号');
-            return;
-        }
-
         // 验证两个密码是否一致
         if (password !== confirmPassword) {
             message.error('两次输入的密码不一致');
@@ -65,79 +60,42 @@ const RegisterPage = () => {
         setLoading(true);
         setMsg('');
         try {
-            // 使用用户名和密码注册
-            const signUpResult = await getCloudbaseAuth().signUp({
-                username: name,
-                password,
-            });
+            // 调用统一的API端点注册
+            const response = await AuthService.register(name, password, confirmPassword);
 
-            // 注册成功后创建用户记录
-            if (signUpResult && signUpResult.user) {
-                const userId = signUpResult.user.uid;
-                await createUserRecord(userId, name, '', '');
-            }
+            if (response.data && response.data.token) {
+                const token = response.data.token;
 
-            // 注册成功后自动登录
-            try {
-                await getCloudbaseAuth().signIn({
-                    username: name,
-                    password,
-                });
+                // 保存token到localStorage
+                localStorage.setItem('token', token);
 
-                const authHeader = getAuthHeader();
-                // 优先获取后端用户信息以填充上下文
-                try {
-                    const userInfoResult = await paymentService.getUserInfo();
-                    if (userInfoResult.success && userInfoResult.data) {
-                        const d = userInfoResult.data;
-                        const authUserData = {
-                            user_id: d.user_id || 0,
-                            user_name: d.user_name || name,
-                            user_email: d.user_email || '',
-                            user_plan: d.user_plan || 'free',
-                            user_point: d.user_point || '0',
-                            subscription_expires_at: d.subscription_expires_at,
-                            subscription_status: d.subscription_status,
-                            userId: d.userId,
-                        } as any;
-                        const token = authHeader ? authHeader.replace('Bearer ', '') : '';
-                        login(authUserData, token);
-                    } else {
-                        const token = authHeader ? authHeader.replace('Bearer ', '') : '';
-                        login({
-                            user_id: 1,
-                            user_name: name,
-                            user_email: '',
-                            user_plan: 'free',
-                            user_point: '0',
-                        } as any, token);
-                    }
-                } catch (_) {
-                    const token = authHeader ? authHeader.replace('Bearer ', '') : '';
-                    login({
-                        user_id: 1,
-                        user_name: name,
-                        user_email: '',
-                        user_plan: 'free',
-                        user_point: '0',
-                    } as any, token);
-                }
+                // 构建用户信息
+                const userInfo = {
+                    user_id: parseInt(response.data.user_id) || 1,
+                    user_name: response.data.user_name || name,
+                    user_email: '',
+                    user_plan: 'free' as const,
+                    user_point: '0'
+                };
+
+                console.log('注册成功:', userInfo);
+
+                // 更新AuthContext
+                await login(userInfo, token);
 
                 message.success('注册成功，即将跳转');
-                navigate('/app/home');
-            } catch (autoLoginErr) {
-                console.error('注册后自动登录失败:', autoLoginErr);
-                message.success('注册成功，请重新登录');
-                navigate('/app/login');
-            }
 
-            // 清空表单
-            setPassword('');
-            setConfirmPassword('');
-            setName('');
+                // 清空表单
+                setPassword('');
+                setConfirmPassword('');
+                setName('');
+
+                // 导航到首页
+                navigate('/app/home');
+            }
         } catch (e) {
             console.error('注册失败:', e);
-            const errorMsg = e.message || '注册失败，请检查信息';
+            const errorMsg = e instanceof Error ? e.message : '注册失败，请检查信息';
             setMsg(`注册失败: ${errorMsg}`);
             message.error(`注册失败: ${errorMsg}`);
         }

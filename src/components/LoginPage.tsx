@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getCloudbaseAuth, getAuthHeader } from '../cloudbase';
 import { paymentService } from '../services/paymentService';
 import { useI18n } from '../contexts/I18nContext';
+import AuthService from '../services/authService';
 import { log } from 'console';
 
 const { Title, Text } = Typography;
@@ -228,37 +229,37 @@ const LoginPage: React.FC = () => {
         setLoading(true);
         setMsg('');
         try {
-            await getCloudbaseAuth().signIn({
-                username,
-                password,
-            });
-            setMsg(t('common.loginSuccess'));
-            message.success(t('common.loginSuccess'));
+            // 调用统一的API端点登录
+            const response = await AuthService.login(username, password);
 
-            const authHeader = getAuthHeader();
-            // 提取纯token，去掉Bearer前缀
-            const token = authHeader ? authHeader.replace('Bearer ', '') : null;
-            
-            // 获取用户信息并更新AuthContext
-            const userInfoUpdated = await fetchAndUpdateUserInfo(authHeader);
-            if (userInfoUpdated) {
-                navigate('/app/home');
-            } else {
-                // 如果获取用户信息失败，使用默认信息
+            if (response.data && response.data.token) {
+                const token = response.data.token;
+
+                // 保存token到localStorage
+                localStorage.setItem('token', token);
+
+                // 构建用户信息
                 const userInfo = {
-                    user_id: 1,
-                    user_name: username,
-                    user_email: '',
+                    user_id: parseInt(response.data.user_id) || 1,
+                    user_name: response.data.user_name || username,
+                    user_email: response.data.user_email || '',
                     user_plan: 'free' as const,
                     user_point: '0'
                 };
-                console.log('用户名密码登录 - 使用默认用户信息:', userInfo);
-                await login(userInfo, token || '');
+
+                setMsg(t('common.loginSuccess'));
+                message.success(t('common.loginSuccess'));
+                console.log('用户名密码登录成功:', userInfo);
+
+                // 更新AuthContext
+                await login(userInfo, token);
+
+                // 导航到首页
                 navigate('/app/home');
             }
         } catch (e) {
             console.error('登录失败:', e);
-            const errorMsg = e.message || t('common.loginFailed');
+            const errorMsg = e instanceof Error ? e.message : t('common.loginFailed');
             setMsg(`${t('common.loginFailed')}: ${errorMsg}`);
             message.error(`${t('common.loginFailed')}: ${errorMsg}`);
         }
