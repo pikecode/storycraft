@@ -2,20 +2,23 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { zhCN } from '../locales/zh-CN';
 import { enUS } from '../locales/en-US';
 import { jaJP } from '../locales/ja-JP';
+import { koKR } from '../locales/ko-KR';
 import { useAuth } from './AuthContext';
 
-export type Language = 'zh-CN' | 'en-US' | 'ja-JP';
+export type Language = 'zh-CN' | 'en-US' | 'ja-JP' | 'ko-KR';
 
 export const languageNames: Record<Language, string> = {
   'zh-CN': '简体中文',
   'en-US': 'English',
   'ja-JP': '日本語',
+  'ko-KR': '한국어',
 };
 
 const translations = {
   'zh-CN': zhCN,
   'en-US': enUS,
   'ja-JP': jaJP,
+  'ko-KR': koKR,
 };
 
 interface I18nContextType {
