@@ -19,9 +19,9 @@ export interface LoginResponse {
 export interface RegisterResponse {
   code: number;
   message: string;
-  data: {
-    userId: number | string;
-    username: string;
+  data: null | {
+    userId?: number | string;
+    username?: string;
     token?: string;
   };
 }

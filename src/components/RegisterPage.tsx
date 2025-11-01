@@ -63,37 +63,16 @@ const RegisterPage = () => {
             // 调用统一的API端点注册
             const response = await AuthService.register(name, password, confirmPassword);
 
-            if (response.data && response.data.userId) {
-                // 如果有token，使用token；否则使用username作为临时标识
-                const token = response.token || response.data.username;
+            // 注册成功，重定向到登陆页面
+            message.success('注册成功，请登陆');
 
-                // 保存token到localStorage
-                localStorage.setItem('token', token);
+            // 清空表单
+            setPassword('');
+            setConfirmPassword('');
+            setName('');
 
-                // 构建用户信息
-                const userInfo = {
-                    user_id: parseInt(String(response.data.userId)) || 1,
-                    user_name: response.data.username || name,
-                    user_email: '',
-                    user_plan: 'free' as const,
-                    user_point: '0'
-                };
-
-                console.log('注册成功:', userInfo);
-
-                // 更新AuthContext
-                await login(userInfo, token);
-
-                message.success('注册成功，即将跳转');
-
-                // 清空表单
-                setPassword('');
-                setConfirmPassword('');
-                setName('');
-
-                // 导航到首页
-                navigate('/app/home');
-            }
+            // 导航到登陆页面
+            navigate('/app/login');
         } catch (e) {
             console.error('注册失败:', e);
             const errorMsg = e instanceof Error ? e.message : '注册失败，请检查信息';
