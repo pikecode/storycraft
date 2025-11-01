@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HomeOutlined, UserOutlined, CrownOutlined, LoginOutlined, LogoutOutlined, DownOutlined, GlobalOutlined, LockOutlined } from '@ant-design/icons';
+import { HomeOutlined, UserOutlined, CrownOutlined, LoginOutlined, LogoutOutlined, DownOutlined, GlobalOutlined } from '@ant-design/icons';
 import { Dropdown, Menu, Avatar } from 'antd';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n, languageNames, Language } from '../contexts/I18nContext';
@@ -8,7 +8,7 @@ import { useI18n, languageNames, Language } from '../contexts/I18nContext';
 const TopBar: React.FC = () => {
     const navigate = useNavigate();
     const { user, isAuthenticated, logout, refreshUserInfo } = useAuth();
-    const { language, setLanguage, t, canChangeLanguage } = useI18n();
+    const { language, setLanguage, t } = useI18n();
     const [userMenuVisible, setUserMenuVisible] = useState(false);
 
     // 获取会员状态显示文本
@@ -56,37 +56,22 @@ const TopBar: React.FC = () => {
     );
 
     const handleLanguageClick = (lang: Language) => {
-        if (lang === 'zh-CN' || canChangeLanguage) {
-            setLanguage(lang);
-        } else {
-            // 显示需要会员的提示
-            const confirmUpgrade = window.confirm('多语言功能需要会员权限，是否前往升级页面？');
-            if (confirmUpgrade) {
-                navigate('/app/vip');
-            }
-        }
+        // 允许所有用户改变语言
+        setLanguage(lang);
     };
 
     const languageMenu = (
         <Menu>
             {Object.entries(languageNames).map(([lang, name]) => {
-                const isLocked = lang !== 'zh-CN' && !canChangeLanguage;
                 const isCurrent = language === lang;
-                
+
                 return (
-                    <Menu.Item 
-                        key={lang} 
+                    <Menu.Item
+                        key={lang}
                         onClick={() => handleLanguageClick(lang as Language)}
                         className={isCurrent ? 'bg-blue-50' : ''}
-                        style={{ 
-                            opacity: isLocked ? 0.6 : 1,
-                            cursor: isLocked ? 'not-allowed' : 'pointer'
-                        }}
                     >
-                        <div className="flex items-center justify-between">
-                            <span>{name}</span>
-                            {isLocked && <LockOutlined className="text-gray-400" />}
-                        </div>
+                        <span>{name}</span>
                     </Menu.Item>
                 );
             })}
