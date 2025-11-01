@@ -63,16 +63,17 @@ const RegisterPage = () => {
             // 调用统一的API端点注册
             const response = await AuthService.register(name, password, confirmPassword);
 
-            if (response.data && response.data.token) {
-                const token = response.data.token;
+            if (response.data && response.data.userId) {
+                // 如果有token，使用token；否则使用username作为临时标识
+                const token = response.token || response.data.username;
 
                 // 保存token到localStorage
                 localStorage.setItem('token', token);
 
                 // 构建用户信息
                 const userInfo = {
-                    user_id: parseInt(response.data.user_id) || 1,
-                    user_name: response.data.user_name || name,
+                    user_id: parseInt(String(response.data.userId)) || 1,
+                    user_name: response.data.username || name,
                     user_email: '',
                     user_plan: 'free' as const,
                     user_point: '0'

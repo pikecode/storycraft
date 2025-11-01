@@ -8,10 +8,11 @@ export interface LoginResponse {
   code: number;
   message: string;
   data: {
-    token: string;
-    user_id: string;
-    user_name: string;
-    user_email?: string;
+    userId: number | string;
+    username: string;
+    loginTime?: string;
+    message?: string;
+    token?: string;
   };
 }
 
@@ -19,9 +20,9 @@ export interface RegisterResponse {
   code: number;
   message: string;
   data: {
-    token: string;
-    user_id: string;
-    user_name: string;
+    userId: number | string;
+    username: string;
+    token?: string;
   };
 }
 
@@ -29,7 +30,7 @@ export class AuthService {
   /**
    * 用户名密码登录
    */
-  static async login(username: string, password: string): Promise<LoginResponse> {
+  static async login(username: string, password: string): Promise<LoginResponse & { token?: string }> {
     const response = await fetch(`${STORYAI_API_BASE}/user/login`, {
       method: 'POST',
       headers: {
@@ -41,13 +42,21 @@ export class AuthService {
       }),
     });
 
-    const data = await response.json();
+    const data: LoginResponse = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || data.code !== 0) {
       throw new Error(data.message || '登录失败');
     }
 
-    return data;
+    // 尝试从response headers中获取token
+    const authHeader = response.headers.get('Authorization');
+    const token = authHeader ? authHeader.replace('Bearer ', '') : undefined;
+
+    // 返回包含token的响应
+    return {
+      ...data,
+      token
+    };
   }
 
   /**
@@ -57,7 +66,7 @@ export class AuthService {
     username: string,
     password: string,
     confirmPassword: string
-  ): Promise<RegisterResponse> {
+  ): Promise<RegisterResponse & { token?: string }> {
     if (password !== confirmPassword) {
       throw new Error('两次输入的密码不一致');
     }
@@ -73,13 +82,21 @@ export class AuthService {
       }),
     });
 
-    const data = await response.json();
+    const data: RegisterResponse = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || data.code !== 0) {
       throw new Error(data.message || '注册失败');
     }
 
-    return data;
+    // 尝试从response headers中获取token
+    const authHeader = response.headers.get('Authorization');
+    const token = authHeader ? authHeader.replace('Bearer ', '') : undefined;
+
+    // 返回包含token的响应
+    return {
+      ...data,
+      token
+    };
   }
 
   /**

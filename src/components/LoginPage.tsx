@@ -232,17 +232,18 @@ const LoginPage: React.FC = () => {
             // 调用统一的API端点登录
             const response = await AuthService.login(username, password);
 
-            if (response.data && response.data.token) {
-                const token = response.data.token;
+            if (response.data && response.data.userId) {
+                // 如果有token，使用token；否则使用username作为临时标识
+                const token = response.token || response.data.username;
 
                 // 保存token到localStorage
                 localStorage.setItem('token', token);
 
                 // 构建用户信息
                 const userInfo = {
-                    user_id: parseInt(response.data.user_id) || 1,
-                    user_name: response.data.user_name || username,
-                    user_email: response.data.user_email || '',
+                    user_id: parseInt(String(response.data.userId)) || 1,
+                    user_name: response.data.username || username,
+                    user_email: '',
                     user_plan: 'free' as const,
                     user_point: '0'
                 };
