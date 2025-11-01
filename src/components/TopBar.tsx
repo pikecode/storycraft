@@ -40,9 +40,10 @@ const TopBar: React.FC = () => {
 
     const userMenu = (
         <Menu>
-            <Menu.Item key="profile" onClick={() => navigate('/app/profile')}>
+            {/* 个人资料 - 已隐藏 */}
+            {/* <Menu.Item key="profile" onClick={() => navigate('/app/profile')}>
                 <UserOutlined /> {t('topbar.profile')}
-            </Menu.Item>
+            </Menu.Item> */}
             {/* 会员中心 - 已隐藏 */}
             {/* <Menu.Item key="vip" onClick={() => navigate('/app/vip')}>
                 <CrownOutlined /> {t('topbar.memberCenter')}
