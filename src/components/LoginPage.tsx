@@ -245,8 +245,7 @@ const LoginPage: React.FC = () => {
                     user_name: response.data.username || username,
                     user_email: '',
                     user_plan: 'free' as const,
-                    user_point: '0',
-                    userId: String(response.data.userId)
+                    user_point: '0'
                 };
 
                 setMsg(t('common.loginSuccess'));

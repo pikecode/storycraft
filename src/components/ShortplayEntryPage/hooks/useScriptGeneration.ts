@@ -59,25 +59,6 @@ export const useScriptGeneration = () => {
     setGenerationStatus('正在创建剧本任务...');
 
     try {
-      // 从localStorage获取user信息
-      const userStr = localStorage.getItem('user');
-
-      // 解析user信息获取userId
-      let userId = "";
-      if (userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          userId = user.userId || "";
-        } catch (error) {
-          console.warn(t('shortplayEntry.input.userInfoParseError'), error);
-        }
-      }
-
-      if (!userId) {
-        toast.error('用户信息不完整，请重新登录');
-        return '';
-      }
-
       // 从localStorage获取token
       const token = localStorage.getItem('token');
 
@@ -89,7 +70,6 @@ export const useScriptGeneration = () => {
           'X-Prompt-Manager-Token': token || '',
         },
         body: JSON.stringify({
-          userId: userId,
           userInput: userInput.trim(),
           provider: ""
         })
@@ -259,22 +239,6 @@ export const useScriptGeneration = () => {
     setGenerationStatus('正在生成音效...');
 
     try {
-      const userStr = localStorage.getItem('user');
-      let userId = "";
-      if (userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          userId = user.userId || "";
-        } catch (error) {
-          console.warn(t('shortplayEntry.input.userInfoParseError'), error);
-        }
-      }
-
-      if (!userId) {
-        toast.error('用户信息不完整，请重新登录');
-        return userInput;
-      }
-
       const token = localStorage.getItem('token');
 
       const response = await fetch(`${STORYAI_API_BASE}/ai/bgm/design`, {
@@ -284,8 +248,7 @@ export const useScriptGeneration = () => {
           'X-Prompt-Manager-Token': token || '',
         },
         body: JSON.stringify({
-          prompt: userInput.trim(),
-          userId: userId
+          prompt: userInput.trim()
         })
       });
 
@@ -326,22 +289,6 @@ export const useScriptGeneration = () => {
     setGenerationStatus('正在生成音色...');
 
     try {
-      const userStr = localStorage.getItem('user');
-      let userId = "";
-      if (userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          userId = user.userId || "";
-        } catch (error) {
-          console.warn(t('shortplayEntry.input.userInfoParseError'), error);
-        }
-      }
-
-      if (!userId) {
-        toast.error('用户信息不完整，请重新登录');
-        return userInput;
-      }
-
       const token = localStorage.getItem('token');
 
       const response = await fetch(`${STORYAI_API_BASE}/ai/voice/design`, {
@@ -351,8 +298,7 @@ export const useScriptGeneration = () => {
           'X-Prompt-Manager-Token': token || '',
         },
         body: JSON.stringify({
-          prompt: userInput.trim(),
-          userId: userId
+          prompt: userInput.trim()
         })
       });
 

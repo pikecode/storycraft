@@ -35,13 +35,6 @@ export const useAudioManagement = () => {
    */
   const loadVoiceList = async (status: number) => {
     try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) return [];
-
-      const user = JSON.parse(userStr);
-      const userId = user.userId;
-      if (!userId) return [];
-
       const token = localStorage.getItem('token');
       const response = await fetch(`${STORYAI_API_BASE}/voice/list`, {
         method: 'POST',
@@ -50,7 +43,6 @@ export const useAudioManagement = () => {
           'X-Prompt-Manager-Token': token || '',
         },
         body: JSON.stringify({
-          userId: userId,
           status: status
         })
       });
@@ -318,13 +310,6 @@ export const useAudioManagement = () => {
   const loadBgmList = async () => {
     setIsLoadingBgm(true);
     try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) return;
-
-      const user = JSON.parse(userStr);
-      const userId = user.userId;
-      if (!userId) return;
-
       const token = localStorage.getItem('token');
       const response = await fetch(`${STORYAI_API_BASE}/bgm/list`, {
         method: 'POST',
@@ -332,9 +317,7 @@ export const useAudioManagement = () => {
           'Content-Type': 'application/json',
           'X-Prompt-Manager-Token': token || '',
         },
-        body: JSON.stringify({
-          userId: userId.toString()
-        })
+        body: JSON.stringify({})
       });
 
       if (response.ok) {
