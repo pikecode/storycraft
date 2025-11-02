@@ -22,6 +22,8 @@ export function BottomInputArea({
   onBackgroundTypeChange,
   style = "古风",
   onStyleChange,
+  relevanceScore = "1",
+  onRelevanceScoreChange,
   // 视频tab属性
   videoLength = "2s",
   onVideoLengthChange,
@@ -40,6 +42,7 @@ export function BottomInputArea({
   onRemoveImage
 }: BottomInputAreaProps) {
   const { t } = useI18n();
+  const [imageGenerationMode, setImageGenerationMode] = React.useState('single');
 
   // Use translated placeholder if not provided
   const finalPlaceholder = placeholder || t('shortplayEntry.input.placeholder');
@@ -199,8 +202,8 @@ export function BottomInputArea({
 
       {activeTab === 'image' && (
         <>
-          <div className="mb-3">
-            <div className="flex space-x-3">
+          <div>
+            <div className="flex space-x-3 items-center">
               <div className="relative w-32">
                 <select
                   value={selectedModel}
@@ -215,6 +218,88 @@ export function BottomInputArea({
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
+                </div>
+              </div>
+
+              {/* 背景选择 */}
+              <div className="relative h-9 flex items-center">
+                <select
+                  value={backgroundType}
+                  onChange={(e) => onBackgroundTypeChange?.(e.target.value)}
+                  className="appearance-none bg-transparent pl-0 pr-3 text-xs text-gray-700 focus:outline-none"
+                  style={{ width: '70px' }}
+                >
+                  <option value="空镜/背景">空镜/背景</option>
+                  <option value="大远景">大远景</option>
+                  <option value="全景">全景</option>
+                  <option value="中景">中景</option>
+                  <option value="近景">近景</option>
+                  <option value="特写">特写</option>
+                  <option value="主观视角">主观视角</option>
+                </select>
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L6 6L11 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* 古风选择 */}
+              <div className="relative h-9 flex items-center">
+                <select
+                  value={style}
+                  onChange={(e) => onStyleChange?.(e.target.value)}
+                  className="appearance-none bg-transparent pl-0 pr-3 text-xs text-gray-700 focus:outline-none"
+                  style={{ width: '70px' }}
+                >
+                  <option value="电影感">电影感</option>
+                  <option value="写实">写实</option>
+                  <option value="古风动漫">古风动漫</option>
+                  <option value="古风版画">古风版画</option>
+                  <option value="古风写真">古风写真</option>
+                  <option value="油画风格">油画风格</option>
+                  <option value="水彩/水墨风格">水彩/水墨风格</option>
+                  <option value="赛博朋克">赛博朋克</option>
+                  <option value="奇幻风格">奇幻风格</option>
+                  <option value="蒸汽朋克">蒸汽朋克</option>
+                  <option value="吉卜力动画">吉卜力动画</option>
+                  <option value="怀旧日漫">怀旧日漫</option>
+                  <option value="新海诚动画">新海诚动画</option>
+                  <option value="复古/胶片">复古/胶片</option>
+                </select>
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L6 6L11 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* 相关性选择 */}
+              <div className="flex items-center space-x-1">
+                <span className="text-xs text-gray-700">相关性</span>
+                <div className="relative h-9 flex items-center">
+                  <select
+                    value={relevanceScore}
+                    onChange={(e) => onRelevanceScoreChange?.(e.target.value)}
+                    className="appearance-none bg-transparent pl-0 pr-3 text-xs text-gray-700 focus:outline-none"
+                    style={{ width: '20px' }}
+                  >
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                  </select>
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 1L6 6L11 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
                 </div>
               </div>
 
@@ -283,14 +368,14 @@ export function BottomInputArea({
 
       {activeTab === 'video' && (
         <>
-          <div className="mb-3">
-            <div className="flex space-x-2">
+          <div>
+            <div className="flex space-x-2 items-center">
               {/* 模型选择 */}
-              <div className="relative w-50">
+              <div className="relative w-48">
                 <select
                   value={videoModel || availableVideoModels[0].value}
                   onChange={(e) => onVideoModelChange?.(e.target.value)}
-                  className="w-200 h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
+                  className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
                 >
                   {availableVideoModels.map((model) => (
                     <option key={model.value} value={model.value}>
@@ -347,26 +432,67 @@ export function BottomInputArea({
                 </div>
               </div> */}
 
-              {/* 持续时间（秒）*/}
-              <div className="relative w-14">
+              {/* 视频时长选择 */}
+              <div className="flex items-center space-x-1">
+                <span className="text-xs text-gray-700">视频时长</span>
+                <div className="relative h-9 flex items-center">
+                  <select
+                    value={singleGenerate || '5s'}
+                    onChange={(e) => onSingleGenerateChange?.(e.target.value)}
+                    className="appearance-none bg-transparent pl-0 pr-4 text-xs text-gray-700 focus:outline-none"
+                  >
+                    <option value="2s">2s</option>
+                    <option value="3s">3s</option>
+                    <option value="4s">4s</option>
+                    <option value="5s">5s</option>
+                    <option value="6s">6s</option>
+                    <option value="7s">7s</option>
+                    <option value="8s">8s</option>
+                    <option value="9s">9s</option>
+                    <option value="10s">10s</option>
+                  </select>
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 1L6 6L11 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* 分辨率选择 */}
+              <div className="flex items-center space-x-1">
+                <span className="text-xs text-gray-700">分辨率</span>
+                <div className="relative h-9 flex items-center">
+                  <select
+                    value={resolution || '1080p'}
+                    onChange={(e) => onResolutionChange?.(e.target.value)}
+                    className="appearance-none bg-transparent pl-0 pr-4 text-xs text-gray-700 focus:outline-none"
+                  >
+                    <option value="1080p">1080p</option>
+                    <option value="720p">720p</option>
+                    <option value="480p">480p</option>
+                  </select>
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 1L6 6L11 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* 图片生成模式选择 */}
+              <div className="relative h-9 flex items-center">
                 <select
-                  value={singleGenerate || '5s'}
-                  onChange={(e) => onSingleGenerateChange?.(e.target.value)}
-                  className="w-100 h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
-                > 
-                  <option value="2s">2s</option>
-                  <option value="3s">3s</option>
-                  <option value="4s">4s</option>
-                  <option value="5s">5s</option>
-                  <option value="6s">6s</option>
-                  <option value="7s">7s</option>
-                  <option value="8s">8s</option>
-                  <option value="9s">9s</option>
-                  <option value="10s">10s</option> 
+                  value={imageGenerationMode}
+                  onChange={(e) => setImageGenerationMode(e.target.value)}
+                  className="appearance-none bg-transparent pl-0 pr-4 text-xs text-gray-700 focus:outline-none"
+                >
+                  <option value="single">单图生成</option>
+                  <option value="multi">多图生成</option>
                 </select>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M1 1L6 6L11 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
               </div>
@@ -413,23 +539,37 @@ export function BottomInputArea({
               <input
                 type="file"
                 accept="image/*"
-                multiple
+                multiple={imageGenerationMode === 'multi'}
                 className="hidden"
-                disabled={isUploading}
+                disabled={isUploading || (imageGenerationMode === 'single' && uploadedImages.length >= 1)}
                 onChange={async (e) => {
                   console.log('文件选择事件触发');
                   const files = Array.from(e.target.files || []);
                   console.log('选择的文件:', files);
                   console.log('当前上传状态:', isUploading);
+                  console.log('生成模式:', imageGenerationMode);
                   console.log('onMultipleFileUpload 函数:', onMultipleFileUpload);
 
-                  if (files.length > 0 && !isUploading) {
-                    console.log('开始上传文件:', files.map(f => f.name));
+                  // 单图生成模式下的验证
+                  if (imageGenerationMode === 'single' && uploadedImages.length >= 1) {
+                    console.log('单图生成模式：已上传图片，不允许继续上传');
+                    return;
+                  }
+
+                  // 单图生成模式只允许上传一张
+                  let filesToUpload = files;
+                  if (imageGenerationMode === 'single' && files.length > 1) {
+                    filesToUpload = files.slice(0, 1);
+                    console.log('单图生成模式：只上传第一张图片');
+                  }
+
+                  if (filesToUpload.length > 0 && !isUploading) {
+                    console.log('开始上传文件:', filesToUpload.map(f => f.name));
 
                     // 使用批量上传处理
                     if (onMultipleFileUpload) {
                       console.log('调用批量上传函数');
-                      await onMultipleFileUpload(files);
+                      await onMultipleFileUpload(filesToUpload);
                     } else {
                       console.log('批量上传函数不存在');
                     }
@@ -438,7 +578,7 @@ export function BottomInputArea({
                     e.target.value = '';
                   } else {
                     console.log('跳过上传，原因:', {
-                      filesLength: files.length,
+                      filesLength: filesToUpload.length,
                       isUploading
                     });
                   }

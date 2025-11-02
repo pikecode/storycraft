@@ -75,6 +75,7 @@ function ShortplayEntryPage() {
   const [voiceType, setVoiceType] = useState<string>('male');
   const [backgroundType, setBackgroundType] = useState<string>(t('shortplayEntry.image.background'));
   const [style, setStyle] = useState<string>(t('shortplayEntry.image.ancient'));
+  const [relevanceScore, setRelevanceScore] = useState<string>('1');
   const [videoLength, setVideoLength] = useState<string>('2s');
   const [resolution, setResolution] = useState<string>('1080p');
   const [singleGenerate, setSingleGenerate] = useState<string>('5s');
@@ -1908,7 +1909,10 @@ function ShortplayEntryPage() {
           sceneId: sceneId,
           userInput: userInput.trim(),
           llmName: imageModel,
-          durationMillis: durationMillis
+          durationMillis: durationMillis,
+          imageBackground: backgroundType,
+          imageStyle: style,
+          relevance: relevanceScore
         })
       });
 
@@ -2188,7 +2192,8 @@ function ShortplayEntryPage() {
         userMessage: userInput.trim(),
         useImageGeneration: uploadedImages.length > 0,
         images: uploadedImages.map(img => img.fileId), // 使用fileId而不是fileUrl
-        durationMillis: durationSeconds * 1000 // 转换秒为毫秒
+        durationMillis: durationSeconds * 1000, // 转换秒为毫秒
+        resolution: resolution // 分辨率参数
       };
 
       console.log('视频生成请求参数:', requestBody);
@@ -3364,6 +3369,8 @@ function ShortplayEntryPage() {
                   onBackgroundTypeChange={setBackgroundType}
                   style={style}
                   onStyleChange={setStyle}
+                  relevanceScore={relevanceScore}
+                  onRelevanceScoreChange={setRelevanceScore}
                   videoLength={videoLength}
                   onVideoLengthChange={setVideoLength}
                   resolution={resolution}
@@ -3452,7 +3459,7 @@ function ShortplayEntryPage() {
 
                 setIsLoadingPreviewVideo(true);
                 const token = localStorage.getItem('token');
-                const response = await fetch(`${STORYAI_API_BASE}/multimedia/video/preview?sceneId=${sceneId}`, {
+                const response = await fetch(`${STORYAI_API_BASE}/multimedia/episode/video/preview?sceneId=${sceneId}`, {
                   method: 'POST',
                   headers: {
                     'X-Prompt-Manager-Token': token || '',
