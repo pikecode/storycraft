@@ -1,7 +1,27 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 // API 基础路径
 const STORYAI_API_BASE = '/episode-api/storyai';
+
+/**
+ * 处理API响应，检查401未授权错误
+ */
+const handleApiResponse = async (response: Response) => {
+  const data = await response.json();
+
+  // 检查是否为401未授权错误
+  if (data.code === 401) {
+    console.log('检测到401未授权错误，触发重定向到登陆页面');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    toast.error('用户未登录，请重新登陆');
+    window.location.href = '/#/app/login';
+    throw new Error('用户未登录');
+  }
+
+  return data;
+};
 
 /**
  * 场次管理 Hook
@@ -32,7 +52,7 @@ export const useSceneManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           console.log('场次内容:', result.data);
           setSceneContent(result.data);
@@ -68,7 +88,7 @@ export const useSceneManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           const { scenes } = result.data;
 
