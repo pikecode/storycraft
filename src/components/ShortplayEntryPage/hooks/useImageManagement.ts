@@ -2,6 +2,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import { useAuth } from '../../../contexts/AuthContext';
 
 // API 基础路径
 const STORYAI_API_BASE = '/episode-api/storyai';
@@ -15,8 +16,6 @@ const handleApiResponse = async (response: Response) => {
   // 检查是否为401未授权错误
   if (data.code === 401) {
     console.log('检测到401未授权错误，触发重定向到登陆页面');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
     toast.error('用户未登录，请重新登陆');
     window.location.href = '/#/app/login';
     throw new Error('用户未登录');
@@ -30,6 +29,9 @@ const handleApiResponse = async (response: Response) => {
  * 管理图片和分镜板相关的所有状态和函数
  */
 export const useImageManagement = () => {
+  // 获取认证信息
+  const { token } = useAuth();
+
   // 图片聊天记录数据状态
   const [imageChatHistory, setImageChatHistory] = useState<any[]>([]);
   const [isLoadingImageHistory, setIsLoadingImageHistory] = useState<boolean>(false);
@@ -69,7 +71,7 @@ export const useImageManagement = () => {
 
     setIsLoadingImageHistory(true);
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/chat-history/query`, {
         method: 'POST',
         headers: {
@@ -117,7 +119,7 @@ export const useImageManagement = () => {
 
     setIsLoadingStoryboard(true);
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/storyboard/list?sceneId=${sceneId}`, {
         method: 'GET',
         headers: {
@@ -161,7 +163,7 @@ export const useImageManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
 
       // 计算下一个排序号 (当前列表长度 + 1)
       const storyboardOrder = storyboardItems.length + 1;
@@ -204,7 +206,7 @@ export const useImageManagement = () => {
    */
   const handleDeleteStoryboard = async (itemId: string, sceneId: number | null) => {
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/storyboard/delete`, {
         method: 'DELETE',
         headers: {
@@ -288,7 +290,7 @@ export const useImageManagement = () => {
 
         // 调用API更新排序
         try {
-          const token = localStorage.getItem('token');
+          // token from useAuth()
           const movedItem = oldItems[oldIndex];
 
           // 计算新的storyboardOrder：使用新位置的索引+1作为order
@@ -341,7 +343,7 @@ export const useImageManagement = () => {
     setUploadProgress({ current: 1, total: 1 });
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const formData = new FormData();
       formData.append('file', file);
 
@@ -389,7 +391,7 @@ export const useImageManagement = () => {
     setUploadProgress({ current: 0, total: files.length });
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -449,7 +451,7 @@ export const useImageManagement = () => {
       const startTime = (parseInt(editingStartMinutes) * 60 + parseInt(editingStartSeconds)) * 1000;
       const endTime = (parseInt(editingEndMinutes) * 60 + parseInt(editingEndSeconds)) * 1000;
 
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/storyboard/update`, {
         method: 'PUT',
         headers: {

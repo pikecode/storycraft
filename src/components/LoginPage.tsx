@@ -236,9 +236,6 @@ const LoginPage: React.FC = () => {
                 // 如果有token，使用token；否则使用username作为临时标识
                 const token = response.token || response.data.username;
 
-                // 保存token到localStorage
-                localStorage.setItem('token', token);
-
                 // 构建用户信息
                 const userInfo = {
                     user_id: parseInt(String(response.data.userId)) || 1,

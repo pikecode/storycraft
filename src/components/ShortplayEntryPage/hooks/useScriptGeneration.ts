@@ -3,15 +3,37 @@ import toast from 'react-hot-toast';
 import type { ScriptCardProps } from '../types';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import { apiInterceptor } from '../../../services/apiInterceptor';
+import { useAuth } from '../../../contexts/AuthContext';
 
 // API 基础路径
 const STORYAI_API_BASE = '/episode-api/storyai';
+
+/**
+ * 处理API响应，检查401未授权错误
+ */
+const handleApiResponse = async (response: Response) => {
+  const data = await response.json();
+
+  // 检查是否为401未授权错误
+  if (data.code === 401) {
+    console.log('检测到401未授权错误，触发重定向到登陆页面');
+    toast.error('用户未登录，请重新登陆');
+    window.location.href = '/#/app/login';
+    throw new Error('用户未登录');
+  }
+
+  return data;
+};
 
 /**
  * 脚本生成 Hook
  * 管理脚本生成相关的所有状态和函数
  */
 export const useScriptGeneration = () => {
+  // 获取认证信息
+  const { token } = useAuth();
+
   // 生成状态
   const [isGenerating, setIsGenerating] = useState<boolean>(false); // 生成状态
   const [generatedContent, setGeneratedContent] = useState<string>(''); // 生成的内容
@@ -60,7 +82,7 @@ export const useScriptGeneration = () => {
 
     try {
       // 从localStorage获取token
-      const token = localStorage.getItem('token');
+      // token from useAuth()
 
       // 第一步：创建剧本生成任务
       const response = await fetch(`${STORYAI_API_BASE}/series/create`, {
@@ -79,7 +101,7 @@ export const useScriptGeneration = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       console.log('剧本生成任务创建成功:', result);
 
       if (result.code !== 0 || !result.data?.seriesId) {
@@ -103,7 +125,7 @@ export const useScriptGeneration = () => {
             throw new Error(`获取详情失败: ${detailResponse.status}`);
           }
 
-          const detailResult = await detailResponse.json();
+          const detailResult = await handleApiResponse(detailResponse);
           console.log('轮询结果:', detailResult);
 
           if (detailResult.code === 0 && detailResult.data) {
@@ -187,7 +209,7 @@ export const useScriptGeneration = () => {
     setGenerationStatus('正在生成图片...');
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
 
       const response = await fetch(`${STORYAI_API_BASE}/ai/image/generate`, {
         method: 'POST',
@@ -206,7 +228,7 @@ export const useScriptGeneration = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       console.log('图片生成结果:', result);
 
       if (result.code === 0) {
@@ -239,7 +261,7 @@ export const useScriptGeneration = () => {
     setGenerationStatus('正在生成音效...');
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
 
       const response = await fetch(`${STORYAI_API_BASE}/ai/bgm/design`, {
         method: 'POST',
@@ -256,7 +278,7 @@ export const useScriptGeneration = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       console.log('音效生成结果:', result);
 
       if (result.code === 0) {
@@ -289,7 +311,7 @@ export const useScriptGeneration = () => {
     setGenerationStatus('正在生成音色...');
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
 
       const response = await fetch(`${STORYAI_API_BASE}/ai/voice/design`, {
         method: 'POST',
@@ -306,7 +328,7 @@ export const useScriptGeneration = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       console.log('音色生成结果:', result);
 
       if (result.code === 0) {
@@ -352,7 +374,7 @@ export const useScriptGeneration = () => {
     if (deleteConfirmId === null) return;
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/scene/content`, {
         method: 'DELETE',
         headers: {
@@ -368,7 +390,7 @@ export const useScriptGeneration = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         toast.success('删除成功！');
         // 刷新场次内容
@@ -440,7 +462,7 @@ export const useScriptGeneration = () => {
       const startTime = (parseInt(editingSceneStartMinutes) * 60 + parseInt(editingSceneStartSeconds)) * 1000;
       const endTime = (parseInt(editingSceneEndMinutes) * 60 + parseInt(editingSceneEndSeconds)) * 1000;
 
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/scene/content`, {
         method: 'PUT',
         headers: {
@@ -461,7 +483,7 @@ export const useScriptGeneration = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         toast.success('更新成功！');
 
@@ -523,7 +545,7 @@ export const useScriptGeneration = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
 
       // 计算下一个orderNum
       const orderNum = sceneContent.length + 1;
@@ -549,7 +571,7 @@ export const useScriptGeneration = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         toast.success('添加成功！');
         // 刷新场次内容

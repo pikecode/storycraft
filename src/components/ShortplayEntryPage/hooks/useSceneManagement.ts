@@ -1,3 +1,4 @@
+import { useAuth } from '../../../contexts/AuthContext';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -13,8 +14,6 @@ const handleApiResponse = async (response: Response) => {
   // 检查是否为401未授权错误
   if (data.code === 401) {
     console.log('检测到401未授权错误，触发重定向到登陆页面');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
     toast.error('用户未登录，请重新登陆');
     window.location.href = '/#/app/login';
     throw new Error('用户未登录');
@@ -28,6 +27,7 @@ const handleApiResponse = async (response: Response) => {
  * 管理场次相关的所有状态和函数
  */
 export const useSceneManagement = () => {
+  const { token, user } = useAuth();
   // 场次管理状态
   const [selectedScene, setSelectedScene] = useState<string>('');
   const [sceneOptions, setSceneOptions] = useState<string[]>([]);
@@ -43,7 +43,7 @@ export const useSceneManagement = () => {
    */
   const loadSceneContent = async (sceneId: number) => {
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/scene/content?sceneId=${sceneId}`, {
         method: 'GET',
         headers: {
@@ -69,18 +69,13 @@ export const useSceneManagement = () => {
   const loadUserData = async () => {
     // 防止重复调用
     if (isLoadingUserData) return;
+    if (!user || !user.userId) return;
     setIsLoadingUserData(true);
 
     try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) return;
 
-      const user = JSON.parse(userStr);
-      const userId = user.userId;
-      if (!userId) return;
-
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${STORYAI_API_BASE}/series/detail?userId=${userId}`, {
+      // token from useAuth()
+      const response = await fetch(`${STORYAI_API_BASE}/series/detail?userId=${user.userId}`, {
         method: 'GET',
         headers: {
           'X-Prompt-Manager-Token': token || '',

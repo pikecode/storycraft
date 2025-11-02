@@ -1,3 +1,4 @@
+import { useAuth } from '../../../contexts/AuthContext';
 import { useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { DragEndEvent } from '@dnd-kit/core';
@@ -15,8 +16,6 @@ const handleApiResponse = async (response: Response) => {
   // 检查是否为401未授权错误
   if (data.code === 401) {
     console.log('检测到401未授权错误，触发重定向到登陆页面');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
     toast.error('用户未登录，请重新登陆');
     window.location.href = '/#/app/login';
     throw new Error('用户未登录');
@@ -30,6 +29,7 @@ const handleApiResponse = async (response: Response) => {
  * 管理视频相关的所有状态和函数
  */
 export const useVideoManagement = () => {
+  const { token } = useAuth();
   // 视频数据状态
   const [videoItems, setVideoItems] = useState([]);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -64,7 +64,7 @@ export const useVideoManagement = () => {
 
     setIsLoadingVideoHistory(true);
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/chat-history/query`, {
         method: 'POST',
         headers: {
@@ -111,7 +111,7 @@ export const useVideoManagement = () => {
 
     setIsGeneratingPreview(true);
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/multimedia/video/preview?sceneId=${sceneId}`, {
         method: 'POST',
         headers: {
@@ -171,7 +171,7 @@ export const useVideoManagement = () => {
     setGenerationStatus('正在生成视频...');
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
 
       // 构建请求参数
       const requestBody = {
@@ -238,7 +238,7 @@ export const useVideoManagement = () => {
         pollCount++;
         console.log(`轮询视频进度，第 ${pollCount} 次`, fileId);
 
-        const token = localStorage.getItem('token');
+        // token from useAuth()
         const response = await fetch(`${STORYAI_API_BASE}/ai/video/progress`, {
           method: 'POST',
           headers: {
@@ -318,7 +318,7 @@ export const useVideoManagement = () => {
    */
   const handleMultipleFileUpload = async (files: File[]) => {
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const uploadedFiles: any[] = [];
 
       for (const file of files) {

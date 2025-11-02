@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../../contexts/AuthContext';
 
 // API 基础路径
 const STORYAI_API_BASE = '/episode-api/storyai';
@@ -13,8 +14,6 @@ const handleApiResponse = async (response: Response) => {
   // 检查是否为401未授权错误
   if (data.code === 401) {
     console.log('检测到401未授权错误，触发重定向到登陆页面');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
     toast.error('用户未登录，请重新登陆');
     window.location.href = '/#/app/login';
     throw new Error('用户未登录');
@@ -28,6 +27,9 @@ const handleApiResponse = async (response: Response) => {
  * 管理音频相关的所有状态和函数，包括音色和音效
  */
 export const useAudioManagement = () => {
+  // 获取认证信息
+  const { token } = useAuth();
+
   // 音色数据状态
   const [configuredVoices, setConfiguredVoices] = useState<any[]>([]);
   const [availableVoices, setAvailableVoices] = useState<any[]>([]);
@@ -54,7 +56,7 @@ export const useAudioManagement = () => {
    */
   const loadVoiceList = async (status: number) => {
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/voice/list`, {
         method: 'POST',
         headers: {
@@ -102,7 +104,7 @@ export const useAudioManagement = () => {
    */
   const handleApplyVoice = async (voiceId: string) => {
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/voice/update`, {
         method: 'POST',
         headers: {
@@ -151,7 +153,7 @@ export const useAudioManagement = () => {
     if (!editingVoiceId || !editingVoiceName.trim()) return;
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/voice/update`, {
         method: 'POST',
         headers: {
@@ -213,7 +215,7 @@ export const useAudioManagement = () => {
     if (!voiceId) return;
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/ai/voice/batch-bind`, {
         method: 'POST',
         headers: {
@@ -252,7 +254,7 @@ export const useAudioManagement = () => {
    */
   const handlePlayAudio = async (itemId: string) => {
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/multimedia/audio/play`, {
         method: 'POST',
         headers: {
@@ -296,7 +298,7 @@ export const useAudioManagement = () => {
   const loadAudioContent = async (sceneId: number) => {
     setIsLoadingAudioContent(true);
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/scene/content?sceneId=${sceneId}`, {
         method: 'GET',
         headers: {
@@ -329,7 +331,7 @@ export const useAudioManagement = () => {
   const loadBgmList = async () => {
     setIsLoadingBgm(true);
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
       const response = await fetch(`${STORYAI_API_BASE}/bgm/list`, {
         method: 'POST',
         headers: {
@@ -369,7 +371,7 @@ export const useAudioManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      // token from useAuth()
 
       // 计算下一个排序号（当前音频内容列表长度 + 1）
       const orderNum = audioContent.length + 1;

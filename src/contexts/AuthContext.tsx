@@ -47,28 +47,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        // 从localStorage恢复用户状态
-        const savedToken = localStorage.getItem('token');
-        const savedUser = localStorage.getItem('user');
-
-        if (savedToken && savedUser) {
-            try {
-                const userData = JSON.parse(savedUser);
-                setToken(savedToken);
-                setUser(userData);
-                setIsAuthenticated(true);
-            } catch (error) {
-                console.error('Error parsing saved user data:', error);
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                setIsAuthenticated(false);
-            }
-        } else {
-            // 如果没有保存的凭证，保持未登陆状态
-            setIsAuthenticated(false);
-            setUser(null);
-            setToken(null);
-        }
+        // 初始化为未登陆状态（不使用localStorage）
+        setIsAuthenticated(false);
+        setUser(null);
+        setToken(null);
 
         // 设置API拦截器的未授权回调（用户未登陆）
         apiInterceptor.setUnauthorizedCallback(() => {
@@ -76,8 +58,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(null);
             setToken(null);
             setIsAuthenticated(false);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
             window.location.href = '/#/app/login';
         });
 
@@ -85,21 +65,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }, []);
 
     const login = async (userData: User, userToken: string) => {
-        console.log('🔐 [AuthContext] login - Token调试信息:');
-        console.log('  - 接收到的userToken:', userToken);
-        console.log('  - userToken类型:', typeof userToken);
-        console.log('  - userToken长度:', userToken.length);
-        console.log('  - 是否包含Bearer:', userToken.startsWith('Bearer '));
-        console.log('  - 前50个字符:', userToken.substring(0, 50));
-        
-        console.log('🔐 [AuthContext] 设置认证状态为true');
+        console.log('🔐 [AuthContext] login - 设置认证状态');
         setUser(userData);
         setToken(userToken);
         setIsAuthenticated(true);
-        localStorage.setItem('token', userToken);
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        console.log('  - 已存储到localStorage的token:', localStorage.getItem('token')?.substring(0, 50) + '...');
 
         // 处理每日登录积分奖励
         try {
@@ -123,13 +92,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(null);
         setToken(null);
         setIsAuthenticated(false);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
     };
 
     const updateUser = (userData: User) => {
         setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
     };
 
     // 刷新用户信息（包括积分）
