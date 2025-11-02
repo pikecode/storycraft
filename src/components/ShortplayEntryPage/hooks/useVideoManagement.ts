@@ -7,6 +7,25 @@ import { arrayMove } from '@dnd-kit/sortable';
 const STORYAI_API_BASE = '/episode-api/storyai';
 
 /**
+ * 处理API响应，检查401未授权错误
+ */
+const handleApiResponse = async (response: Response) => {
+  const data = await response.json();
+
+  // 检查是否为401未授权错误
+  if (data.code === 401) {
+    console.log('检测到401未授权错误，触发重定向到登陆页面');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    toast.error('用户未登录，请重新登陆');
+    window.location.href = '/#/app/login';
+    throw new Error('用户未登录');
+  }
+
+  return data;
+};
+
+/**
  * 视频管理 Hook
  * 管理视频相关的所有状态和函数
  */
@@ -62,7 +81,7 @@ export const useVideoManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           setVideoChatHistory(result.data.records || result.data || []);
         } else {
@@ -105,7 +124,7 @@ export const useVideoManagement = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         toast.success('视频预览生成成功！');
         // 可以在这里处理返回的预览视频URL
@@ -178,7 +197,7 @@ export const useVideoManagement = () => {
         throw new Error(`视频生成请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       console.log('视频生成响应:', result);
 
       if (result.code === 0 && result.data) {
@@ -233,7 +252,7 @@ export const useVideoManagement = () => {
           throw new Error(`进度查询失败: ${response.status}`);
         }
 
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         console.log('视频进度响应:', result);
 
         if (result.code === 0 && result.data) {
@@ -318,7 +337,7 @@ export const useVideoManagement = () => {
           throw new Error(`上传失败: ${response.status}`);
         }
 
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           uploadedFiles.push({
             fileId: result.data.attachmentId,
