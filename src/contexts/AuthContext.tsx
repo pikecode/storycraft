@@ -91,6 +91,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             });
         }
 
+        // 设置API拦截器的未授权回调（用户未登陆）
+        apiInterceptor.setUnauthorizedCallback(() => {
+            console.log('用户未登陆，清空认证信息并重定向到登陆页面');
+            setUser(null);
+            setToken(null);
+            setIsAuthenticated(false);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/#/app/login';
+        });
+
         // API拦截器的token过期回调将在TokenExpiryHandler组件中设置
     }, []);
 
