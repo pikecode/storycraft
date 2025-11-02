@@ -5,6 +5,25 @@ import toast from 'react-hot-toast';
 const STORYAI_API_BASE = '/episode-api/storyai';
 
 /**
+ * 处理API响应，检查401未授权错误
+ */
+const handleApiResponse = async (response: Response) => {
+  const data = await response.json();
+
+  // 检查是否为401未授权错误
+  if (data.code === 401) {
+    console.log('检测到401未授权错误，触发重定向到登陆页面');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    toast.error('用户未登录，请重新登陆');
+    window.location.href = '/#/app/login';
+    throw new Error('用户未登录');
+  }
+
+  return data;
+};
+
+/**
  * 音频管理 Hook
  * 管理音频相关的所有状态和函数，包括音色和音效
  */
@@ -48,7 +67,7 @@ export const useAudioManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           return result.data;
         }
@@ -97,7 +116,7 @@ export const useAudioManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0) {
           // 应用成功，刷新已设置的音色列表和可用音色列表
           const updatedConfigured = await loadVoiceList(1);
@@ -146,7 +165,7 @@ export const useAudioManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0) {
           // 更新成功，刷新音色列表
           await loadAllVoices();
@@ -215,7 +234,7 @@ export const useAudioManagement = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         toast.success('音色绑定成功！');
       } else {
@@ -249,7 +268,7 @@ export const useAudioManagement = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         if (result.data?.audioUrl) {
           // 直接播放音频，不添加事件监听器
@@ -286,7 +305,7 @@ export const useAudioManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           console.log('音频内容:', result.data);
           setAudioContent(result.data);
@@ -321,7 +340,7 @@ export const useAudioManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           setBgmList(result.data);
         }
@@ -376,7 +395,7 @@ export const useAudioManagement = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         toast.success('音效应用成功！');
         // 刷新音频内容列表
