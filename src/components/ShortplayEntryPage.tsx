@@ -2713,7 +2713,8 @@ function ShortplayEntryPage() {
           prompt: userInput.trim(),
           userId: userId,
           seriesId: seriesId,
-          llmName: audioModel
+          llmName: audioModel,
+          gender: audioGender
         })
       });
 
