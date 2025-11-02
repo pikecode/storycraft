@@ -78,7 +78,7 @@ export function BottomInputArea({
     <div className="p-4">
       {activeTab === 'script' && (
         <>
-          <div className="mb-3">
+          <div className="">
             <div className="relative w-40">
               <select
                 value={selectedModel}

@@ -479,7 +479,7 @@ function BottomInputArea({
     <div className="border-t border-gray-100 p-4">
       {activeTab === 'script' && (
         <>
-          <div className="mb-3">
+          <div className="">
             <div className="relative w-40">
               <select
                 value={selectedModel}
@@ -543,7 +543,7 @@ function BottomInputArea({
 
       {activeTab === 'audio' && (
         <>
-          <div className="mb-3">
+          <div className="">
             <div className="flex space-x-3">
               <div className="relative w-32">
                 <select
@@ -606,7 +606,7 @@ function BottomInputArea({
 
       {activeTab === 'image' && (
         <>
-          <div className="mb-3">
+          <div className="">
             <div className="flex space-x-3">
               <div className="relative w-32">
                 <select
@@ -688,7 +688,7 @@ function BottomInputArea({
 
       {activeTab === 'video' && (
         <>
-          <div className="mb-3">
+          <div className="">
             <div className="flex space-x-2">
               <div className="relative w-32">
                 <select
