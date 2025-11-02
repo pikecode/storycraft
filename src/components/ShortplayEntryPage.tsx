@@ -1894,6 +1894,12 @@ function ShortplayEntryPage() {
     const isSingleImageModel = imageModel === 'doubao-seededit-3.0-i2i';
     const isMultiImageModel = imageModel === 'doubao-seedream-4.0';
 
+    // 文生图模型（doubao-seedream-3.0-t2i）不支持上传图片
+    if (isT2iModel && uploadedImages.length > 0) {
+      toast.error('doubao-seedream-3.0-t2i 模型只支持文生图，不支持上传图片');
+      return;
+    }
+
     // 单图模型（doubao-seededit-3.0-i2i）只支持单张图片
     if (isSingleImageModel && uploadedImages.length === 0) {
       toast.error('doubao-seededit-3.0-i2i 模型需要上传图片进行图生图');
@@ -1922,8 +1928,9 @@ function ShortplayEntryPage() {
       const durationMillis = durationSeconds * 1000;
 
       // 判断是否需要调用图生图API
-      const isImage2Image = uploadedImages.length > 0;
-      const apiEndpoint = isImage2Image ? `${STORYAI_API_BASE}/ai/image2image` : `${STORYAI_API_BASE}/ai/image/generate`;
+      // 如果有上传的图片，调用图生图API；否则调用文生图API
+      const hasUploadedImages = uploadedImages.length > 0;
+      const apiEndpoint = hasUploadedImages ? `${STORYAI_API_BASE}/ai/image2image` : `${STORYAI_API_BASE}/ai/image/generate`;
 
       // 构建请求体
       const requestBody: any = {
@@ -1937,7 +1944,7 @@ function ShortplayEntryPage() {
       };
 
       // 如果有上传的图片，添加sourceFileIds参数
-      if (isImage2Image && uploadedImages.length > 0) {
+      if (hasUploadedImages) {
         requestBody.sourceFileIds = uploadedImages.map(img => img.fileId);
       }
 

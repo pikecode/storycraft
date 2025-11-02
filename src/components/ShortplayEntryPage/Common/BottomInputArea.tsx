@@ -346,14 +346,16 @@ export function BottomInputArea({
             <textarea
               value={userInput}
               onChange={(e) => onInputChange(e.target.value)}
-              className="w-full h-12 py-2 pl-12 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
+              className={`w-full h-12 py-2 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto ${
+                selectedModel === 'doubao-seedream-3.0-t2i' ? 'pl-4' : 'pl-12'
+              }`}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
               placeholder={finalPlaceholder}
               disabled={isGenerating}
             />
             <label className={`absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 ${
-              isUploading ? 'opacity-50 cursor-not-allowed' : ''
-            }`} title={isUploading && uploadProgress.total > 0 ? `上传进度: ${uploadProgress.current}/${uploadProgress.total}` : '上传图片'}>
+              selectedModel === 'doubao-seedream-3.0-t2i' ? 'hidden' : ''
+            } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`} title={isUploading && uploadProgress.total > 0 ? `上传进度: ${uploadProgress.current}/${uploadProgress.total}` : '上传图片'}>
               {isUploading ? (
                 <div className="relative w-4 h-4">
                   <Icon icon="ri:loader-4-line" className="w-4 h-4 text-gray-400 animate-spin" />
