@@ -43,6 +43,8 @@ interface AudioBottomPanelProps {
   // 输入区域
   selectedModel: string;
   onModelChange: (model: string) => void;
+  audioGender?: string;
+  onAudioGenderChange?: (gender: string) => void;
   userInput: string;
   onInputChange: (input: string) => void;
   isGenerating: boolean;
@@ -67,6 +69,8 @@ export function AudioBottomPanel({
   onApplyBgm,
   selectedModel,
   onModelChange,
+  audioGender = '1',
+  onAudioGenderChange,
   userInput,
   onInputChange,
   isGenerating,
@@ -80,7 +84,7 @@ export function AudioBottomPanel({
     <div>
       {/* 输入区域 */}
       <div className="p-4">
-        <div className="mb-3">
+        <div>
           <div className="flex space-x-3">
             <div className="relative w-24">
               <select
@@ -93,6 +97,22 @@ export function AudioBottomPanel({
                 ) : (
                   <option value="video">video</option>
                 )}
+              </select>
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <div className="relative w-20">
+              <select
+                value={audioGender}
+                onChange={(e) => onAudioGenderChange?.(e.target.value)}
+                className="w-full h-9 pl-3 pr-8 text-xs rounded-lg bg-white focus:outline-none appearance-none text-black/50"
+              >
+                <option value="0">女生</option>
+                <option value="1">男生</option>
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">

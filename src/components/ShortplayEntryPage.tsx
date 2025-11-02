@@ -73,6 +73,7 @@ function ShortplayEntryPage() {
 
   // 底部输入区域的额外状态
   const [voiceType, setVoiceType] = useState<string>('male');
+  const [audioGender, setAudioGender] = useState<string>('1'); // '0' for 女生, '1' for 男生
   const [backgroundType, setBackgroundType] = useState<string>(t('shortplayEntry.image.background'));
   const [style, setStyle] = useState<string>(t('shortplayEntry.image.ancient'));
   const [relevanceScore, setRelevanceScore] = useState<string>('1');
@@ -3380,6 +3381,8 @@ function ShortplayEntryPage() {
                   onApplyBgm={handleApplyBgm}
                   selectedModel={audioModel}
                   onModelChange={setAudioModel}
+                  audioGender={audioGender}
+                  onAudioGenderChange={setAudioGender}
                   userInput={userInput}
                   onInputChange={setUserInput}
                   isGenerating={isGenerating}
