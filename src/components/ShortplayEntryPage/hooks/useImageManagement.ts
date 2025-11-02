@@ -7,6 +7,25 @@ import { arrayMove } from '@dnd-kit/sortable';
 const STORYAI_API_BASE = '/episode-api/storyai';
 
 /**
+ * 处理API响应，检查401未授权错误
+ */
+const handleApiResponse = async (response: Response) => {
+  const data = await response.json();
+
+  // 检查是否为401未授权错误
+  if (data.code === 401) {
+    console.log('检测到401未授权错误，触发重定向到登陆页面');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    toast.error('用户未登录，请重新登陆');
+    window.location.href = '/#/app/login';
+    throw new Error('用户未登录');
+  }
+
+  return data;
+};
+
+/**
  * 图片管理 Hook
  * 管理图片和分镜板相关的所有状态和函数
  */
@@ -67,7 +86,7 @@ export const useImageManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           setImageChatHistory(result.data.records || result.data || []);
         } else {
@@ -107,7 +126,7 @@ export const useImageManagement = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           // 按 storyboardOrder 排序后设置数据
           const sortedData = (result.data || []).sort((a: any, b: any) =>
@@ -164,7 +183,7 @@ export const useImageManagement = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         toast.success(`已应用图片: ${fileName}`);
         // 刷新分镜板列表
@@ -201,7 +220,7 @@ export const useImageManagement = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         toast.success('删除成功！');
         // 刷新分镜板列表
@@ -291,7 +310,7 @@ export const useImageManagement = () => {
             throw new Error(`请求失败: ${response.status}`);
           }
 
-          const result = await response.json();
+          const result = await handleApiResponse(response);
           if (result.code !== 0) {
             throw new Error(result.message || '更新排序失败');
           }
@@ -338,7 +357,7 @@ export const useImageManagement = () => {
         throw new Error(`上传失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0 && result.data) {
         toast.success('上传成功！');
         return result.data;
@@ -391,7 +410,7 @@ export const useImageManagement = () => {
           throw new Error(`上传失败: ${response.status}`);
         }
 
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.code === 0 && result.data) {
           // 上传成功后，创建分镜板
           await handleCreateStoryboard(result.data.attachmentId, file.name, sceneId);
@@ -448,7 +467,7 @@ export const useImageManagement = () => {
         throw new Error(`请求失败: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await handleApiResponse(response);
       if (result.code === 0) {
         toast.success('时间更新成功！');
         // 刷新分镜板列表
