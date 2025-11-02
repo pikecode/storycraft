@@ -7,6 +7,7 @@ import { SortableStoryboardItemProps } from '../types';
 import { formatMillisecondsToTime } from '../utils/formatTime';
 import { TimeRangeInput } from '../Common/TimeRangeInput';
 import { useI18n } from '../../../contexts/I18nContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const STORYAI_API_BASE = '/episode-api/storyai';
 
@@ -32,12 +33,12 @@ export function SortableStoryboardItem({
   isHighlighted,
 }: SortableStoryboardItemProps) {
   const { t } = useI18n();
+  const { token } = useAuth();
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const handleRegenerateStoryboard = async () => {
     try {
       setIsRegenerating(true);
-      const token = localStorage.getItem('token');
 
       const response = await fetch(`${STORYAI_API_BASE}/storyboard/regenerate`, {
         method: 'POST',
