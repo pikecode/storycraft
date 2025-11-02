@@ -1889,6 +1889,28 @@ function ShortplayEntryPage() {
       return;
     }
 
+    // 验证模型和图片数量的兼容性
+    const isT2iModel = imageModel === 'doubao-seedream-3.0-t2i';
+    const isSingleImageModel = imageModel === 'doubao-seededit-3.0-i2i';
+    const isMultiImageModel = imageModel === 'doubao-seedream-4.0';
+
+    // 单图模型（doubao-seededit-3.0-i2i）只支持单张图片
+    if (isSingleImageModel && uploadedImages.length === 0) {
+      toast.error('doubao-seededit-3.0-i2i 模型需要上传图片进行图生图');
+      return;
+    }
+
+    if (isSingleImageModel && uploadedImages.length > 1) {
+      toast.error('doubao-seededit-3.0-i2i 模型只支持单张图片');
+      return;
+    }
+
+    // 多图模型（doubao-seedream-4.0）最多10张
+    if (isMultiImageModel && uploadedImages.length > 10) {
+      toast.error('doubao-seedream-4.0 模型最多支持 10 张图片');
+      return;
+    }
+
     setIsGenerating(true);
     setGenerationStatus('正在生成图片...');
 
@@ -1899,21 +1921,33 @@ function ShortplayEntryPage() {
       const durationSeconds = parseInt(videoLength.replace('s', ''));
       const durationMillis = durationSeconds * 1000;
 
-      const response = await fetch(`${STORYAI_API_BASE}/ai/image/generate`, {
+      // 判断是否需要调用图生图API
+      const isImage2Image = uploadedImages.length > 0;
+      const apiEndpoint = isImage2Image ? `${STORYAI_API_BASE}/ai/image2image` : `${STORYAI_API_BASE}/ai/image/generate`;
+
+      // 构建请求体
+      const requestBody: any = {
+        sceneId: sceneId,
+        userInput: userInput.trim(),
+        llmName: imageModel,
+        durationMillis: durationMillis,
+        imageBackground: backgroundType,
+        imageStyle: style,
+        relevance: relevanceScore
+      };
+
+      // 如果有上传的图片，添加sourceFileIds参数
+      if (isImage2Image && uploadedImages.length > 0) {
+        requestBody.sourceFileIds = uploadedImages.map(img => img.fileId);
+      }
+
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Prompt-Manager-Token': token || '',
         },
-        body: JSON.stringify({
-          sceneId: sceneId,
-          userInput: userInput.trim(),
-          llmName: imageModel,
-          durationMillis: durationMillis,
-          imageBackground: backgroundType,
-          imageStyle: style,
-          relevance: relevanceScore
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {

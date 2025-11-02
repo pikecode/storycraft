@@ -346,11 +346,61 @@ export function BottomInputArea({
             <textarea
               value={userInput}
               onChange={(e) => onInputChange(e.target.value)}
-              className="w-full h-12 py-2 pl-4 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
+              className="w-full h-12 py-2 pl-12 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
               placeholder={finalPlaceholder}
               disabled={isGenerating}
             />
+            <label className={`absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 ${
+              isUploading ? 'opacity-50 cursor-not-allowed' : ''
+            }`} title={isUploading && uploadProgress.total > 0 ? `上传进度: ${uploadProgress.current}/${uploadProgress.total}` : '上传图片'}>
+              {isUploading ? (
+                <div className="relative w-4 h-4">
+                  <Icon icon="ri:loader-4-line" className="w-4 h-4 text-gray-400 animate-spin" />
+                  {uploadProgress.total > 1 && (
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center" style={{ fontSize: '6px' }}>
+                      {uploadProgress.current}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Icon icon="ri:image-line" className="w-4 h-4 text-gray-400" />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                multiple={true}
+                className="hidden"
+                disabled={isUploading}
+                onChange={async (e) => {
+                  console.log('文件选择事件触发');
+                  const files = Array.from(e.target.files || []);
+                  console.log('选择的文件:', files);
+                  console.log('当前上传状态:', isUploading);
+                  console.log('onMultipleFileUpload 函数:', onMultipleFileUpload);
+
+                  if (files.length > 0 && !isUploading) {
+                    console.log('开始上传文件:', files.map(f => f.name));
+
+                    // 使用批量上传处理
+                    if (onMultipleFileUpload) {
+                      console.log('调用批量上传函数');
+                      await onMultipleFileUpload(files);
+                    } else {
+                      console.log('批量上传函数不存在');
+                    }
+
+                    // 重置input的value，允许重复选择相同文件
+                    e.target.value = '';
+                  } else {
+                    console.log('跳过上传，原因:', {
+                      filesLength: files.length,
+                      isUploading
+                    });
+                  }
+                }}
+              />
+            </label>
             <button
               onClick={onGenerate}
               disabled={isGenerating || !userInput.trim()}
@@ -363,6 +413,32 @@ export function BottomInputArea({
               {isGenerating ? t('shortplayEntry.generation.generating') : t('shortplayEntry.generation.oneClickGenerate')}
             </button>
           </div>
+
+          {/* 上传图片预览 */}
+          {uploadedImages && uploadedImages.length > 0 && (
+            <div className="mt-3 p-2 bg-gray-50 rounded-lg">
+              <div className="text-xs text-gray-600 mb-2">已上传 {uploadedImages.length} 张图片</div>
+              <div className="flex flex-wrap gap-2">
+                {uploadedImages.map((image) => (
+                  <div key={image.fileId} className="relative group">
+                    <img
+                      src={image.fileUrl}
+                      alt={image.fileName}
+                      className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                      title={image.fileName}
+                    />
+                    <button
+                      onClick={() => onRemoveImage?.(image.fileId)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                      title="移除"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
 
@@ -522,7 +598,7 @@ export function BottomInputArea({
               disabled={isGenerating}
             />
             <label className={`absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 ${
-              activeTab === 'video' ? '' : 'hidden'
+              (activeTab === 'video' || activeTab === 'image') ? '' : 'hidden'
             } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`} title={isUploading && uploadProgress.total > 0 ? `上传进度: ${uploadProgress.current}/${uploadProgress.total}` : '上传图片'}>
               {isUploading ? (
                 <div className="relative w-4 h-4">

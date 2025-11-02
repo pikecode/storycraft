@@ -105,6 +105,8 @@ export interface BottomInputAreaProps {
   onBackgroundTypeChange?: (bg: string) => void;
   style?: string;
   onStyleChange?: (style: string) => void;
+  relevanceScore?: string;
+  onRelevanceScoreChange?: (score: string) => void;
   // 视频tab特有属性
   videoLength?: string;
   onVideoLengthChange?: (length: string) => void;
