@@ -59,7 +59,7 @@ function ShortplayEntryPage() {
 
   const [activeTab, setActiveTab] = useState<string>('script');
   const [selectedModel, setSelectedModel] = useState<string>('deepseek'); // 脚本tab模型
-  const [imageModel, setImageModel] = useState<string>('doubao-seedream-4.0'); // 图片tab模型
+  const [imageModel, setImageModel] = useState<string>('doubao-seedream-3.0-t2i'); // 图片tab模型
   const [audioModel, setAudioModel] = useState<string>('minmax'); // 音频tab模型
   const [progress, setProgress] = useState<number>(0); // 进度百分比
   const [isPlaying, setIsPlaying] = useState<boolean>(false);

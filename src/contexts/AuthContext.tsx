@@ -73,10 +73,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 console.log('🔍 [AuthContext] 使用userId验证session:', savedUserId);
                 const sessionData = await AuthService.validateSession(savedUserId);
 
-                if (sessionData && sessionData.data) {
+                if (sessionData) {
                     // session有效，恢复认证状态
-                    const userData = sessionData.data;
+                    // heartbeat 可能返回 {code: 0, data: {...}} 或 {code: 0, ...userData}
+                    const userData = sessionData.data || sessionData;
                     const userId = userData.userId || userData.user_id || savedUserId;
+
+                    console.log('📋 [AuthContext] 恢复的用户数据:', userData);
 
                     const authUserData = {
                         user_id: userData.user_id || parseInt(String(userData.userId)) || parseInt(String(savedUserId)) || 0,

@@ -131,22 +131,36 @@ export class AuthService {
       return null;
     }
 
-    const response = await fetch(`${STORYAI_API_BASE}/user/heartbeat?userId=${userId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // 重要：发送cookie
-    });
+    try {
+      const response = await fetch(`${STORYAI_API_BASE}/user/heartbeat?userId=${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // 重要：发送cookie
+      });
 
-    const data = await response.json();
+      const data = await response.json();
+      console.log('📊 [AuthService] validateSession 响应:', { status: response.status, data });
 
-    if (data.code === 401 || !response.ok) {
-      // 未登录或session失效
+      if (data.code === 401 || !response.ok) {
+        // 未登录或session失效
+        console.warn('⚠️ [AuthService] validateSession: code=401 或 HTTP error');
+        return null;
+      }
+
+      // 检查数据结构
+      if (data.code === 0) {
+        console.log('✅ [AuthService] validateSession: session验证成功');
+        return data;
+      } else {
+        console.warn('⚠️ [AuthService] validateSession: code !== 0:', data.code);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ [AuthService] validateSession 请求失败:', error);
       return null;
     }
-
-    return data;
   }
 }
 

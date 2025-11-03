@@ -18,9 +18,9 @@ export function BottomInputArea({
   voiceType = "male",
   onVoiceTypeChange,
   // 图片tab属性
-  backgroundType = "背景",
+  backgroundType = "空镜/背景",
   onBackgroundTypeChange,
-  style = "古风",
+  style = "电影感",
   onStyleChange,
   relevanceScore = "1",
   onRelevanceScoreChange,
