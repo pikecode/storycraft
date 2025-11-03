@@ -100,7 +100,7 @@ export class AuthService {
   }
 
   /**
-   * 获取用户信息
+   * 获取用户信息（使用token）
    */
   static async getUserInfo(token: string) {
     const response = await fetch(`${STORYAI_API_BASE}/user/info`, {
@@ -115,6 +115,35 @@ export class AuthService {
 
     if (!response.ok) {
       throw new Error(data.message || '获取用户信息失败');
+    }
+
+    return data;
+  }
+
+  /**
+   * 验证当前用户登录状态（基于Session/Cookie）
+   * 用于页面初始化时恢复登录状态
+   * 调用 /user/heartbeat 接口（POST方式，userId为URL参数）
+   */
+  static async validateSession(userId?: string | number) {
+    if (!userId) {
+      console.warn('⚠️ [AuthService] validateSession: userId为空');
+      return null;
+    }
+
+    const response = await fetch(`${STORYAI_API_BASE}/user/heartbeat?userId=${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // 重要：发送cookie
+    });
+
+    const data = await response.json();
+
+    if (data.code === 401 || !response.ok) {
+      // 未登录或session失效
+      return null;
     }
 
     return data;

@@ -53,6 +53,22 @@ class ApiInterceptor {
     }
 
     /**
+     * 触发未授权错误（当用户未登录时调用）
+     */
+    public triggerUnauthorized(): void {
+        console.log('🔴 [ApiInterceptor] 触发未授权错误');
+        if (this.onUnauthorized) {
+            this.onUnauthorized();
+        } else {
+            // 如果没有设置回调，直接重定向
+            console.warn('⚠️ [ApiInterceptor] 未授权回调未设置，直接重定向到登录页面');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/#/app/login';
+        }
+    }
+
+    /**
      * 检查响应是否为未授权错误（用户未登陆）
      */
     private isUnauthorizedError(errorData?: any): boolean {

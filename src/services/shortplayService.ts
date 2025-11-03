@@ -3,20 +3,61 @@
  * 一键创作相关的API调用服务
  */
 
+import { apiInterceptor } from './apiInterceptor';
+
 const STORYAI_API_BASE = '/episode-api/storyai';
 
-const getToken = () => localStorage.getItem('token') || '';
+// 在内存中保存userId（从AuthContext中设置，不持久化）
+let currentUserId: string | number = '';
+
+/**
+ * 设置当前用户的userId（登录时调用）
+ */
+export const setCurrentUserId = (userId: string | number) => {
+  currentUserId = userId;
+  console.log('🔑 [shortplayService] userId已设置:', userId);
+};
+
+/**
+ * 清除当前用户的userId（登出时调用）
+ */
+export const clearCurrentUserId = () => {
+  currentUserId = '';
+  console.log('🔑 [shortplayService] userId已清除');
+};
 
 const getUserId = (): string => {
-  const userStr = localStorage.getItem('user');
-  if (!userStr) return '';
-  try {
-    const user = JSON.parse(userStr);
-    return user.userId || '';
-  } catch (error) {
-    console.error('Failed to parse user info:', error);
-    return '';
+  return String(currentUserId) || '';
+};
+
+/**
+ * 处理API响应，检查code字段中的错误
+ * @param response HTTP响应对象
+ * @returns 解析后的JSON数据
+ * @throws 如果code === 401，触发未授权回调并抛出错误
+ */
+const handleApiResponse = async (response: Response): Promise<any> => {
+  // 首先检查HTTP状态码
+  if (!response.ok) {
+    throw new Error(`HTTP Error: ${response.status}`);
   }
+
+  const data = await response.json();
+
+  // 检查响应体中的code字段（后端自定义的错误码）
+  if (data.code === 401) {
+    console.error('🔴 [shortplayService] API返回401未登录错误，触发登出和重定向');
+    // 调用apiInterceptor的公开方法来触发未授权处理
+    apiInterceptor.triggerUnauthorized();
+    throw new Error('用户未登录，已重定向到登录页面');
+  }
+
+  // 其他非0的code也应该作为错误处理
+  if (data.code !== 0 && data.code !== undefined) {
+    throw new Error(data.message || `API Error: ${data.code}`);
+  }
+
+  return data;
 };
 
 // ============ 剧本相关 API ============
@@ -32,17 +73,17 @@ export const createSeries = async (userInput: string) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
+    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       userId,
       userInput: userInput.trim(),
       provider: ""
-    })
+    }),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -57,12 +98,11 @@ export const getSeriesDetail = async (seriesId?: string) => {
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      'X-Prompt-Manager-Token': getToken(),
-    }
+      },
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 // ============ 场次相关 API ============
@@ -74,12 +114,11 @@ export const getSceneContent = async (sceneId: number) => {
   const response = await fetch(`${STORYAI_API_BASE}/scene/content?sceneId=${sceneId}`, {
     method: 'GET',
     headers: {
-      'X-Prompt-Manager-Token': getToken(),
-    }
+      },
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -90,16 +129,16 @@ export const updateScene = async (sceneId: number, sceneTitle: string) => {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
+    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       id: sceneId,
       sceneTitle
-    })
+    }),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -117,13 +156,13 @@ export const createSceneContent = async (data: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
-    body: JSON.stringify(data)
+    credentials: 'include' as RequestCredentials,
+    body: JSON.stringify(data),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -142,13 +181,13 @@ export const updateSceneContent = async (data: {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
-    body: JSON.stringify(data)
+    credentials: 'include' as RequestCredentials,
+    body: JSON.stringify(data),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -158,12 +197,11 @@ export const deleteSceneContent = async (id: number) => {
   const response = await fetch(`${STORYAI_API_BASE}/scene/content/${id}`, {
     method: 'DELETE',
     headers: {
-      'X-Prompt-Manager-Token': getToken(),
-    }
+      },
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 // ============ 音色相关 API ============
@@ -179,17 +217,17 @@ export const getVoiceList = async (status: number) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
+    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       userId,
       status
-    })
+    }),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  const result = await response.json();
-  return result.code === 0 && result.data ? result.data : [];
+  const result = await handleApiResponse(response);
+  return result.data ? result.data : [];
 };
 
 /**
@@ -204,13 +242,13 @@ export const updateVoice = async (data: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
-    body: JSON.stringify(data)
+    credentials: 'include' as RequestCredentials,
+    body: JSON.stringify(data),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -224,13 +262,13 @@ export const batchBindVoice = async (bindings: Array<{
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
-    body: JSON.stringify({ bindings })
+    credentials: 'include' as RequestCredentials,
+    body: JSON.stringify({ bindings }),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -244,16 +282,16 @@ export const designVoice = async (prompt: string) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
+    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       prompt: prompt.trim(),
       userId
-    })
+    }),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 // ============ BGM相关 API ============
@@ -269,16 +307,16 @@ export const getBgmList = async () => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
+    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       userId
-    })
+    }),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  const result = await response.json();
-  return result.code === 0 && result.data ? result.data : [];
+  const result = await handleApiResponse(response);
+  return result.data ? result.data : [];
 };
 
 /**
@@ -292,17 +330,17 @@ export const generateBgm = async (userInput: string, style: string) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
+    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       userId: parseInt(userId),
       style,
       userInput: userInput.trim()
-    })
+    }),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 // ============ 图片相关 API ============
@@ -315,16 +353,16 @@ export const generateImage = async (sceneId: number, userInput: string) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
+    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       sceneId,
       userInput: userInput.trim()
-    })
+    }),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -341,13 +379,13 @@ export const queryChatHistory = async (data: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
-    body: JSON.stringify(data)
+    credentials: 'include' as RequestCredentials,
+    body: JSON.stringify(data),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 // ============ 分镜板相关 API ============
@@ -359,12 +397,11 @@ export const getStoryboardList = async (sceneId: number) => {
   const response = await fetch(`${STORYAI_API_BASE}/storyboard/list?sceneId=${sceneId}`, {
     method: 'GET',
     headers: {
-      'X-Prompt-Manager-Token': getToken(),
-    }
+      },
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -379,13 +416,13 @@ export const createStoryboard = async (data: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
-    body: JSON.stringify(data)
+    credentials: 'include' as RequestCredentials,
+    body: JSON.stringify(data),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -401,13 +438,13 @@ export const updateStoryboard = async (data: {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
-    body: JSON.stringify(data)
+    credentials: 'include' as RequestCredentials,
+    body: JSON.stringify(data),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -417,12 +454,11 @@ export const deleteStoryboard = async (id: string) => {
   const response = await fetch(`${STORYAI_API_BASE}/storyboard/${id}`, {
     method: 'DELETE',
     headers: {
-      'X-Prompt-Manager-Token': getToken(),
-    }
+      },
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 // ============ 视频相关 API ============
@@ -444,13 +480,13 @@ export const generateVideo = async (data: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
-    body: JSON.stringify(data)
+    credentials: 'include' as RequestCredentials,
+    body: JSON.stringify(data),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 /**
@@ -461,13 +497,13 @@ export const getVideoProgress = async (fileId: number) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Prompt-Manager-Token': getToken(),
     },
-    body: JSON.stringify({ fileId })
+    credentials: 'include' as RequestCredentials,
+    body: JSON.stringify({ fileId }),
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };
 
 // ============ 文件上传 API ============
@@ -487,12 +523,9 @@ export const uploadFile = async (file: File) => {
 
   const response = await fetch(uploadUrl, {
     method: 'POST',
-    headers: {
-      'X-Prompt-Manager-Token': getToken(),
-    },
-    body: formData
+    body: formData,
+    credentials: 'include' as RequestCredentials
   });
 
-  if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
-  return response.json();
+  return handleApiResponse(response);
 };

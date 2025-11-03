@@ -3,6 +3,8 @@ import { apiInterceptor } from '../services/apiInterceptor';
 import { pointsService } from '../services/pointsService';
 import { paymentService } from '../services/paymentService';
 import { getCloudbaseAuth, ensureCloudbaseLogin } from '../cloudbase';
+import AuthService from '../services/authService';
+import { setCurrentUserId, clearCurrentUserId } from '../services/shortplayService';
 
 interface User {
     user_id: number;
@@ -49,59 +51,98 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [isInitializing, setIsInitializing] = useState(true);  // 新增：初始化标志
 
     useEffect(() => {
-        // 初始化：尝试从localStorage恢复认证状态
-        const savedToken = localStorage.getItem('token');
-        const savedUser = localStorage.getItem('user');
-
-        if (savedToken && savedUser) {
+        // 初始化：验证用户session（基于Cookie + userId）
+        const initAuth = async () => {
             try {
-                const user = JSON.parse(savedUser);
-                setToken(savedToken);
-                setUser(user);
-                setIsAuthenticated(true);
-                console.log('✅ [AuthContext] 从localStorage恢复认证状态');
+                console.log('🔄 [AuthContext] 正在验证用户session...');
+
+                // 首先尝试从sessionStorage获取userId
+                const savedUserId = sessionStorage.getItem('userId');
+
+                if (!savedUserId) {
+                    console.log('⚠️ [AuthContext] sessionStorage中没有userId，用户未登录');
+                    clearCurrentUserId();
+                    setIsAuthenticated(false);
+                    setUser(null);
+                    setToken(null);
+                    setIsInitializing(false);
+                    return;
+                }
+
+                // 有userId，调用heartbeat验证session
+                console.log('🔍 [AuthContext] 使用userId验证session:', savedUserId);
+                const sessionData = await AuthService.validateSession(savedUserId);
+
+                if (sessionData && sessionData.data) {
+                    // session有效，恢复认证状态
+                    const userData = sessionData.data;
+                    const userId = userData.userId || userData.user_id || savedUserId;
+
+                    const authUserData = {
+                        user_id: userData.user_id || parseInt(String(userData.userId)) || parseInt(String(savedUserId)) || 0,
+                        user_name: userData.user_name || userData.username || '用户',
+                        user_email: userData.user_email || '',
+                        user_plan: userData.user_plan || 'free',
+                        user_point: userData.user_point || '0',
+                        subscription_expires_at: userData.subscription_expires_at,
+                        subscription_status: userData.subscription_status,
+                        userId: userId
+                    };
+
+                    // 设置userId到shortplayService
+                    setCurrentUserId(userId);
+
+                    setUser(authUserData);
+                    // token在内存中保存为username（不持久化）
+                    setToken(userData.username || '');
+                    setIsAuthenticated(true);
+                    console.log('✅ [AuthContext] Session验证成功，已恢复认证状态');
+                } else {
+                    // session无效，清除sessionStorage中的userId
+                    console.log('⚠️ [AuthContext] Session无效或已过期');
+                    sessionStorage.removeItem('userId');
+                    clearCurrentUserId();
+                    setIsAuthenticated(false);
+                    setUser(null);
+                    setToken(null);
+                }
             } catch (error) {
-                console.error('❌ [AuthContext] 恢复认证状态失败:', error);
-                // 恢复失败，清空localStorage
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
+                console.error('❌ [AuthContext] Session验证失败:', error);
                 setIsAuthenticated(false);
                 setUser(null);
                 setToken(null);
+            } finally {
+                // 标记初始化完成
+                setIsInitializing(false);
             }
-        } else {
-            setIsAuthenticated(false);
-            setUser(null);
-            setToken(null);
-        }
+        };
 
         // 设置API拦截器的未授权回调（用户未登陆）
         apiInterceptor.setUnauthorizedCallback(() => {
             console.log('用户未登陆，清空认证信息并重定向到登陆页面');
+            sessionStorage.removeItem('userId');
+            clearCurrentUserId();
             setUser(null);
             setToken(null);
             setIsAuthenticated(false);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
             window.location.href = '/#/app/login';
         });
 
-        // 标记初始化完成
-        setIsInitializing(false);
+        // 执行初始化
+        initAuth();
 
         // API拦截器的token过期回调将在TokenExpiryHandler组件中设置
     }, []);
 
     const login = async (userData: User, userToken: string) => {
         console.log('🔐 [AuthContext] login - 设置认证状态');
+        // 设置userId到shortplayService
+        setCurrentUserId(userData.userId);
         setUser(userData);
+        // token只在内存中保存，不持久化到localStorage（基于session cookie）
         setToken(userToken);
         setIsAuthenticated(true);
-
-        // 保存到localStorage以便页面刷新时恢复
-        localStorage.setItem('token', userToken);
-        localStorage.setItem('user', JSON.stringify(userData));
-        console.log('💾 [AuthContext] 认证信息已保存到localStorage');
+        console.log('✅ [AuthContext] 认证状态已设置（token仅在内存中，基于session cookie维持）');
 
         // 处理每日登录积分奖励
         try {
@@ -122,21 +163,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const logout = () => {
         console.log('🔐 [AuthContext] logout - 设置认证状态为false');
+        // 清除sessionStorage中的userId
+        sessionStorage.removeItem('userId');
+        clearCurrentUserId();
         setUser(null);
         setToken(null);
         setIsAuthenticated(false);
-
-        // 清除localStorage中的认证信息
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        console.log('💾 [AuthContext] 已清除localStorage中的认证信息');
+        console.log('✅ [AuthContext] 认证状态已清除（userId已从sessionStorage移除）');
     };
 
     const updateUser = (userData: User) => {
         setUser(userData);
-        // 同时更新localStorage中的用户信息
-        localStorage.setItem('user', JSON.stringify(userData));
-        console.log('💾 [AuthContext] 用户信息已更新到localStorage');
+        // 用户信息仅在内存中更新（基于session）
+        console.log('✅ [AuthContext] 用户信息已更新（内存中）');
     };
 
     // 刷新用户信息（包括积分）

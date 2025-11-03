@@ -1939,8 +1939,8 @@ function ShortplayEntryPage() {
         userInput: userInput.trim(),
         llmName: imageModel,
         durationMillis: durationMillis,
-        imageBackground: backgroundType,
-        imageStyle: style,
+        imageBackground: `画面风格-${backgroundType}`,
+        imageStyle: `画面类型-${style}`,
         relevance: relevanceScore
       };
 

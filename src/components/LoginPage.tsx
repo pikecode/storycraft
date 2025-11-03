@@ -7,6 +7,7 @@ import { getCloudbaseAuth, getAuthHeader } from '../cloudbase';
 import { paymentService } from '../services/paymentService';
 import { useI18n } from '../contexts/I18nContext';
 import AuthService from '../services/authService';
+import { setCurrentUserId } from '../services/shortplayService';
 import { log } from 'console';
 
 const { Title, Text } = Typography;
@@ -236,16 +237,24 @@ const LoginPage: React.FC = () => {
             if (response.data && response.data.userId) {
                 // 使用username作为token（后端不返回JWT token）
                 const token = response.data.username;
+                const userId = response.data.userId;
 
                 // 构建用户信息，确保包含userId字段供后续API调用使用
                 const userInfo = {
-                    user_id: parseInt(String(response.data.userId)) || 1,
+                    user_id: parseInt(String(userId)) || 1,
                     user_name: response.data.username || username,
                     user_email: '',
                     user_plan: 'free' as const,
                     user_point: '0',
-                    userId: response.data.userId  // 重要：需要这个字段用于API调用
+                    userId: userId  // 重要：需要这个字段用于API调用
                 };
+
+                // 保存userId到sessionStorage（仅当前标签页有效）
+                sessionStorage.setItem('userId', String(userId));
+                console.log('💾 [LoginPage] userId已保存到sessionStorage:', userId);
+
+                // 设置userId到shortplayService（基于session，不持久化）
+                setCurrentUserId(userId);
 
                 setMsg(t('common.loginSuccess'));
                 message.success(t('common.loginSuccess'));
