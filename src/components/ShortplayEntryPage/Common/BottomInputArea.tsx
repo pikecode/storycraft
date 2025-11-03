@@ -194,7 +194,7 @@ export function BottomInputArea({
                   : 'bg-blue-500 hover:bg-blue-600'
               }`}
             >
-              {isGenerating ? t('shortplayEntry.generation.generating') : '一键生成'}
+              {isGenerating ? t('shortplayEntry.generation.generating') : t('shortplayEntry.generation.oneClickGenerate')}
             </button>
           </div>
         </>
@@ -276,7 +276,7 @@ export function BottomInputArea({
 
               {/* 相关性选择 */}
               <div className="flex items-center space-x-1">
-                <span className="text-xs text-gray-700">相关性</span>
+                <span className="text-xs text-gray-700">{t('shortplayEntry.image.relevance')}</span>
                 <div className="relative h-9 flex items-center">
                   <select
                     value={relevanceScore}
@@ -355,7 +355,7 @@ export function BottomInputArea({
             />
             <label className={`absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 ${
               selectedModel === 'doubao-seedream-3.0-t2i' ? 'hidden' : ''
-            } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`} title={isUploading && uploadProgress.total > 0 ? `上传进度: ${uploadProgress.current}/${uploadProgress.total}` : '上传图片'}>
+            } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`} title={isUploading && uploadProgress.total > 0 ? `${t('shortplayEntry.generation.uploadProgress')}: ${uploadProgress.current}/${uploadProgress.total}` : t('shortplayEntry.generation.uploadImage')}>
               {isUploading ? (
                 <div className="relative w-4 h-4">
                   <Icon icon="ri:loader-4-line" className="w-4 h-4 text-gray-400 animate-spin" />
@@ -419,7 +419,7 @@ export function BottomInputArea({
           {/* 上传图片预览 */}
           {uploadedImages && uploadedImages.length > 0 && (
             <div className="mt-3 p-2 bg-gray-50 rounded-lg">
-              <div className="text-xs text-gray-600 mb-2">已上传 {uploadedImages.length} 张图片</div>
+              <div className="text-xs text-gray-600 mb-2">{t('shortplayEntry.generation.uploadedCount')} {uploadedImages.length} {t('shortplayEntry.generation.images')}</div>
               <div className="flex flex-wrap gap-2">
                 {uploadedImages.map((image) => (
                   <div key={image.fileId} className="relative group">
@@ -432,7 +432,7 @@ export function BottomInputArea({
                     <button
                       onClick={() => onRemoveImage?.(image.fileId)}
                       className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                      title="移除"
+                      title={t('shortplayEntry.generation.remove')}
                     >
                       ×
                     </button>
@@ -512,7 +512,7 @@ export function BottomInputArea({
 
               {/* 视频时长选择 */}
               <div className="flex items-center space-x-1">
-                <span className="text-xs text-gray-700">视频时长</span>
+                <span className="text-xs text-gray-700">{t('shortplayEntry.video.videoDuration')}</span>
                 <div className="relative h-9 flex items-center">
                   <select
                     value={singleGenerate || '5s'}
@@ -539,7 +539,7 @@ export function BottomInputArea({
 
               {/* 分辨率选择 */}
               <div className="flex items-center space-x-1">
-                <span className="text-xs text-gray-700">分辨率</span>
+                <span className="text-xs text-gray-700">{t('shortplayEntry.video.resolution')}</span>
                 <div className="relative h-9 flex items-center">
                   <select
                     value={resolution || '1080p'}
@@ -601,7 +601,7 @@ export function BottomInputArea({
             />
             <label className={`absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 ${
               (activeTab === 'video' || activeTab === 'image') ? '' : 'hidden'
-            } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`} title={isUploading && uploadProgress.total > 0 ? `上传进度: ${uploadProgress.current}/${uploadProgress.total}` : '上传图片'}>
+            } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`} title={isUploading && uploadProgress.total > 0 ? `${t('shortplayEntry.generation.uploadProgress')}: ${uploadProgress.current}/${uploadProgress.total}` : t('shortplayEntry.generation.uploadImage')}>
               {isUploading ? (
                 <div className="relative w-4 h-4">
                   <Icon icon="ri:loader-4-line" className="w-4 h-4 text-gray-400 animate-spin" />
@@ -679,7 +679,7 @@ export function BottomInputArea({
           {/* 上传图片预览 */}
           {uploadedImages && uploadedImages.length > 0 && (
             <div className="mt-3 p-2 bg-gray-50 rounded-lg">
-              <div className="text-xs text-gray-600 mb-2">已上传 {uploadedImages.length} 张图片</div>
+              <div className="text-xs text-gray-600 mb-2">{t('shortplayEntry.generation.uploadedCount')} {uploadedImages.length} {t('shortplayEntry.generation.images')}</div>
               <div className="flex flex-wrap gap-2">
                 {uploadedImages.map((image) => (
                   <div key={image.fileId} className="relative group">
@@ -692,7 +692,7 @@ export function BottomInputArea({
                     <button
                       onClick={() => onRemoveImage?.(image.fileId)}
                       className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                      title="移除"
+                      title={t('shortplayEntry.generation.remove')}
                     >
                       ×
                     </button>
