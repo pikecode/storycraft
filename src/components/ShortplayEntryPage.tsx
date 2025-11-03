@@ -51,6 +51,11 @@ function ShortplayEntryPage() {
   const { t } = useI18n();
   const location = useLocation();
 
+  // 从sessionStorage获取userId的辅助函数
+  const getUserId = (): string => {
+    return sessionStorage.getItem('userId') || "";
+  };
+
   // 从URL的search部分提取seriesId参数
   const urlSeriesId = React.useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -1423,11 +1428,7 @@ function ShortplayEntryPage() {
   // 获取音色列表
   const loadVoiceList = async (status: number, voiceSeriesId?: number) => {
     try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) return [];
-
-      const user = JSON.parse(userStr);
-      const userId = user.userId;
+      const userId = getUserId();
       if (!userId) return [];
 
       const token = localStorage.getItem('token');
@@ -1701,11 +1702,7 @@ function ShortplayEntryPage() {
   const loadBgmList = async () => {
     setIsLoadingBgm(true);
     try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) return;
-
-      const user = JSON.parse(userStr);
-      const userId = user.userId;
+      const userId = getUserId();
       if (!userId) return;
 
       const token = localStorage.getItem('token');
@@ -2000,16 +1997,9 @@ function ShortplayEntryPage() {
     if (!file || isUploading) return;
 
     try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) {
-        toast.error(t('shortplayEntry.userErrors.userInfoMissing'));
-        return;
-      }
-
-      const user = JSON.parse(userStr);
-      const userId = user.userId;
+      const userId = getUserId();
       if (!userId) {
-        toast.error(t('shortplayEntry.userErrors.userIdMissing'));
+        toast.error(t('shortplayEntry.userErrors.userInfoMissing'));
         return;
       }
 
@@ -2365,17 +2355,7 @@ function ShortplayEntryPage() {
     setGenerationStatus('正在生成音效...');
 
     try {
-      const userStr = localStorage.getItem('user');
-      let userId = "";
-      if (userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          userId = user.userId || "";
-        } catch (error) {
-          console.warn(t('shortplayEntry.input.userInfoParseError'), error);
-        }
-      }
-
+      const userId = getUserId();
       if (!userId) {
         toast.error(t('shortplayEntry.userErrors.userInfoIncomplete'));
         return;
@@ -2549,11 +2529,7 @@ function ShortplayEntryPage() {
     setIsLoadingUserData(true);
 
     try {
-      const userStr = localStorage.getItem('user');
-      if (!userStr) return;
-
-      const user = JSON.parse(userStr);
-      const userId = user.userId;
+      const userId = getUserId();
       if (!userId) return;
 
       const token = localStorage.getItem('token');
@@ -2686,17 +2662,7 @@ function ShortplayEntryPage() {
 
     try {
       // 从localStorage获取user信息
-      const userStr = localStorage.getItem('user');
-      let userId = "";
-      if (userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          userId = user.userId || "";
-        } catch (error) {
-          console.warn(t('shortplayEntry.input.userInfoParseError'), error);
-        }
-      }
-
+      const userId = getUserId();
       if (!userId) {
         toast.error(t('shortplayEntry.userErrors.userInfoIncomplete'));
         return;
@@ -2761,19 +2727,8 @@ function ShortplayEntryPage() {
     setGenerationStatus('正在创建剧本任务...');
 
     try {
-      // 从localStorage获取user信息
-      const userStr = localStorage.getItem('user');
-
-      // 解析user信息获取userId
-      let userId = "";
-      if (userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          userId = user.userId || "";
-        } catch (error) {
-          console.warn(t('shortplayEntry.input.userInfoParseError'), error);
-        }
-      }
+      // 从sessionStorage获取userId（在LoginPage中设置）
+      let userId = sessionStorage.getItem('userId') || "";
 
       if (!userId) {
         toast.error(t('shortplayEntry.userErrors.userInfoIncomplete'));
