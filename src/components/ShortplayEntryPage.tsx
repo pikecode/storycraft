@@ -3304,7 +3304,7 @@ function ShortplayEntryPage() {
                                                 }}
                                               />
                                               {/* 悬停时显示的按钮覆盖层 */}
-                                              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 rounded-lg">
+                                              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 rounded-lg bg-black/60">
                                                 <button
                                                   onClick={() => {
                                                     setPreviewUrl(file.downloadUrl);
@@ -3314,23 +3314,21 @@ function ShortplayEntryPage() {
                                                     setPreviewSource('left');
                                                     setPreviewModalVisible(true);
                                                   }}
-                                                  className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
-                                                  style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
+                                                  className="flex items-center justify-center gap-1 px-2 py-1 text-white text-xs font-medium hover:bg-blue-600 transition-colors bg-blue-500 rounded"
                                                   title={t('shortplayEntry.tooltips.playVideo')}
                                                 >
                                                   <Icon icon="ri:play-line" className="w-3 h-3" />
-                                                  {t('shortplayEntry.preview.view')}
+                                                  预览
                                                 </button>
                                                 <button
                                                   onClick={() => {
                                                     handleCreateStoryboard(file.fileId, file.fileName, message.userPrompt);
                                                   }}
-                                                  className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
-                                                  style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
+                                                  className="flex items-center justify-center gap-1 px-2 py-1 text-white text-xs font-medium hover:bg-green-600 transition-colors bg-green-500 rounded"
                                                   title={t('shortplayEntry.tooltips.applyVideo')}
                                                 >
-                                                  <Icon icon="ri:check-line" className="w-3 h-3 text-green-400" />
-                                                  {t('shortplayEntry.buttons.apply')}
+                                                  <Icon icon="ri:check-line" className="w-3 h-3" />
+                                                  应用
                                                 </button>
                                               </div>
                                             </div>
