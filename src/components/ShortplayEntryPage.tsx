@@ -3296,15 +3296,14 @@ function ShortplayEntryPage() {
                                                   e.currentTarget.style.display = 'none';
                                                   const parent = e.currentTarget.parentElement;
                                                   if (parent) {
-                                                    parent.innerHTML = `<div class="w-full h-full bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 flex items-center justify-center cursor-pointer">
+                                                    parent.innerHTML = `<div class="w-full h-full bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 flex items-center justify-center">
                                                       <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                                                     </div>`;
-                                                    parent.onclick = () => window.open(file.downloadUrl, '_blank');
                                                   }
                                                 }}
                                               />
                                               {/* 悬停时显示的按钮覆盖层 */}
-                                              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 rounded-lg bg-black/60">
+                                              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 rounded-lg">
                                                 <button
                                                   onClick={() => {
                                                     setPreviewUrl(file.downloadUrl);
@@ -3314,21 +3313,23 @@ function ShortplayEntryPage() {
                                                     setPreviewSource('left');
                                                     setPreviewModalVisible(true);
                                                   }}
-                                                  className="flex items-center justify-center gap-1 px-2 py-1 text-white text-xs font-medium hover:bg-blue-600 transition-colors bg-blue-500 rounded"
+                                                  className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
+                                                  style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
                                                   title={t('shortplayEntry.tooltips.playVideo')}
                                                 >
                                                   <Icon icon="ri:play-line" className="w-3 h-3" />
-                                                  预览
+                                                  {t('shortplayEntry.preview.view')}
                                                 </button>
                                                 <button
                                                   onClick={() => {
                                                     handleCreateStoryboard(file.fileId, file.fileName, message.userPrompt);
                                                   }}
-                                                  className="flex items-center justify-center gap-1 px-2 py-1 text-white text-xs font-medium hover:bg-green-600 transition-colors bg-green-500 rounded"
+                                                  className="flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium hover:text-gray-200 transition-colors bg-transparent"
+                                                  style={{ border: '1px solid #3E83F6', borderRadius: '4px' }}
                                                   title={t('shortplayEntry.tooltips.applyVideo')}
                                                 >
-                                                  <Icon icon="ri:check-line" className="w-3 h-3" />
-                                                  应用
+                                                  <Icon icon="ri:check-line" className="w-3 h-3 text-green-400" />
+                                                  {t('shortplayEntry.buttons.apply')}
                                                 </button>
                                               </div>
                                             </div>
