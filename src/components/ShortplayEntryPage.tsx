@@ -2132,6 +2132,7 @@ function ShortplayEntryPage() {
   const [previewType, setPreviewType] = useState<'image' | 'video'>('image');
   const [previewFileId, setPreviewFileId] = useState<string>('');
   const [previewFileName, setPreviewFileName] = useState<string>('');
+  const [previewUserPrompt, setPreviewUserPrompt] = useState<string>(''); // 预览时保存的用户提示词
   const [previewSource, setPreviewSource] = useState<'left' | 'middle' | null>(null); // 弹窗来源：left=左侧列表，middle=中间列表
 
   // 编辑器状态（题目和选项）
@@ -3219,6 +3220,7 @@ function ShortplayEntryPage() {
                                                     setPreviewType('image');
                                                     setPreviewFileId(file.fileId);
                                                     setPreviewFileName(file.fileName);
+                                                    setPreviewUserPrompt(message.userPrompt || '');
                                                     setPreviewSource('left');
                                                     setPreviewModalVisible(true);
                                                   }}
@@ -3310,6 +3312,7 @@ function ShortplayEntryPage() {
                                                     setPreviewType('video');
                                                     setPreviewFileId(file.fileId);
                                                     setPreviewFileName(file.fileName);
+                                                    setPreviewUserPrompt(message.userPrompt || '');
                                                     setPreviewSource('left');
                                                     setPreviewModalVisible(true);
                                                   }}
@@ -4381,7 +4384,7 @@ function ShortplayEntryPage() {
             <button
               onClick={() => {
                 if (previewFileId && previewFileName) {
-                  handleCreateStoryboard(previewFileId, previewFileName);
+                  handleCreateStoryboard(previewFileId, previewFileName, previewUserPrompt);
                   setPreviewModalVisible(false);
                 }
               }}
@@ -4424,27 +4427,6 @@ function ShortplayEntryPage() {
               style={{ objectFit: 'contain' }}
               autoPlay
             />
-          )}
-          {previewSource === 'left' && (
-            <div className="w-full flex gap-4 p-3 mt-3">
-              <button
-                onClick={() => setPreviewModalVisible(false)}
-                className="flex-1 px-4 py-2 text-gray-400 bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
-              >
-                {t('shortplayEntry.preview.close')}
-              </button>
-              <button
-                onClick={() => {
-                  if (previewFileId && previewFileName) {
-                    handleCreateStoryboard(previewFileId, previewFileName);
-                    setPreviewModalVisible(false);
-                  }
-                }}
-                className="flex-1 px-4 py-2 text-white bg-gray-700 hover:bg-gray-600 transition-colors font-medium text-sm rounded"
-              >
-                {t('shortplayEntry.buttons.apply')}
-              </button>
-            </div>
           )}
         </div>
       </Modal>
