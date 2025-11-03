@@ -1,8 +1,8 @@
 /**
- * 认证服务 - 使用统一的 /episode-api/storyai host
+ * 认证服务 - 使用统一的 /storyai host
  */
 
-const STORYAI_API_BASE = '/episode-api/storyai';
+const STORYAI_API_BASE = '/storyai';
 
 export interface LoginResponse {
   code: number;

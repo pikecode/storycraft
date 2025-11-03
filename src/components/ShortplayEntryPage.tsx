@@ -43,7 +43,7 @@ import type { ScriptCardProps } from './ShortplayEntryPage/types';
 import { formatMillisecondsToTime } from './ShortplayEntryPage/utils/formatTime';
 
 // 一键创作API基础路径
-const STORYAI_API_BASE = '/episode-api/storyai';
+const STORYAI_API_BASE = '/storyai';
 
 const { Option } = Select;
 

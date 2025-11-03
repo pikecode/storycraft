@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../../contexts/AuthContext';
 
 // API 基础路径
-const STORYAI_API_BASE = '/episode-api/storyai';
+const STORYAI_API_BASE = '/storyai';
 
 /**
  * 处理API响应，检查401未授权错误

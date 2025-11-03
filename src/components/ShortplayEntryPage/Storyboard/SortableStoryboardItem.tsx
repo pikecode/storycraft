@@ -9,7 +9,7 @@ import { TimeRangeInput } from '../Common/TimeRangeInput';
 import { useI18n } from '../../../contexts/I18nContext';
 import { useAuth } from '../../../contexts/AuthContext';
 
-const STORYAI_API_BASE = '/episode-api/storyai';
+const STORYAI_API_BASE = '/storyai';
 
 export function SortableStoryboardItem({
   item,

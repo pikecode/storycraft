@@ -5,7 +5,7 @@
 
 import { apiInterceptor } from './apiInterceptor';
 
-const STORYAI_API_BASE = '/episode-api/storyai';
+const STORYAI_API_BASE = '/storyai';
 
 // 在内存中保存userId（从AuthContext中设置，不持久化）
 let currentUserId: string | number = '';
@@ -74,7 +74,6 @@ export const createSeries = async (userInput: string) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       userId,
       userInput: userInput.trim(),
@@ -130,7 +129,6 @@ export const updateScene = async (sceneId: number, sceneTitle: string) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       id: sceneId,
       sceneTitle
@@ -157,7 +155,6 @@ export const createSceneContent = async (data: {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify(data),
     credentials: 'include' as RequestCredentials
   });
@@ -182,7 +179,6 @@ export const updateSceneContent = async (data: {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify(data),
     credentials: 'include' as RequestCredentials
   });
@@ -218,7 +214,6 @@ export const getVoiceList = async (status: number) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       userId,
       status
@@ -243,7 +238,6 @@ export const updateVoice = async (data: {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify(data),
     credentials: 'include' as RequestCredentials
   });
@@ -263,7 +257,6 @@ export const batchBindVoice = async (bindings: Array<{
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({ bindings }),
     credentials: 'include' as RequestCredentials
   });
@@ -283,7 +276,6 @@ export const designVoice = async (prompt: string) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       prompt: prompt.trim(),
       userId
@@ -308,7 +300,6 @@ export const getBgmList = async () => {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       userId
     }),
@@ -331,7 +322,6 @@ export const generateBgm = async (userInput: string, style: string) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       userId: parseInt(userId),
       style,
@@ -354,7 +344,6 @@ export const generateImage = async (sceneId: number, userInput: string) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({
       sceneId,
       userInput: userInput.trim()
@@ -380,7 +369,6 @@ export const queryChatHistory = async (data: {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify(data),
     credentials: 'include' as RequestCredentials
   });
@@ -417,7 +405,6 @@ export const createStoryboard = async (data: {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify(data),
     credentials: 'include' as RequestCredentials
   });
@@ -439,7 +426,6 @@ export const updateStoryboard = async (data: {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify(data),
     credentials: 'include' as RequestCredentials
   });
@@ -481,7 +467,6 @@ export const generateVideo = async (data: {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify(data),
     credentials: 'include' as RequestCredentials
   });
@@ -498,7 +483,6 @@ export const getVideoProgress = async (fileId: number) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' as RequestCredentials,
     body: JSON.stringify({ fileId }),
     credentials: 'include' as RequestCredentials
   });
