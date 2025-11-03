@@ -3876,16 +3876,8 @@ function ShortplayEntryPage() {
           <div className="border-b border-gray-200 bg-white flex items-center" style={{ height: '64px' }}>
             <div className="flex items-center justify-between w-full px-4">
               <div className="flex items-center space-x-2">
-                <Button
-                  size="small"
-                  type="primary"
-                  className="text-xs"
-                  onClick={handleVideoPreview}
-                  disabled={isLoadingPreviewVideo}
-                >
-                  <Icon icon="ri:play-circle-line" className="w-3 h-3 mr-1" />
-                  {t('shortplayEntry.buttons.preview')}
-                </Button>
+                <Icon icon="ri:play-circle-line" className="w-4 h-4 text-blue-500" />
+                <span className="text-sm font-medium text-gray-800">{t('shortplayEntry.buttons.preview')}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Button
