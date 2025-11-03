@@ -98,7 +98,7 @@ const LoginPage: React.FC = () => {
                     user_point: userData.user_point || '0',
                     subscription_expires_at: userData.subscription_expires_at,
                     subscription_status: userData.subscription_status,
-                    userId: userData.userId
+                    userId: userData.userId || userData.user_id || 0  // 确保userId存在
                 };
                 // 提取纯token，去掉Bearer前缀
                 const token = authHeader ? authHeader.replace('Bearer ', '') : null;
@@ -204,7 +204,8 @@ const LoginPage: React.FC = () => {
                     user_name: phoneNumber,
                     user_email: '',
                     user_plan: 'free' as const,
-                    user_point: '0'
+                    user_point: '0',
+                    userId: 1  // 使用默认userId
                 };
                 console.log('手机号登录 - 使用默认用户信息:', userInfo);
                 await login(userInfo, token || '');
@@ -233,16 +234,17 @@ const LoginPage: React.FC = () => {
             const response = await AuthService.login(username, password);
 
             if (response.data && response.data.userId) {
-                // 如果有token，使用token；否则使用username作为临时标识
-                const token = response.token || response.data.username;
+                // 使用username作为token（后端不返回JWT token）
+                const token = response.data.username;
 
-                // 构建用户信息
+                // 构建用户信息，确保包含userId字段供后续API调用使用
                 const userInfo = {
                     user_id: parseInt(String(response.data.userId)) || 1,
                     user_name: response.data.username || username,
                     user_email: '',
                     user_plan: 'free' as const,
-                    user_point: '0'
+                    user_point: '0',
+                    userId: response.data.userId  // 重要：需要这个字段用于API调用
                 };
 
                 setMsg(t('common.loginSuccess'));
@@ -297,6 +299,7 @@ const LoginPage: React.FC = () => {
                     user_email: email,
                     user_plan: 'free' as const,
                     user_point: '0',
+                    userId: 1  // 使用默认userId
                 };
                 console.log('邮箱登录 - 使用默认用户信息:', userInfo);
                 await login(userInfo, token || '');

@@ -12,7 +12,7 @@ interface User {
     user_point: string;
     subscription_expires_at?: string | null;
     subscription_status?: 'free' | 'active' | 'expired' | 'cancelled';
-    userId?: string;
+    userId: string | number;  // 新增：后端认证需要使用
 }
 
 interface AuthContextType {
@@ -23,6 +23,7 @@ interface AuthContextType {
     updateUser: (userData: User) => void;
     refreshUserInfo: () => Promise<void>;
     isAuthenticated: boolean;
+    isInitializing: boolean;  // 新增：标记是否正在初始化
     checkTokenValidity: () => Promise<boolean>;
     refreshToken: () => Promise<boolean>;
 }
@@ -45,12 +46,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isInitializing, setIsInitializing] = useState(true);  // 新增：初始化标志
 
     useEffect(() => {
-        // 初始化为未登陆状态（不使用localStorage）
-        setIsAuthenticated(false);
-        setUser(null);
-        setToken(null);
+        // 初始化：尝试从localStorage恢复认证状态
+        const savedToken = localStorage.getItem('token');
+        const savedUser = localStorage.getItem('user');
+
+        if (savedToken && savedUser) {
+            try {
+                const user = JSON.parse(savedUser);
+                setToken(savedToken);
+                setUser(user);
+                setIsAuthenticated(true);
+                console.log('✅ [AuthContext] 从localStorage恢复认证状态');
+            } catch (error) {
+                console.error('❌ [AuthContext] 恢复认证状态失败:', error);
+                // 恢复失败，清空localStorage
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                setIsAuthenticated(false);
+                setUser(null);
+                setToken(null);
+            }
+        } else {
+            setIsAuthenticated(false);
+            setUser(null);
+            setToken(null);
+        }
 
         // 设置API拦截器的未授权回调（用户未登陆）
         apiInterceptor.setUnauthorizedCallback(() => {
@@ -58,8 +81,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(null);
             setToken(null);
             setIsAuthenticated(false);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
             window.location.href = '/#/app/login';
         });
+
+        // 标记初始化完成
+        setIsInitializing(false);
 
         // API拦截器的token过期回调将在TokenExpiryHandler组件中设置
     }, []);
@@ -69,6 +97,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(userData);
         setToken(userToken);
         setIsAuthenticated(true);
+
+        // 保存到localStorage以便页面刷新时恢复
+        localStorage.setItem('token', userToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+        console.log('💾 [AuthContext] 认证信息已保存到localStorage');
 
         // 处理每日登录积分奖励
         try {
@@ -92,10 +125,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(null);
         setToken(null);
         setIsAuthenticated(false);
+
+        // 清除localStorage中的认证信息
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        console.log('💾 [AuthContext] 已清除localStorage中的认证信息');
     };
 
     const updateUser = (userData: User) => {
         setUser(userData);
+        // 同时更新localStorage中的用户信息
+        localStorage.setItem('user', JSON.stringify(userData));
+        console.log('💾 [AuthContext] 用户信息已更新到localStorage');
     };
 
     // 刷新用户信息（包括积分）
@@ -182,6 +223,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         updateUser,
         refreshUserInfo,
         isAuthenticated,
+        isInitializing,  // 新增
         checkTokenValidity,
         refreshToken,
     };
