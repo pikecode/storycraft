@@ -45,8 +45,6 @@ import { formatMillisecondsToTime } from "./ShortplayEntryPage/utils/formatTime"
 // 一键创作API基础路径
 const STORYAI_API_BASE = "/storyai";
 
-const { Option } = Select;
-
 function ShortplayEntryPage() {
   const { t } = useI18n();
   const location = useLocation();
@@ -177,7 +175,6 @@ function ShortplayEntryPage() {
         const cache = JSON.parse(savedCache);
         setVideoCacheMap(cache);
       } catch (error) {
-        console.error("Failed to load video cache:", error);
       }
     }
   }, []);
@@ -203,12 +200,7 @@ function ShortplayEntryPage() {
     );
     const sceneId = currentSceneData?.sceneId;
 
-    console.log("LoadImageChatHistory - selectedScene:", selectedScene);
-    console.log("LoadImageChatHistory - scenesData:", scenesData);
-    console.log("LoadImageChatHistory - sceneId:", sceneId);
-
     if (!sceneId) {
-      console.log("No scene selected, skipping image chat history load");
       setIsLoadingImageHistory(false); // 确保loading状态被重置
       return;
     }
@@ -230,23 +222,17 @@ function ShortplayEntryPage() {
         }),
       });
 
-      console.log("LoadImageChatHistory - response:", response);
-
       if (response.ok) {
         const result = await response.json();
-        console.log("LoadImageChatHistory - result:", result);
         if (result.code === 0 && result.data) {
           setImageChatHistory(result.data.records || result.data || []);
         } else {
-          console.log("LoadImageChatHistory - API returned error:", result);
           setImageChatHistory([]);
         }
       } else {
-        console.error("LoadImageChatHistory - HTTP error:", response.status);
         setImageChatHistory([]);
       }
     } catch (error) {
-      console.error("加载图片聊天记录失败:", error);
       setImageChatHistory([]);
     } finally {
       setIsLoadingImageHistory(false);
@@ -269,12 +255,7 @@ function ShortplayEntryPage() {
     );
     const sceneId = currentSceneData?.sceneId;
 
-    console.log("LoadStoryboardList - selectedScene:", selectedScene);
-    console.log("LoadStoryboardList - scenesData:", scenesData);
-    console.log("LoadStoryboardList - sceneId:", sceneId);
-
     if (!sceneId) {
-      console.log("No scene selected, skipping storyboard list load");
       setIsLoadingStoryboard(false); // 确保loading状态被重置
       return;
     }
@@ -292,11 +273,8 @@ function ShortplayEntryPage() {
         }
       );
 
-      console.log("LoadStoryboardList - response:", response);
-
       if (response.ok) {
         const result = await response.json();
-        console.log("LoadStoryboardList - result:", result);
         if (result.code === 0 && result.data) {
           // 按 storyboardOrder 排序后设置数据
           const sortedData = (result.data || []).sort(
@@ -305,15 +283,12 @@ function ShortplayEntryPage() {
           );
           setStoryboardItems(sortedData);
         } else {
-          console.log("LoadStoryboardList - API returned error:", result);
           setStoryboardItems([]);
         }
       } else {
-        console.error("LoadStoryboardList - HTTP error:", response.status);
         setStoryboardItems([]);
       }
     } catch (error) {
-      console.error("加载分镜板列表失败:", error);
       setStoryboardItems([]);
     } finally {
       setIsLoadingStoryboard(false);
@@ -356,7 +331,6 @@ function ShortplayEntryPage() {
         }
       }
     } catch (error) {
-      console.error("静默加载分镜板列表失败:", error);
     }
   };
 
@@ -396,13 +370,11 @@ function ShortplayEntryPage() {
       }
 
       const result = await response.json();
-      console.log("视频预览请求成功:", result);
 
       if (result.code === 0) {
         // 获取下载地址并更新视频源
         if (result.data?.downloadUrl) {
           const downloadUrl = result.data.downloadUrl;
-          console.log("设置videoSrc:", downloadUrl);
           setVideoSrc(downloadUrl);
           setHasVideo(true);
 
@@ -411,10 +383,6 @@ function ShortplayEntryPage() {
           const newCache = { ...videoCacheMap, [cacheKey]: result.data };
           setVideoCacheMap(newCache);
           localStorage.setItem("videoCacheMap", JSON.stringify(newCache));
-          console.log(
-            `Saved video data to cache for series ${seriesId}, scene ${sceneId}:`,
-            result.data
-          );
 
           toast.success(
             t("shortplayEntry.messages.success.videoPreviewLoaded")
@@ -426,7 +394,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "视频预览生成失败");
       }
     } catch (error) {
-      console.error("视频预览失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.videoPreviewFailed", {
           error: (error as Error).message,
@@ -492,7 +459,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "应用图片失败");
       }
     } catch (error) {
-      console.error("创建分镜板失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.imageApplyFailed", {
           error: (error as Error).message,
@@ -562,7 +528,6 @@ function ShortplayEntryPage() {
       // 重新加载视频
       if (videoRef.current) {
         videoRef.current.load();
-        console.log("视频已加载，开始播放");
       }
     } else {
       setHasVideo(false);
@@ -634,10 +599,7 @@ function ShortplayEntryPage() {
           if (result.code !== 0) {
             throw new Error(result.message || "更新排序失败");
           }
-
-          console.log("排序更新成功:", result);
         } catch (error) {
-          console.error("更新排序失败:", error);
           // API调用失败时，恢复原来的排序
           if (isAudioTab) {
             setAudioContent(oldItems);
@@ -697,7 +659,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "删除分镜板失败");
       }
     } catch (error) {
-      console.error("删除分镜板失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.deleteFailed", {
           error: (error as Error).message,
@@ -767,7 +728,6 @@ function ShortplayEntryPage() {
             throw new Error(result.message || "更新排序失败");
           }
         } catch (error) {
-          console.error("更新分镜板排序失败:", error);
           // API调用失败时，恢复原来的排序
           setStoryboardItems(oldItems);
           toast.error(
@@ -852,7 +812,6 @@ function ShortplayEntryPage() {
         throw new Error(`请求失败: ${response.status}`);
       }
     } catch (error) {
-      console.error("删除场次内容失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.deleteFailed", {
           error: (error as Error).message,
@@ -906,7 +865,6 @@ function ShortplayEntryPage() {
         throw new Error(`请求失败: ${response.status}`);
       }
     } catch (error) {
-      console.error("删除音频项失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.deleteFailed", {
           error: (error as Error).message,
@@ -969,7 +927,6 @@ function ShortplayEntryPage() {
         throw new Error(`请求失败: ${response.status}`);
       }
     } catch (error) {
-      console.error("更新场次名称失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.sceneNameUpdateFailed", {
           error: (error as Error).message,
@@ -1269,7 +1226,6 @@ function ShortplayEntryPage() {
         throw new Error(`请求失败: ${response.status}`);
       }
     } catch (error) {
-      console.error("保存场次内容失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.saveFailed", {
           error: (error as Error).message,
@@ -1390,14 +1346,7 @@ function ShortplayEntryPage() {
 
   // 编辑时间相关函数
   const startEditTime = (itemId: string, currentTimeRange: string) => {
-    console.log(
-      "Starting edit for item:",
-      itemId,
-      "timeRange:",
-      currentTimeRange
-    );
     const timeData = parseTimeRange(currentTimeRange);
-    console.log("Parsed time data:", timeData);
 
     setEditingTimeId(itemId);
     setEditingStartMinutes(timeData.startMinutes);
@@ -1440,7 +1389,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "更新时间失败");
       }
     } catch (error) {
-      console.error("更新分镜板时间失败:", error);
       toast.error("时间更新失败：" + (error as Error).message);
     }
   };
@@ -1641,7 +1589,6 @@ function ShortplayEntryPage() {
       }
       return [];
     } catch (error) {
-      console.error("获取音色列表失败:", error);
       return [];
     }
   };
@@ -1703,7 +1650,6 @@ function ShortplayEntryPage() {
             throw new Error(`请求失败: ${response.status}`);
           }
         } catch (error) {
-          console.error("删除音色失败:", error);
           toast.error(
             t("shortplayEntry.messages.error.voiceDeleteFailed", {
               error: (error as Error).message,
@@ -1745,7 +1691,6 @@ function ShortplayEntryPage() {
         throw new Error(`请求失败: ${response.status}`);
       }
     } catch (error) {
-      console.error("应用音色失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.voiceApplyFailed", {
           error: (error as Error).message,
@@ -1791,7 +1736,6 @@ function ShortplayEntryPage() {
         throw new Error(`请求失败: ${response.status}`);
       }
     } catch (error) {
-      console.error("更新音色名称失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.voiceNameUpdateFailed", {
           error: (error as Error).message,
@@ -1851,7 +1795,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "音色绑定失败");
       }
     } catch (error) {
-      console.error("音色绑定失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.voiceBindFailed", {
           error: (error as Error).message,
@@ -1888,7 +1831,6 @@ function ShortplayEntryPage() {
           // 直接播放音频，不添加事件监听器
           const audio = new Audio(result.data.audioUrl);
           audio.play().catch((error) => {
-            console.error("音频播放失败:", error);
             toast.error(
               t("shortplayEntry.messages.success.audioPlaybackFailed")
             );
@@ -1902,7 +1844,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "获取音频失败");
       }
     } catch (error) {
-      console.error("播放音频失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.audioPlayError", {
           error: (error as Error).message,
@@ -1937,7 +1878,6 @@ function ShortplayEntryPage() {
         }
       }
     } catch (error) {
-      console.error("获取音效列表失败:", error);
     } finally {
       setIsLoadingBgm(false);
     }
@@ -2006,7 +1946,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "应用音效失败");
       }
     } catch (error) {
-      console.error("应用音效失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.soundApplyFailed", {
           error: (error as Error).message,
@@ -2094,7 +2033,6 @@ function ShortplayEntryPage() {
         throw new Error(`请求失败: ${response.status}`);
       }
     } catch (error) {
-      console.error("更新音效时间失败:", error);
       toast.error("更新时间失败：" + (error as Error).message);
     }
   };
@@ -2196,7 +2134,6 @@ function ShortplayEntryPage() {
       }
 
       const result = await response.json();
-      console.log("图片生成结果:", result);
 
       if (result.code === 0) {
         setGenerationStatus("生成完成！");
@@ -2210,7 +2147,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "图片生成失败");
       }
     } catch (error) {
-      console.error("图片生成失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.imageGenerationFailed", {
           error: (error as Error).message,
@@ -2238,7 +2174,6 @@ function ShortplayEntryPage() {
 
   // 处理文件上传
   const handleFileUpload = async (file: File) => {
-    console.log("handleFileUpload 被调用，文件:", file);
     if (!file || isUploading) return;
 
     try {
@@ -2248,13 +2183,9 @@ function ShortplayEntryPage() {
         return;
       }
 
-      console.log("准备上传文件:", { fileName: file.name, userId });
-
       // 构建URL参数
       const fileName = encodeURIComponent(file.name);
       const uploadUrl = `${STORYAI_API_BASE}/file/upload?userId=${userId}&fileName=${fileName}`;
-
-      console.log("上传URL:", uploadUrl);
 
       const formData = new FormData();
       formData.append("file", file);
@@ -2268,14 +2199,11 @@ function ShortplayEntryPage() {
         body: formData,
       });
 
-      console.log("上传响应状态:", response.status);
-
       if (!response.ok) {
         throw new Error(`上传失败: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log("文件上传结果:", result);
 
       if (result.code === 0) {
         // 这里可以处理上传成功后的逻辑，比如保存文件信息
@@ -2284,25 +2212,16 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "文件上传失败");
       }
     } catch (error) {
-      console.error("文件上传失败:", error);
       throw error; // 重新抛出错误，让批量上传处理
     }
   };
 
   // 批量文件上传处理
   const handleMultipleFileUpload = async (files: File[]) => {
-    console.log("handleMultipleFileUpload 被调用，参数:", files);
-    console.log("当前上传状态:", isUploading);
 
     if (!files.length || isUploading) {
-      console.log("提前返回，原因:", {
-        filesLength: files.length,
-        isUploading,
-      });
       return;
     }
-
-    console.log("开始设置上传状态");
     setIsUploading(true);
     setUploadProgress({ current: 0, total: files.length });
 
@@ -2321,7 +2240,6 @@ function ShortplayEntryPage() {
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        console.log(`开始上传第 ${i + 1} 个文件:`, file.name);
         setUploadProgress({ current: i + 1, total: files.length });
 
         try {
@@ -2336,29 +2254,23 @@ function ShortplayEntryPage() {
               fileName: data.fileName || file.name,
             });
           }
-
-          console.log(`文件 ${file.name} 上传成功`, data);
         } catch (error) {
           const errorMessage = (error as Error).message;
           results.push({ file, success: false, error: errorMessage });
-          console.log(`文件 ${file.name} 上传失败:`, errorMessage);
         }
       }
 
       // 更新上传成功的图片列表
       if (successfulUploads.length > 0) {
         setUploadedImages((prev) => [...prev, ...successfulUploads]);
-        console.log("更新上传图片列表:", successfulUploads);
       }
 
       // 统计结果
       const successCount = results.filter((r) => r.success).length;
       const failCount = results.filter((r) => !r.success).length;
-      console.log("上传结果统计:", { successCount, failCount });
 
       return results;
     } finally {
-      console.log("重置上传状态");
       setIsUploading(false);
       setUploadProgress({ current: 0, total: 0 });
     }
@@ -2405,12 +2317,7 @@ function ShortplayEntryPage() {
     );
     const sceneId = currentSceneData?.sceneId;
 
-    console.log("LoadVideoChatHistory - selectedScene:", selectedScene);
-    console.log("LoadVideoChatHistory - scenesData:", scenesData);
-    console.log("LoadVideoChatHistory - sceneId:", sceneId);
-
     if (!sceneId) {
-      console.log("No scene selected, skipping video chat history load");
       setIsLoadingVideoHistory(false); // 确保loading状态被重置
       return;
     }
@@ -2432,23 +2339,17 @@ function ShortplayEntryPage() {
         }),
       });
 
-      console.log("LoadVideoChatHistory - response:", response);
-
       if (response.ok) {
         const result = await response.json();
-        console.log("LoadVideoChatHistory - result:", result);
         if (result.code === 0 && result.data) {
           setVideoChatHistory(result.data.records || result.data || []);
         } else {
-          console.log("LoadVideoChatHistory - API returned error:", result);
           setVideoChatHistory([]);
         }
       } else {
-        console.error("LoadVideoChatHistory - HTTP error:", response.status);
         setVideoChatHistory([]);
       }
     } catch (error) {
-      console.error("加载视频聊天记录失败:", error);
       setVideoChatHistory([]);
     } finally {
       setIsLoadingVideoHistory(false);
@@ -2500,8 +2401,6 @@ function ShortplayEntryPage() {
         resolution: resolution, // 分辨率参数
       };
 
-      console.log("视频生成请求参数:", requestBody);
-
       const response = await fetch(`${STORYAI_API_BASE}/ai/video/generate`, {
         method: "POST",
         headers: {
@@ -2516,7 +2415,6 @@ function ShortplayEntryPage() {
       }
 
       const result = await response.json();
-      console.log("视频生成响应:", result);
 
       if (result.code === 0 && result.data) {
         const fileId = result.data.toString();
@@ -2533,7 +2431,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "视频生成失败");
       }
     } catch (error) {
-      console.error("视频生成失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.videoGenerationFailed", {
           error: (error as Error).message,
@@ -2553,7 +2450,6 @@ function ShortplayEntryPage() {
     const poll = async () => {
       try {
         pollCount++;
-        console.log(`轮询视频进度，第 ${pollCount} 次`, fileId);
 
         const token = localStorage.getItem("token");
         const response = await fetch(`${STORYAI_API_BASE}/ai/video/progress`, {
@@ -2570,7 +2466,6 @@ function ShortplayEntryPage() {
         }
 
         const result = await response.json();
-        console.log("视频进度响应:", result);
 
         if (result.code === 0 && result.data) {
           const { status, playUrl, errorMessage } = result.data;
@@ -2580,7 +2475,6 @@ function ShortplayEntryPage() {
             toast.success("视频生成成功！");
 
             if (playUrl) {
-              console.log("视频播放地址:", playUrl);
               // 这里可以添加显示视频的逻辑
             }
 
@@ -2608,7 +2502,6 @@ function ShortplayEntryPage() {
           throw new Error(result.message || "进度查询失败");
         }
       } catch (error) {
-        console.error("轮询进度失败:", error);
         toast.error(
           t("shortplayEntry.messages.error.videoGenerationFailed", {
             error: (error as Error).message,
@@ -2664,7 +2557,6 @@ function ShortplayEntryPage() {
       }
 
       const result = await response.json();
-      console.log("音效生成结果:", result);
 
       if (result.code === 0) {
         setGenerationStatus("生成完成！");
@@ -2676,7 +2568,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "音效生成失败");
       }
     } catch (error) {
-      console.error("音效生成失败:", error);
       toast.error(
         t("shortplayEntry.messages.error.soundGenerationFailed", {
           error: (error as Error).message,
@@ -2703,12 +2594,10 @@ function ShortplayEntryPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.code === 0 && result.data) {
-          console.log("场次内容:", result.data);
           setSceneContent(result.data);
         }
       }
     } catch (error) {
-      console.error("加载场次内容失败:", error);
     }
   };
 
@@ -2730,7 +2619,6 @@ function ShortplayEntryPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.code === 0 && result.data) {
-          console.log("音频内容:", result.data);
           setAudioContent(result.data);
         } else {
           setAudioContent([]);
@@ -2739,7 +2627,6 @@ function ShortplayEntryPage() {
         setAudioContent([]);
       }
     } catch (error) {
-      console.error("加载音频内容失败:", error);
       setAudioContent([]);
     } finally {
       setIsLoadingAudioContent(false);
@@ -2757,7 +2644,6 @@ function ShortplayEntryPage() {
     try {
       const token = localStorage.getItem("token");
       const url = `${STORYAI_API_BASE}/series/detail?seriesId=${targetSeriesId}`;
-      console.log("加载series数据，URL:", url);
 
       const response = await fetch(url, {
         method: "GET",
@@ -2765,11 +2651,8 @@ function ShortplayEntryPage() {
           "X-Prompt-Manager-Token": token || "",
         },
       });
-
-      console.log("API响应状态:", response.status);
       if (response.ok) {
         const result = await response.json();
-        console.log("API返回数据:", result);
 
         if (result.code === 0 && result.data) {
           const {
@@ -2805,13 +2688,10 @@ function ShortplayEntryPage() {
             }
           }
         } else {
-          console.warn("API返回异常状态码或无数据:", result);
         }
       } else {
-        console.error("API请求失败，状态码:", response.status);
       }
     } catch (error) {
-      console.error("加载series数据失败:", error);
     } finally {
       setIsLoadingUserData(false);
     }
@@ -2871,7 +2751,6 @@ function ShortplayEntryPage() {
         }
       }
     } catch (error) {
-      console.error("加载用户历史数据失败:", error);
     } finally {
       setIsLoadingUserData(false);
     }
@@ -2879,14 +2758,11 @@ function ShortplayEntryPage() {
 
   // 组件加载时，根据URL参数决定加载哪个数据源
   React.useEffect(() => {
-    console.log("URLseriesId:", urlSeriesId);
     if (urlSeriesId) {
       // 如果URL中有seriesId参数，加载指定的series数据
-      console.log("从URL参数加载seriesId:", urlSeriesId);
       loadSeriesBySeriesId(urlSeriesId);
     } else {
       // 否则加载用户的历史数据
-      console.log("加载用户历史数据");
       loadUserData();
     }
   }, [urlSeriesId]);
@@ -3002,7 +2878,6 @@ function ShortplayEntryPage() {
       }
 
       const result = await response.json();
-      console.log("音色生成结果:", result);
 
       if (result.code === 0) {
         // 生成成功，刷新音频列表
@@ -3015,7 +2890,6 @@ function ShortplayEntryPage() {
         throw new Error(result.message || "音色生成失败");
       }
     } catch (error) {
-      console.error("音色生成失败:", error);
       toast.error("音色生成失败：" + (error as Error).message);
     } finally {
       setIsGenerating(false);
@@ -3069,7 +2943,6 @@ function ShortplayEntryPage() {
       }
 
       const result = await response.json();
-      console.log("剧本生成任务创建成功:", result);
 
       if (result.code !== 0 || !result.data?.seriesId) {
         throw new Error(result.message || "创建任务失败");
@@ -3097,7 +2970,6 @@ function ShortplayEntryPage() {
           }
 
           const detailResult = await detailResponse.json();
-          console.log("轮询结果:", detailResult);
 
           if (detailResult.code === 0 && detailResult.data) {
             const {
@@ -3143,19 +3015,16 @@ function ShortplayEntryPage() {
               toast.error(
                 t("shortplayEntry.messages.error.videoGenerationRetry")
               );
-              console.error("剧本生成失败，状态为 FAILED");
             } else {
               // 其他状态，可能是失败
               setIsGenerating(false);
               setGenerationStatus("");
               toast.error(`生成状态异常: ${status}`);
-              console.error(`生成状态异常: ${status}`);
             }
           } else {
             throw new Error(detailResult.message || "获取生成状态失败");
           }
         } catch (pollError) {
-          console.error("轮询过程出错:", pollError);
           // 继续重试轮询，不立即失败
           setTimeout(pollForResult, 5000); // 5秒后重试
         }
@@ -3164,7 +3033,6 @@ function ShortplayEntryPage() {
       // 开始轮询
       setTimeout(pollForResult, 2000); // 2秒后开始第一次轮询
     } catch (error) {
-      console.error(t("shortplayEntry.input.generateFailed") + ":", error);
       toast.error(
         t("shortplayEntry.input.generateFailed") +
           ": " +
@@ -4141,12 +4009,10 @@ function ShortplayEntryPage() {
                     }
 
                     const result = await response.json();
-                    console.log("视频预览请求成功:", result);
 
                     // 获取下载地址并更新视频源
                     if (result.data?.downloadUrl) {
                       const downloadUrl = result.data.downloadUrl;
-                      console.log("设置videoSrc:", downloadUrl);
                       setVideoSrc(downloadUrl);
                       setHasVideo(true);
 
@@ -4161,10 +4027,6 @@ function ShortplayEntryPage() {
                         "videoCacheMap",
                         JSON.stringify(newCache)
                       );
-                      console.log(
-                        `Saved video data to cache for series ${seriesId}, scene ${sceneId}:`,
-                        result.data
-                      );
 
                       toast.success(
                         t("shortplayEntry.messages.success.videoPreviewLoaded")
@@ -4173,7 +4035,6 @@ function ShortplayEntryPage() {
                       throw new Error("返回数据中缺少downloadUrl");
                     }
                   } catch (error) {
-                    console.error("视频预览请求失败:", error);
                     toast.error(
                       t("shortplayEntry.messages.error.videoPreviewFailed", {
                         error: (error as Error).message,
@@ -4490,19 +4351,13 @@ function ShortplayEntryPage() {
                                       );
 
                                       if (!bindingResponse.ok) {
-                                        console.error("音色绑定请求失败");
                                       }
 
                                       const bindingResult =
                                         await bindingResponse.json();
                                       if (bindingResult.code !== 0) {
-                                        console.error(
-                                          "音色绑定失败:",
-                                          bindingResult.message
-                                        );
                                       }
                                     } catch (bindError) {
-                                      console.error("音色绑定出错:", bindError);
                                     }
                                   }
 
@@ -4510,7 +4365,6 @@ function ShortplayEntryPage() {
                                   setEditingSceneContent("");
                                   setEditingSceneRoleName("");
                                 } catch (error) {
-                                  console.error("保存失败:", error);
                                   toast.error(
                                     t(
                                       "shortplayEntry.messages.error.saveFailed",
@@ -4746,7 +4600,6 @@ function ShortplayEntryPage() {
                         toast.success(
                           t("shortplayEntry.messages.success.frameInserted")
                         );
-                        console.log("插入lastFrame:", cachedData.lastFrame);
                       } else {
                         toast.error(t("shortplayEntry.ui.noFrameCacheHint"));
                       }
@@ -5076,8 +4929,6 @@ function ShortplayEntryPage() {
                                     },
                                   };
 
-                                  console.log("发送请求数据:", requestData);
-
                                   const response = await fetch(
                                     `${STORYAI_API_BASE}/storyboard/special/create`,
                                     {
@@ -5097,7 +4948,6 @@ function ShortplayEntryPage() {
                                   }
 
                                   const result = await response.json();
-                                  console.log("保存结果:", result);
 
                                   if (result.code === 0) {
                                     toast.success(
@@ -5112,7 +4962,6 @@ function ShortplayEntryPage() {
                                     );
                                   }
                                 } catch (error) {
-                                  console.error("保存失败:", error);
                                   toast.error(
                                     t(
                                       "shortplayEntry.messages.error.saveFailed",
