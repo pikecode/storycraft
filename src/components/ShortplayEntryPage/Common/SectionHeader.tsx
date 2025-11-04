@@ -93,7 +93,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
   return (
     <div className="bg-white border-b border-gray-100 flex items-center" style={{ height: '64px', paddingLeft: '16px', paddingRight: '16px' }}>
       <div className="flex items-center justify-between w-full">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 whitespace-nowrap">
           <svg width="40" height="36" viewBox="0 0 56 51" fill="none" xmlns="http://www.w3.org/2000/svg">
             {/* 边框 */}
             <rect width="56" height="51" rx="10" fill="#3E83F6"/>

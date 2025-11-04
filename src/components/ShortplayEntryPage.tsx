@@ -3059,7 +3059,7 @@ function ShortplayEntryPage() {
               }}
             >
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 whitespace-nowrap">
                   <svg
                     width="40"
                     height="36"
@@ -4533,7 +4533,7 @@ function ShortplayEntryPage() {
               style={{ height: "64px" }}
             >
               <div className="flex items-center justify-between w-full px-4">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 whitespace-nowrap">
                   <svg width="40" height="36" viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect width="40" height="36" rx="8" fill="#3E83F6"/>
                     <circle cx="20" cy="18" r="9" stroke="white" strokeWidth="1.5" fill="none"/>
