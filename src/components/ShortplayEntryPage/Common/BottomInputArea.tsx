@@ -109,11 +109,11 @@ export function BottomInputArea({
             </div>
           )}
 
-          <div className="relative mb-8">
+          <div className="relative">
             <textarea
               value={userInput}
               onChange={(e) => onInputChange(e.target.value)}
-              className="w-full h-12 py-2 pl-4 pr-12 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
+              className="w-full h-12 py-2 pl-4 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
               placeholder={finalPlaceholder}
               disabled={isGenerating}
@@ -121,7 +121,7 @@ export function BottomInputArea({
             <button
               onClick={onGenerate}
               disabled={isGenerating || !userInput.trim()}
-              className={`absolute bottom-1.5 right-1.5 px-2 py-1 text-white text-xs font-medium rounded transition-colors flex items-center space-x-1 ${
+              className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors flex items-center space-x-1 ${
                 isGenerating || !userInput.trim()
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
@@ -180,7 +180,7 @@ export function BottomInputArea({
             <textarea
               value={userInput}
               onChange={(e) => onInputChange(e.target.value)}
-              className="w-full h-12 py-2 pl-4 pr-12 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
+              className="w-full h-12 py-2 pl-4 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
               placeholder={finalPlaceholder}
               disabled={isGenerating}
@@ -188,7 +188,7 @@ export function BottomInputArea({
             <button
               onClick={onGenerate}
               disabled={isGenerating || !userInput.trim()}
-              className={`absolute bottom-1.5 right-1.5 px-2 py-1 text-white text-xs font-medium rounded transition-colors ${
+              className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
                 isGenerating || !userInput.trim()
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
@@ -346,7 +346,7 @@ export function BottomInputArea({
             <textarea
               value={userInput}
               onChange={(e) => onInputChange(e.target.value)}
-              className={`w-full h-12 py-2 pr-12 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto ${
+              className={`w-full h-12 py-2 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto ${
                 selectedModel === 'doubao-seedream-3.0-t2i' ? 'pl-4' : 'pl-12'
               }`}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
@@ -406,7 +406,7 @@ export function BottomInputArea({
             <button
               onClick={onGenerate}
               disabled={isGenerating || !userInput.trim()}
-              className={`absolute bottom-1.5 right-1.5 px-2 py-1 text-white text-xs font-medium rounded transition-colors ${
+              className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
                 isGenerating || !userInput.trim()
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
@@ -594,7 +594,7 @@ export function BottomInputArea({
             <textarea
               value={userInput}
               onChange={(e) => onInputChange(e.target.value)}
-              className="w-full h-12 py-2 pl-12 pr-12 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
+              className="w-full h-12 py-2 pl-12 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
               placeholder={finalPlaceholder}
               disabled={isGenerating}
@@ -666,7 +666,7 @@ export function BottomInputArea({
             <button
               onClick={onGenerate}
               disabled={isGenerating || !userInput.trim()}
-              className={`absolute bottom-1.5 right-1.5 px-2 py-1 text-white text-xs font-medium rounded transition-colors ${
+              className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
                 isGenerating || !userInput.trim()
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
