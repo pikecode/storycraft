@@ -273,4 +273,6 @@ export interface SectionHeaderProps {
   onAddClick?: () => void;
   onApplyClick?: () => void;
   isLoading?: boolean; // 应用按钮加载状态
+  onAddSubtitleOption?: (newName: string) => Promise<boolean>; // 新增：添加选项回调
+  onDeleteSubtitleOption?: (optionName: string) => Promise<boolean>; // 新增：删除选项回调
 }

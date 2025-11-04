@@ -4,13 +4,15 @@ import { Tooltip } from 'antd';
 import { useI18n } from '../../../contexts/I18nContext';
 import { SectionHeaderProps } from '../types';
 
-export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onSubtitleEdit, onOptionsChange, onAddClick, onApplyClick, isLoading }: SectionHeaderProps) {
+export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onSubtitleEdit, onOptionsChange, onAddClick, onApplyClick, isLoading, onAddSubtitleOption, onDeleteSubtitleOption }: SectionHeaderProps) {
   const { t } = useI18n();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingValue, setEditingValue] = useState('');
   const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null);
   const [editingOptionValue, setEditingOptionValue] = useState('');
+  const [isAddingOption, setIsAddingOption] = useState(false);
+  const [newOptionValue, setNewOptionValue] = useState('');
 
   // 处理单击文本开始编辑
   const handleTextClick = (e: React.MouseEvent) => {
@@ -84,6 +86,34 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
     } else if (e.key === 'Escape') {
       setEditingOptionIndex(null);
       setEditingOptionValue('');
+    }
+  };
+
+  // 处理新增选项
+  const handleAddOption = async () => {
+    if (newOptionValue.trim() && onAddSubtitleOption) {
+      const success = await onAddSubtitleOption(newOptionValue.trim());
+      if (success) {
+        setNewOptionValue('');
+        setIsAddingOption(false);
+      }
+    }
+  };
+
+  // 处理删除选项
+  const handleDeleteOption = async (optionName: string) => {
+    if (onDeleteSubtitleOption) {
+      await onDeleteSubtitleOption(optionName);
+    }
+  };
+
+  // 处理新增选项键盘事件
+  const handleAddOptionKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAddOption();
+    } else if (e.key === 'Escape') {
+      setIsAddingOption(false);
+      setNewOptionValue('');
     }
   };
 
