@@ -4064,7 +4064,7 @@ function ShortplayEntryPage() {
                       items={sceneContent.map((item) => item.id.toString())}
                       strategy={verticalListSortingStrategy}
                     >
-                      <div className="space-y-2">
+                      <div className="space-y-0.5">
                         {sceneContent.map((item, index) => (
                           <SortableScriptItem
                             key={item.id}
