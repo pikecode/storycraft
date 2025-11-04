@@ -109,7 +109,7 @@ export function BottomInputArea({
             </div>
           )}
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 mb-3">
             <textarea
               value={userInput}
               onChange={(e) => onInputChange(e.target.value)}
