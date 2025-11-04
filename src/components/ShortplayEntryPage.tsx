@@ -949,6 +949,7 @@ function ShortplayEntryPage() {
         body: JSON.stringify({
           episodeId: seriesId,
           sceneTitle: sceneName,
+          sceneOrder: scenesData.length + 1,
         }),
       });
 
