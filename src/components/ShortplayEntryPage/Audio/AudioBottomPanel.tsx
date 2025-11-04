@@ -136,26 +136,28 @@ export function AudioBottomPanel({
           </div>
         )}
 
-        <div className="relative">
+        <div className="flex flex-col gap-2">
           <textarea
             value={userInput}
             onChange={(e) => onInputChange(e.target.value)}
-            className="w-full h-12 py-2 pl-4 pr-24 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
+            className="w-full h-12 py-2 pl-4 pr-4 text-xs rounded-lg bg-white focus:outline-none resize-none overflow-y-auto"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', border: '1px solid rgba(116, 116, 116, 0.41)' }}
             placeholder={finalPlaceholder}
             disabled={isGenerating}
           />
-          <button
-            onClick={onGenerate}
-            disabled={isGenerating || !userInput.trim()}
-            className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
-              isGenerating || !userInput.trim()
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-600'
-            }`}
-          >
-            {isGenerating ? t('shortplayEntry.generation.generating') : '一键生成'}
-          </button>
+          <div className="flex justify-end">
+            <button
+              onClick={onGenerate}
+              disabled={isGenerating || !userInput.trim()}
+              className={`px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
+                isGenerating || !userInput.trim()
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-500 hover:bg-blue-600'
+              }`}
+            >
+              {isGenerating ? t('shortplayEntry.generation.generating') : '一键生成'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

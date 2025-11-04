@@ -2849,13 +2849,13 @@ function ShortplayEntryPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-blue-50 to-purple-50">
+    <>
+    <div className="flex flex-col h-screen w-screen bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
       <div className="flex flex-grow overflow-hidden">
-        <>
           {/* 左侧面板 - 一键创作 (均分) */}
           <div className="flex-1 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
           {/* 顶部Logo和标题区 */}
-          <div className="bg-white flex items-center" style={{ height: '64px', paddingLeft: '16px', paddingRight: '16px' }}>
+          <div className="bg-white flex items-center flex-shrink-0" style={{ height: '64px', paddingLeft: '16px', paddingRight: '16px' }}>
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center space-x-2">
                 <svg width="40" height="36" viewBox="0 0 56 51" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2889,7 +2889,7 @@ function ShortplayEntryPage() {
 
           {/* 音频tab专属：音色选择和已设置的音色区域（头部下方） */}
           {activeTab === 'audio' && (
-            <div className="px-4 pb-2">
+            <div className="px-4 pb-2 flex-shrink-0">
               <AudioResourcePanel
                 audioType={audioType}
                 onAudioTypeChange={setAudioType}
@@ -2910,10 +2910,10 @@ function ShortplayEntryPage() {
           )}
 
           {/* 内容区域 */}
-          <div className="flex-grow min-h-0" style={{ padding: '10px' }}>
-            <div className={`bg-white rounded-lg h-full flex flex-col ${activeTab === 'script' ? '' : 'border border-gray-200'}`}>
+          <div className="flex-grow min-h-0 overflow-hidden p-2.5">
+            <div className={`bg-white rounded-lg h-full w-full flex flex-col overflow-hidden ${activeTab === 'script' ? '' : 'border border-gray-200'}`}>
               {/* 卡片内容区域 */}
-              <div className="flex-grow overflow-auto min-h-0 h-96" style={{ padding: '10px' }}>
+              <div className="flex-grow overflow-auto min-h-0 w-full" style={{ padding: '10px 10px 40px 10px' }}>
                 {activeTab === 'script' && (
                   <div className="space-y-4">
                     {/* 生成的内容显示 */}
@@ -3308,6 +3308,7 @@ function ShortplayEntryPage() {
               </div>
 
               {/* 卡片底部输入区域 */}
+              <div className="flex-shrink-0 px-3 py-2 border-t border-gray-100">
               {activeTab === 'audio' ? (
                 <AudioBottomPanel
                   audioType={audioType}
@@ -3390,12 +3391,14 @@ function ShortplayEntryPage() {
                   onRemoveImage={handleRemoveImage}
                 />
               )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* 中间面板 - 剧本编辑区域 */}
         <div className="flex-1 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
+          <div className="flex-shrink-0">
           <SectionHeader
             title={
               activeTab === 'script' ? t('shortplayEntry.tabs.script') :
@@ -3502,9 +3505,11 @@ function ShortplayEntryPage() {
             }}
             isLoading={isLoadingPreviewVideo}
           />
+          </div>
 
           {/* 剧本内容区域 */}
-          <div className="flex-grow p-4 overflow-auto min-h-0 h-96">
+          <div className="flex-grow min-h-0 overflow-hidden w-full" style={{ padding: '16px 16px 40px 16px' }}>
+            <div className="h-full w-full overflow-auto">
             {activeTab === 'script' && (
               <DndContext
                 sensors={sensors}
@@ -3822,13 +3827,14 @@ function ShortplayEntryPage() {
                 }}
               />
             )}
+            </div>
           </div>
         </div>
 
         {/* 右侧面板 - 手机预览区域 (固定宽度340px) */}
         <div className="bg-gray-100 flex flex-col overflow-hidden" style={{ width: '340px' }}>
           {/* 预览头部 */}
-          <div className="border-b border-gray-200 bg-white flex items-center" style={{ height: '64px' }}>
+          <div className="border-b border-gray-200 bg-white flex items-center flex-shrink-0" style={{ height: '64px' }}>
             <div className="flex items-center justify-between w-full px-4">
               <div className="flex items-center space-x-2">
                 <Icon icon="ri:play-circle-line" className="w-4 h-4 text-blue-500" />
@@ -3897,13 +3903,11 @@ function ShortplayEntryPage() {
           </div>
 
           {/* 手机预览容器 */}
-          <div className="flex-grow overflow-auto min-h-0 p-2.5">
-            <div className="h-full flex items-start justify-center pt-4">
-              <div className="relative w-full max-w-xs" style={{ height: '700px' }}>
-                {/* 手机外框 - 响应式高度 */}
-                <div className="w-full h-full mx-auto bg-black rounded-[2.5rem] p-2 shadow-2xl" style={{ aspectRatio: '9/16' }}>
-                  {/* 手机屏幕 */}
-                  <div className="w-full h-full bg-gray-900 rounded-[2rem] overflow-hidden relative">
+          <div className="flex-grow min-h-0 overflow-hidden p-2.5 w-full flex flex-col items-center justify-center">
+            {/* 手机外框 - 响应式宽高 */}
+            <div className="bg-black rounded-[2.5rem] p-2 shadow-2xl" style={{ aspectRatio: '9/16', width: 'min(85%, 300px)', height: 'auto' }}>
+              {/* 手机屏幕 */}
+              <div className="w-full h-full bg-gray-900 rounded-[2rem] overflow-hidden relative">
                     {/* 刘海屏设计 */}
                     <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-full z-10"></div>
 
@@ -4217,13 +4221,11 @@ function ShortplayEntryPage() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </>
       </div>
+    </div>
 
-      {/* 删除确认对话框 - 场次内容 */}
-      {deleteConfirmId !== null && (
+    {/* 删除确认对话框 - 场次内容 */}
+    {deleteConfirmId !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
             <div className="flex items-center space-x-3 mb-4">
@@ -4251,10 +4253,10 @@ function ShortplayEntryPage() {
             </div>
           </div>
         </div>
-      )}
+    )}
 
-      {/* 删除确认对话框 - 音频项 */}
-      {deleteAudioItemId !== null && (
+    {/* 删除确认对话框 - 音频项 */}
+    {deleteAudioItemId !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
             <div className="flex items-center space-x-3 mb-4">
@@ -4282,10 +4284,10 @@ function ShortplayEntryPage() {
             </div>
           </div>
         </div>
-      )}
+    )}
 
-      {/* 删除确认对话框 - 分镜板 */}
-      {deleteStoryboardId !== null && (
+    {/* 删除确认对话框 - 分镜板 */}
+    {deleteStoryboardId !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
             <div className="flex items-center space-x-3 mb-4">
@@ -4412,7 +4414,7 @@ function ShortplayEntryPage() {
           </div>
         </>
       )}
-    </div>
+    </>
   );
 }
 
