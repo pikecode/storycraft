@@ -4612,13 +4612,15 @@ function ShortplayEntryPage() {
             </div>
 
             {/* 手机预览容器 */}
-            <div className="flex-grow min-h-0 overflow-hidden p-2.5 w-full flex flex-col items-center justify-center">
+            <div className="flex-grow min-h-0 overflow-hidden p-2.5 w-full">
+              {/* 实际可滚动内容区 */}
+              <div className="h-full w-full overflow-auto flex flex-col items-center py-4">
               {/* 手机外框 - 响应式宽高 */}
               <div
                 className="bg-black rounded-[2.5rem] p-2 shadow-2xl"
                 style={{
-                  aspectRatio: "9/16",
-                  width: "min(85%, 300px)",
+                  aspectRatio: "9/18",
+                  width: "min(85%, 280px)",
                   height: "auto",
                 }}
               >
@@ -5005,6 +5007,7 @@ function ShortplayEntryPage() {
                     </>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           </div>

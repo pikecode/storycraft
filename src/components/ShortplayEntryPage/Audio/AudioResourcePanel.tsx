@@ -84,9 +84,23 @@ export function AudioResourcePanel({
           <>
             {/* 已设置的配音人员 */}
             {(isLoadingVoices || configuredVoices.length > 0) && (
-            <div className="flex items-start space-x-2">
-              <span className="text-sm font-medium text-gray-700 min-w-fit pt-3">{t('shortplayEntry.audio.configured')}</span>
-              <div className="flex-1 space-y-2.5" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            <div className="flex flex-col space-y-2.5">
+              {/* 标题和展开/收起按钮 - 单独一行 */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">{t('shortplayEntry.audio.configured')}</span>
+                <button
+                  onClick={() => onConfiguredVoicesExpandedChange(!isConfiguredVoicesExpanded)}
+                  className="border-none bg-transparent p-0"
+                >
+                  <Icon
+                    icon={isConfiguredVoicesExpanded ? "ri:arrow-up-s-line" : "ri:arrow-down-s-line"}
+                    className="w-4 h-4 text-gray-400"
+                  />
+                </button>
+              </div>
+
+              {/* 列表容器 - 在下面 */}
+              <div className="space-y-2.5 overflow-auto" style={{ maxHeight: '200px' }}>
                 {isLoadingVoices ? (
                   <div className="flex items-center justify-center text-gray-500">
                     <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
@@ -159,15 +173,6 @@ export function AudioResourcePanel({
                     ))
                 )}
               </div>
-              <button
-                onClick={() => onConfiguredVoicesExpandedChange(!isConfiguredVoicesExpanded)}
-                className="flex-shrink-0 pt-3 border-none bg-transparent w-2.5"
-              >
-                <Icon
-                  icon={isConfiguredVoicesExpanded ? "ri:arrow-up-s-line" : "ri:arrow-down-s-line"}
-                  className="w-4 h-4 text-gray-400"
-                />
-              </button>
             </div>
             )}
           </>
