@@ -204,7 +204,7 @@ export function BottomInputArea({
         <>
           <div>
             <div className="flex space-x-3 items-center">
-              <div className="relative w-32">
+              <div className="relative w-20">
                 <select
                   value={selectedModel}
                   onChange={(e) => onModelChange(e.target.value)}
@@ -449,7 +449,7 @@ export function BottomInputArea({
           <div>
             <div className="flex space-x-2 items-center">
               {/* 模型选择 */}
-              <div className="relative w-48">
+              <div className="relative w-24">
                 <select
                   value={videoModel || availableVideoModels[0].value}
                   onChange={(e) => onVideoModelChange?.(e.target.value)}
