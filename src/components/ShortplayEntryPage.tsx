@@ -2869,7 +2869,7 @@ function ShortplayEntryPage() {
                 <span className="text-base font-medium text-gray-900">{t('shortplayEntry.sidebar.aiCreation')}</span>
               </div>
 
-              {/* Ant Design Segmented组件 - 带边框和高度 */}
+              {/* Ant Design Segmented组件 - 带边框和平滑过渡动画 */}
               <div >
                 <Segmented
                   value={activeTab}
@@ -2881,7 +2881,7 @@ function ShortplayEntryPage() {
                     { label: t('shortplayEntry.tabs.video'), value: 'video' }
                   ]}
                   style={{ width: '100%', border: '1px solid #3E83F6', borderRadius: '29px' }}
-                  className="[&.ant-segmented]:!border [&.ant-segmented]:!border-[#3E83F6]! [&.ant-segmented]:!rounded-[29px]! [&_.ant-segmented-item-selected]:!bg-[#3E83F6] [&_.ant-segmented-thumb]:!bg-[#3E83F6] [&_.ant-segmented-item]:!rounded-[28px]"
+                  className="[&.ant-segmented]:!border [&.ant-segmented]:!border-[#3E83F6]! [&.ant-segmented]:!rounded-[29px]! [&_.ant-segmented-item-selected]:!bg-[#3E83F6] [&_.ant-segmented-thumb]:!bg-[#3E83F6] [&_.ant-segmented-item]:!rounded-[28px] [&_.ant-segmented-thumb]:!transition-all [&_.ant-segmented-thumb]:!duration-300 [&_.ant-segmented-thumb]:!ease-in-out [&_.ant-segmented-item:not(.ant-segmented-item-selected):hover]:!bg-transparent [&_.ant-segmented-item:not(.ant-segmented-item-selected):hover]:!text-inherit [&_.ant-segmented-item-selected:hover]:!bg-[#3E83F6] [&_.ant-segmented-item-selected:hover]:!text-white"
                 />
               </div>
             </div>
