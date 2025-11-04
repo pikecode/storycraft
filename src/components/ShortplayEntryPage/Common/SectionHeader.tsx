@@ -184,7 +184,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                 className={actionButtonClass}
               >
                 <Icon icon="ri:add-circle-line" className="w-4 h-4" />
-                <span>{t('shortplayEntry.buttons.add')}</span>
+                <span className="whitespace-nowrap">{t('shortplayEntry.buttons.add')}</span>
               </button>
             )}
             {onApplyClick && (
@@ -195,7 +195,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                 className={`${actionButtonClass} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <Icon icon="ri:check-line" className="w-4 h-4" />
-                <span>{t('shortplayEntry.buttons.apply')}</span>
+                <span className="whitespace-nowrap">{t('shortplayEntry.buttons.apply')}</span>
               </button>
             )}
           </div>

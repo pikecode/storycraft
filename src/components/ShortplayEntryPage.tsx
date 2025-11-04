@@ -4579,36 +4579,50 @@ function ShortplayEntryPage() {
                     <Icon icon="ri:download-line" className="w-3 h-3 mr-1" />
                     {t("shortplayEntry.buttons.download")}
                   </Button>
-                  <Button
-                    size="small"
-                    type="text"
-                    className="text-xs text-blue-500 border border-blue-200 rounded"
-                    onClick={() => {
-                      // 从缓存中获取lastFrame
+                  {
+                    // 计算是否存在缓存的lastFrame
+                    (() => {
                       const cacheKey = `${seriesId}_${currentSceneId}`;
-                      const cachedData = videoCacheMap[cacheKey];
-                      if (cachedData && cachedData.lastFrame) {
-                        setLastFrameImage(cachedData.lastFrame);
-                        setHasVideo(false); // 停止显示视频，改为显示图片
-                        setVideoSrc(""); // 清空视频源
+                      const hasLastFrame = videoCacheMap[cacheKey]?.lastFrame ?? false;
+                      return (
+                        <Button
+                          size="small"
+                          type="text"
+                          disabled={!hasLastFrame}
+                          className={`text-xs border border-blue-200 rounded transition-all ${
+                            hasLastFrame
+                              ? "text-blue-500 hover:border-blue-300 hover:bg-blue-50 cursor-pointer"
+                              : "text-gray-400 border-gray-200 cursor-not-allowed opacity-50"
+                          }`}
+                          onClick={() => {
+                            // 从缓存中获取lastFrame
+                            const cacheKey = `${seriesId}_${currentSceneId}`;
+                            const cachedData = videoCacheMap[cacheKey];
+                            if (cachedData && cachedData.lastFrame) {
+                              setLastFrameImage(cachedData.lastFrame);
+                              setHasVideo(false); // 停止显示视频，改为显示图片
+                              setVideoSrc(""); // 清空视频源
 
-                        // 进入编辑模式，初始化题目和选项
-                        setIsEditorMode(true);
-                        setQuestionTitle("");
-                        setOptions([
-                          `${t("shortplayEntry.ui.defaultOptionPrefix")}1`,
-                        ]);
+                              // 进入编辑模式，初始化题目和选项
+                              setIsEditorMode(true);
+                              setQuestionTitle("");
+                              setOptions([
+                                `${t("shortplayEntry.ui.defaultOptionPrefix")}1`,
+                              ]);
 
-                        toast.success(
-                          t("shortplayEntry.messages.success.frameInserted")
-                        );
-                      } else {
-                        toast.error(t("shortplayEntry.ui.noFrameCacheHint"));
-                      }
-                    }}
-                  >
-                    {t("shortplayEntry.buttons.insertOption")}
-                  </Button>
+                              toast.success(
+                                t("shortplayEntry.messages.success.frameInserted")
+                              );
+                            } else {
+                              toast.error(t("shortplayEntry.ui.noFrameCacheHint"));
+                            }
+                          }}
+                        >
+                          {t("shortplayEntry.buttons.insertOption")}
+                        </Button>
+                      );
+                    })()
+                  }
                 </div>
               </div>
             </div>
@@ -4976,7 +4990,7 @@ function ShortplayEntryPage() {
                               }}
                               className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm font-medium transition-colors"
                             >
-                              {t("shortplayEntry.buttons.save")}
+                              <span className="whitespace-nowrap">{t("shortplayEntry.buttons.save")}</span>
                             </button>
 
                             <button
@@ -4987,7 +5001,7 @@ function ShortplayEntryPage() {
                               }}
                               className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm font-medium transition-colors"
                             >
-                              {t("shortplayEntry.buttons.cancel")}
+                              <span className="whitespace-nowrap">{t("shortplayEntry.buttons.cancel")}</span>
                             </button>
                           </div>
                         </div>
