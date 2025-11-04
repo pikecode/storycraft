@@ -700,6 +700,8 @@ export const zhCN = {
         saved: '已保存',
         audioPlaybackFailed: '音频播放失败',
         voiceStillGenerating: '音色生成中',
+        sceneAdded: '场景已添加',
+        sceneDeleted: '场景已删除',
       },
 
       // 失败消息
@@ -723,6 +725,8 @@ export const zhCN = {
         noFrameCache: '暂无缓存的最后一帧图片，请先点击预览或应用',
         soundGenerationFailed: '音效生成失败：{error}',
         updateFailed: '更新失败',
+        sceneAddFailed: '场景创建失败：{error}',
+        sceneDeleteFailed: '场景删除失败：{error}',
       }
     },
 
@@ -802,6 +806,9 @@ export const zhCN = {
       lastFrameAlt: '最后一帧',
       customizeVoiceLabel: '定制音色',
       systemVoiceLabel: '系',
+      edit: '编辑',
+      inputSceneName: '请输入场景名称',
+      addScene: '新增场景',
     },
   },
 

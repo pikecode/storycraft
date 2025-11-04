@@ -169,36 +169,91 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
 
               {/* 下拉选择器 */}
               {isDropdownOpen && subtitleOptions && !isEditing && (
-                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-48">
+                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-64">
                   {subtitleOptions.map((option, index) => (
                     <div
                       key={index}
-                      className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors first:rounded-t-lg last:rounded-b-lg"
-                      onClick={() => {
-                        if (editingOptionIndex !== index) {
-                          onSubtitleChange?.(option);
-                          setIsDropdownOpen(false);
-                        }
-                      }}
-                      onDoubleClick={(e) => handleOptionDoubleClick(index, option, e)}
+                      className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors first:rounded-t-lg flex items-center justify-between group"
                       title={t('shortplayEntry.scenes.clickToSelectDoubleClickToEdit')}
                     >
-                      {editingOptionIndex === index ? (
-                        <input
-                          type="text"
-                          value={editingOptionValue}
-                          onChange={(e) => setEditingOptionValue(e.target.value)}
-                          onBlur={handleOptionEditComplete}
-                          onKeyDown={handleOptionKeyDown}
-                          className="w-full bg-transparent border-none outline-none text-sm text-gray-700"
-                          autoFocus
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      ) : (
-                        option
+                      <div
+                        className="flex-1 cursor-pointer"
+                        onClick={() => {
+                          if (editingOptionIndex !== index) {
+                            onSubtitleChange?.(option);
+                            setIsDropdownOpen(false);
+                          }
+                        }}
+                      >
+                        {editingOptionIndex === index ? (
+                          <input
+                            type="text"
+                            value={editingOptionValue}
+                            onChange={(e) => setEditingOptionValue(e.target.value)}
+                            onBlur={handleOptionEditComplete}
+                            onKeyDown={handleOptionKeyDown}
+                            className="w-full bg-transparent border-none outline-none text-sm text-gray-700 focus:bg-blue-50"
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span onDoubleClick={(e) => handleOptionDoubleClick(index, option, e)}>
+                            {option}
+                          </span>
+                        )}
+                      </div>
+                      {editingOptionIndex !== index && (
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOptionDoubleClick(index, option, e as any);
+                            }}
+                            className="text-blue-500 hover:text-blue-600 p-0.5"
+                            title={t('shortplayEntry.ui.edit')}
+                          >
+                            <Icon icon="ri:edit-line" className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteOption(option);
+                            }}
+                            className="text-red-500 hover:text-red-600 p-0.5"
+                            title={t('shortplayEntry.buttons.delete')}
+                          >
+                            <Icon icon="ri:delete-bin-line" className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   ))}
+
+                  {/* 新增选项区域 */}
+                  {isAddingOption ? (
+                    <div className="px-3 py-2 border-t border-gray-200">
+                      <input
+                        type="text"
+                        value={newOptionValue}
+                        onChange={(e) => setNewOptionValue(e.target.value)}
+                        onBlur={handleAddOption}
+                        onKeyDown={handleAddOptionKeyDown}
+                        className="w-full px-2 py-1 text-sm border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder={t('shortplayEntry.ui.inputSceneName')}
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <div className="px-3 py-2 border-t border-gray-200">
+                      <button
+                        onClick={() => setIsAddingOption(true)}
+                        className="w-full text-left text-sm text-blue-500 hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors whitespace-nowrap flex items-center gap-2"
+                      >
+                        <Icon icon="ri:add-line" className="w-4 h-4" />
+                        {t('shortplayEntry.ui.addScene')}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

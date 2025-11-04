@@ -700,6 +700,8 @@ export const koKR = {
         saved: '저장됨',
         audioPlaybackFailed: '오디오 재생 실패',
         voiceStillGenerating: '음성 생성 중',
+        sceneAdded: '장면이 추가되었습니다',
+        sceneDeleted: '장면이 삭제되었습니다',
       },
 
       // 오류 메시지
@@ -723,6 +725,8 @@ export const koKR = {
         noFrameCache: '캐시된 마지막 프레임 이미지가 없습니다. 먼저 미리보기를 클릭하거나 적용하세요',
         soundGenerationFailed: '사운드 효과 생성 실패: {error}',
         updateFailed: '업데이트 실패',
+        sceneAddFailed: '장면 생성 실패: {error}',
+        sceneDeleteFailed: '장면 삭제 실패: {error}',
       }
     },
 
@@ -802,6 +806,9 @@ export const koKR = {
       lastFrameAlt: '마지막 프레임',
       customizeVoiceLabel: '음성 사용자 정의',
       systemVoiceLabel: '시스템',
+      edit: '편집',
+      inputSceneName: '장면 이름을 입력하세요',
+      addScene: '장면 추가',
     },
   },
 

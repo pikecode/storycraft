@@ -936,6 +936,135 @@ function ShortplayEntryPage() {
     }
   };
 
+  // 新增场景
+  const handleAddScene = async (sceneName: string): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${STORYAI_API_BASE}/scene`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Prompt-Manager-Token": token || "",
+        },
+        body: JSON.stringify({
+          episodeId: seriesId,
+          sceneTitle: sceneName,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.code === 0 && result.data) {
+          const newScene = result.data;
+
+          // 更新本地场次数据
+          setScenesData((scenes) => [...scenes, newScene]);
+
+          // 更新场次选项
+          setSceneOptions((options) => [...options, newScene.sceneName]);
+
+          // 自动切换到新场景
+          setSelectedScene(newScene.sceneName);
+          setCurrentSceneId(newScene.sceneId);
+
+          toast.success(t("shortplayEntry.messages.success.sceneAdded") || "场景已添加");
+          return true;
+        } else {
+          toast.error("场景创建失败：" + (result.message || "未知错误"));
+          return false;
+        }
+      } else {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+    } catch (error) {
+      toast.error(
+        t("shortplayEntry.messages.error.sceneAddFailed", {
+          error: (error as Error).message,
+        }) || "场景创建失败"
+      );
+      return false;
+    }
+  };
+
+  // 删除场景
+  const handleDeleteScene = async (sceneName: string): Promise<boolean> => {
+    try {
+      // 找到对应的 sceneId
+      const sceneToDelete = scenesData.find(
+        (scene: any) => scene.sceneName === sceneName
+      );
+
+      if (!sceneToDelete) {
+        toast.error("找不到场景");
+        return false;
+      }
+
+      // 弹出确认框
+      const isConfirmed = window.confirm(
+        `确定要删除场景"${sceneName}"吗？此操作无法撤销。`
+      );
+
+      if (!isConfirmed) {
+        return false;
+      }
+
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${STORYAI_API_BASE}/scene/${sceneToDelete.sceneId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "X-Prompt-Manager-Token": token || "",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.code === 0) {
+          // 更新本地场次数据
+          setScenesData((scenes) =>
+            scenes.filter((scene: any) => scene.sceneId !== sceneToDelete.sceneId)
+          );
+
+          // 更新场次选项
+          setSceneOptions((options) =>
+            options.filter((option) => option !== sceneName)
+          );
+
+          // 如果删除的是当前选中的场景，切换到第一个场景
+          if (selectedScene === sceneName) {
+            const remainingScenes = scenesData.filter(
+              (scene: any) => scene.sceneName !== sceneName
+            );
+            if (remainingScenes.length > 0) {
+              setSelectedScene(remainingScenes[0].sceneName);
+              setCurrentSceneId(remainingScenes[0].sceneId);
+            } else {
+              setSelectedScene("");
+              setCurrentSceneId("");
+            }
+          }
+
+          toast.success(t("shortplayEntry.messages.success.sceneDeleted") || "场景已删除");
+          return true;
+        } else {
+          toast.error("场景删除失败：" + (result.message || "未知错误"));
+          return false;
+        }
+      } else {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+    } catch (error) {
+      toast.error(
+        t("shortplayEntry.messages.error.sceneDeleteFailed", {
+          error: (error as Error).message,
+        }) || "场景删除失败"
+      );
+      return false;
+    }
+  };
+
   // 时间格式验证和格式化函数
   const validateTimeFormat = (time: string): boolean => {
     const timeRegex = /^\d{1,2}:\d{1,2}$/;
@@ -3973,6 +4102,8 @@ function ShortplayEntryPage() {
                   return false;
                 }}
                 onOptionsChange={(options) => setSceneOptions(options)}
+                onAddSubtitleOption={handleAddScene}
+                onDeleteSubtitleOption={handleDeleteScene}
                 onAddClick={
                   activeTab === "script" || activeTab === "audio"
                     ? handleStartAddNewItem

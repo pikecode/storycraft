@@ -698,6 +698,8 @@ export const enUS = {
         saved: 'Saved',
         audioPlaybackFailed: 'Audio playback failed',
         voiceStillGenerating: 'Voice is still generating',
+        sceneAdded: 'Scene added',
+        sceneDeleted: 'Scene deleted',
       },
 
       // Error messages
@@ -721,6 +723,8 @@ export const enUS = {
         noFrameCache: 'No cached last frame image, please click preview or apply first',
         soundGenerationFailed: 'Sound effect generation failed: {error}',
         updateFailed: 'Update failed',
+        sceneAddFailed: 'Scene creation failed: {error}',
+        sceneDeleteFailed: 'Scene deletion failed: {error}',
       }
     },
 
@@ -800,6 +804,9 @@ export const enUS = {
       lastFrameAlt: 'Last frame',
       customizeVoiceLabel: 'Customize voice',
       systemVoiceLabel: 'System',
+      edit: 'Edit',
+      inputSceneName: 'Please enter scene name',
+      addScene: 'Add Scene',
     },
   },
 

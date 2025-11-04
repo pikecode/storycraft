@@ -698,6 +698,8 @@ export const jaJP = {
         saved: '保存しました',
         audioPlaybackFailed: 'オーディオ再生失敗',
         voiceStillGenerating: '音声はまだ生成中',
+        sceneAdded: 'シーンが追加されました',
+        sceneDeleted: 'シーンが削除されました',
       },
 
       // エラーメッセージ
@@ -721,6 +723,8 @@ export const jaJP = {
         noFrameCache: 'キャッシュされた最後のフレーム画像がありません。まずプレビューまたは適用をクリックしてください',
         soundGenerationFailed: '音効生成失敗：{error}',
         updateFailed: '更新失敗',
+        sceneAddFailed: 'シーン作成失敗：{error}',
+        sceneDeleteFailed: 'シーン削除失敗：{error}',
       }
     },
 
@@ -800,6 +804,9 @@ export const jaJP = {
       lastFrameAlt: '最後のフレーム',
       customizeVoiceLabel: '音声をカスタマイズ',
       systemVoiceLabel: 'システム',
+      edit: '編集',
+      inputSceneName: 'シーン名を入力してください',
+      addScene: 'シーンを追加',
     },
   },
 
