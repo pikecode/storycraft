@@ -46,7 +46,7 @@ import { formatMillisecondsToTime } from "./ShortplayEntryPage/utils/formatTime"
 const STORYAI_API_BASE = "/storyai";
 
 function ShortplayEntryPage() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const location = useLocation();
 
   // 从sessionStorage获取userId的辅助函数
@@ -2935,6 +2935,7 @@ function ShortplayEntryPage() {
           userId: userId,
           userInput: userInput.trim(),
           provider: selectedModel,
+          language: language,
         }),
       });
 

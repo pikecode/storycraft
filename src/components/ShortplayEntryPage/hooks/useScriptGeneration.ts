@@ -70,7 +70,8 @@ export const useScriptGeneration = () => {
     loadSceneContent: (sceneId: number) => Promise<void>,
     setScenesData: (data: any[]) => void,
     setSceneOptions: (options: string[]) => void,
-    setSelectedScene: (scene: string) => void
+    setSelectedScene: (scene: string) => void,
+    language: string = 'zh-CN'
   ) => {
     if (!userInput.trim()) {
       toast.error(t('shortplayEntry.input.description'));
@@ -93,7 +94,8 @@ export const useScriptGeneration = () => {
         },
         body: JSON.stringify({
           userInput: userInput.trim(),
-          provider: ""
+          provider: "",
+          language
         })
       });
 

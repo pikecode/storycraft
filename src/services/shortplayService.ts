@@ -65,7 +65,7 @@ const handleApiResponse = async (response: Response): Promise<any> => {
 /**
  * 创建剧本生成任务
  */
-export const createSeries = async (userInput: string) => {
+export const createSeries = async (userInput: string, language: string = 'zh-CN') => {
   const userId = getUserId();
   if (!userId) throw new Error('User ID not found');
 
@@ -77,7 +77,8 @@ export const createSeries = async (userInput: string) => {
     body: JSON.stringify({
       userId,
       userInput: userInput.trim(),
-      provider: ""
+      provider: "",
+      language
     }),
     credentials: 'include' as RequestCredentials
   });
