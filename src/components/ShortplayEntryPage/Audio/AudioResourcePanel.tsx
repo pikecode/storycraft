@@ -150,7 +150,7 @@ export function AudioResourcePanel({
                         </div>
                         <div className="flex space-x-2">
                           <button
-                            className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100 flex items-center space-x-1"
+                            className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100 flex items-center space-x-1 whitespace-nowrap"
                             onClick={() => {
                               if (voice.sampleAudioUrl) {
                                 const audio = new Audio(voice.sampleAudioUrl);
@@ -162,7 +162,7 @@ export function AudioResourcePanel({
                             <span>{t('shortplayEntry.audio.listen')}</span>
                           </button>
                           <button
-                            className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100 flex items-center space-x-1"
+                            className="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100 flex items-center space-x-1 whitespace-nowrap"
                             onClick={() => onDeleteVoice?.(voice.voiceId)}
                           >
                             <Icon icon="ri:delete-bin-line" className="w-3 h-3" />
