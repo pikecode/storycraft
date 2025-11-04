@@ -189,7 +189,7 @@ const LoginPage: React.FC = () => {
             });
 
             setMsg(t('login.loginSuccess'));
-            message.success(t('login.loginSuccess'));
+            // message.success(t('login.loginSuccess')); // 去掉登录成功的toast提示
             const authHeader = getAuthHeader();
             // 提取纯token，去掉Bearer前缀
             const token = authHeader ? authHeader.replace('Bearer ', '') : null;
@@ -257,7 +257,7 @@ const LoginPage: React.FC = () => {
                 setCurrentUserId(userId);
 
                 setMsg(t('common.loginSuccess'));
-                message.success(t('common.loginSuccess'));
+                // message.success(t('common.loginSuccess')); // 去掉登录成功的toast提示
                 console.log('用户名密码登录成功:', userInfo);
 
                 // 更新AuthContext
@@ -291,7 +291,7 @@ const LoginPage: React.FC = () => {
                 username: email,
                 password,
             });
-            message.success(t('common.loginSuccess'));
+            // message.success(t('common.loginSuccess')); // 去掉登录成功的toast提示
             const authHeader = getAuthHeader();
             // 提取纯token，去掉Bearer前缀
             const token = authHeader ? authHeader.replace('Bearer ', '') : null;
