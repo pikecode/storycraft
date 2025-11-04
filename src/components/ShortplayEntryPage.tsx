@@ -4537,7 +4537,7 @@ function ShortplayEntryPage() {
                   <svg width="40" height="36" viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect width="40" height="36" rx="8" fill="#3E83F6"/>
                     <circle cx="20" cy="18" r="9" stroke="white" strokeWidth="1.5" fill="none"/>
-                    <path d="M24.5 18L15.5 23.464V12.536L24.5 18Z" fill="white"/>
+                    <path d="M26.5 18L17.5 23.464V12.536L26.5 18Z" fill="white"/>
                   </svg>
                   <span className="text-sm font-medium text-gray-800">
                     {t("shortplayEntry.buttons.preview")}
