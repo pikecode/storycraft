@@ -196,8 +196,16 @@ const LoginPage: React.FC = () => {
             
             // 获取用户信息并更新AuthContext
             const userInfoUpdated = await fetchAndUpdateUserInfo(authHeader);
+
+            // 获取返回路径
+            const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+            const finalRedirectPath = (redirectPath && redirectPath !== '/app/login') ? redirectPath : '/app/home';
+
             if (userInfoUpdated) {
-                navigate('/app/home');
+                if (redirectPath && redirectPath !== '/app/login') {
+                    sessionStorage.removeItem('redirectAfterLogin');
+                }
+                navigate(finalRedirectPath);
             } else {
                 // 如果获取用户信息失败，使用默认信息
                 const userInfo = {
@@ -210,7 +218,10 @@ const LoginPage: React.FC = () => {
                 };
                 console.log('手机号登录 - 使用默认用户信息:', userInfo);
                 await login(userInfo, token || '');
-                navigate('/app/home');
+                if (redirectPath && redirectPath !== '/app/login') {
+                    sessionStorage.removeItem('redirectAfterLogin');
+                }
+                navigate(finalRedirectPath);
             }
         } catch (e) {
             console.error('登录失败:', e);
@@ -263,8 +274,14 @@ const LoginPage: React.FC = () => {
                 // 更新AuthContext
                 await login(userInfo, token);
 
-                // 导航到首页
-                navigate('/app/home');
+                // 检查是否有保存的返回路径，有则返回原页面，否则返回首页
+                const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+                if (redirectPath && redirectPath !== '/app/login') {
+                    sessionStorage.removeItem('redirectAfterLogin');
+                    navigate(redirectPath);
+                } else {
+                    navigate('/app/home');
+                }
             }
         } catch (e) {
             console.error('登录失败:', e);
@@ -298,8 +315,16 @@ const LoginPage: React.FC = () => {
             
             // 获取用户信息并更新AuthContext
             const userInfoUpdated = await fetchAndUpdateUserInfo(authHeader);
+
+            // 获取返回路径
+            const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+            const finalRedirectPath = (redirectPath && redirectPath !== '/app/login') ? redirectPath : '/app/home';
+
             if (userInfoUpdated) {
-                navigate('/app/home');
+                if (redirectPath && redirectPath !== '/app/login') {
+                    sessionStorage.removeItem('redirectAfterLogin');
+                }
+                navigate(finalRedirectPath);
             } else {
                 // 如果获取用户信息失败，使用默认信息
                 const userInfo = {
@@ -312,7 +337,10 @@ const LoginPage: React.FC = () => {
                 };
                 console.log('邮箱登录 - 使用默认用户信息:', userInfo);
                 await login(userInfo, token || '');
-                navigate('/app/home');
+                if (redirectPath && redirectPath !== '/app/login') {
+                    sessionStorage.removeItem('redirectAfterLogin');
+                }
+                navigate(finalRedirectPath);
             }
         } catch (e) {
             console.error('登录失败:', e);

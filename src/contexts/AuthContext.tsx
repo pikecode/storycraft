@@ -123,6 +123,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // 设置API拦截器的未授权回调（用户未登陆）
         apiInterceptor.setUnauthorizedCallback(() => {
             console.log('用户未登陆，清空认证信息并重定向到登陆页面');
+            // 保存当前路径，登录后可以返回
+            const currentPath = window.location.hash.replace('#', '') || '/app/home';
+            sessionStorage.setItem('redirectAfterLogin', currentPath);
             sessionStorage.removeItem('userId');
             clearCurrentUserId();
             setUser(null);

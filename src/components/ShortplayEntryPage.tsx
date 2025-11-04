@@ -3905,7 +3905,7 @@ function ShortplayEntryPage() {
           </div>
 
           {/* 中间面板 - 剧本编辑区域 */}
-          <div className="flex-1 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
+          <div className="flex-1 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden ">
             <div className="flex-shrink-0">
               <SectionHeader
                 title={
@@ -4051,7 +4051,7 @@ function ShortplayEntryPage() {
             {/* 剧本内容区域 */}
             <div
               className="flex-grow min-h-0 overflow-hidden w-full"
-              style={{ padding: "16px 16px 40px 16px" }}
+              style={{ padding: "16px 16px 80px 16px" }}
             >
               <div className="h-full w-full overflow-auto">
                 {activeTab === "script" && (
