@@ -4534,10 +4534,11 @@ function ShortplayEntryPage() {
             >
               <div className="flex items-center justify-between w-full px-4">
                 <div className="flex items-center space-x-2">
-                  <Icon
-                    icon="ri:play-circle-line"
-                    className="w-4 h-4 text-blue-500"
-                  />
+                  <svg width="40" height="36" viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="36" rx="8" fill="#3E83F6"/>
+                    <circle cx="20" cy="18" r="9" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <path d="M24.5 18L15.5 23.464V12.536L24.5 18Z" fill="white"/>
+                  </svg>
                   <span className="text-sm font-medium text-gray-800">
                     {t("shortplayEntry.buttons.preview")}
                   </span>

@@ -88,7 +88,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
   };
 
   const actionButtonClass =
-    "flex items-center space-x-1 px-1 py-0.5 text-sm font-normal text-gray-700 border border-blue-400 rounded hover:border-blue-500 hover:text-blue-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200";
+    "flex items-center space-x-1 px-1 py-0.5 text-xs text-blue-500 border border-blue-200 rounded hover:border-blue-300 hover:text-blue-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200";
 
   return (
     <div className="bg-white border-b border-gray-100 flex items-center" style={{ height: '64px', paddingLeft: '16px', paddingRight: '16px' }}>
