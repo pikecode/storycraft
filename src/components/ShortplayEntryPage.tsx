@@ -196,9 +196,9 @@ function ShortplayEntryPage() {
   const loadImageChatHistory = async () => {
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneName === selectedScene
+      (scene: any) => scene.sceneTitle === selectedScene
     );
-    const sceneId = currentSceneData?.sceneId;
+    const sceneId = currentSceneData?.id;
 
     if (!sceneId) {
       setIsLoadingImageHistory(false); // 确保loading状态被重置
@@ -251,9 +251,9 @@ function ShortplayEntryPage() {
   const loadStoryboardList = async () => {
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneName === selectedScene
+      (scene: any) => scene.sceneTitle === selectedScene
     );
-    const sceneId = currentSceneData?.sceneId;
+    const sceneId = currentSceneData?.id;
 
     if (!sceneId) {
       setIsLoadingStoryboard(false); // 确保loading状态被重置
@@ -299,9 +299,9 @@ function ShortplayEntryPage() {
   const silentLoadStoryboardList = async () => {
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneName === selectedScene
+      (scene: any) => scene.sceneTitle === selectedScene
     );
-    const sceneId = currentSceneData?.sceneId;
+    const sceneId = currentSceneData?.id;
 
     if (!sceneId) {
       return;
@@ -343,9 +343,9 @@ function ShortplayEntryPage() {
 
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneName === selectedScene
+      (scene: any) => scene.sceneTitle === selectedScene
     );
-    const sceneId = currentSceneData?.sceneId;
+    const sceneId = currentSceneData?.id;
 
     if (!sceneId && sceneId !== 0) {
       toast.error(t("shortplayEntry.validation.selectSceneFirst"));
@@ -412,9 +412,9 @@ function ShortplayEntryPage() {
   ) => {
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneName === selectedScene
+      (scene: any) => scene.sceneTitle === selectedScene
     );
-    const sceneId = currentSceneData?.sceneId;
+    const sceneId = currentSceneData?.id;
 
     if (!sceneId) {
       toast.error("请先选择场次");
@@ -899,14 +899,14 @@ function ShortplayEntryPage() {
         if (result.code === 0) {
           // 获取旧的场次名称
           const oldSceneName = scenesData.find(
-            (scene: any) => scene.sceneId === sceneId
-          )?.sceneName;
+            (scene: any) => scene.id === sceneId
+          )?.sceneTitle;
 
           // 更新本地场次数据
           setScenesData((scenes) =>
             scenes.map((scene: any) =>
-              scene.sceneId === sceneId
-                ? { ...scene, sceneName: newSceneName }
+              scene.id === sceneId
+                ? { ...scene, sceneTitle: newSceneName }
                 : scene
             )
           );
@@ -947,7 +947,7 @@ function ShortplayEntryPage() {
           "X-Prompt-Manager-Token": token || "",
         },
         body: JSON.stringify({
-          episodeId: seriesId,
+          episodeId: scenesData.length > 0 ? scenesData[0].episodeId : seriesId,
           sceneTitle: sceneName,
           sceneOrder: scenesData.length + 1,
         }),
@@ -962,11 +962,11 @@ function ShortplayEntryPage() {
           setScenesData((scenes) => [...scenes, newScene]);
 
           // 更新场次选项
-          setSceneOptions((options) => [...options, newScene.sceneName]);
+          setSceneOptions((options) => [...options, newScene.sceneTitle]);
 
           // 自动切换到新场景
-          setSelectedScene(newScene.sceneName);
-          setCurrentSceneId(newScene.sceneId);
+          setSelectedScene(newScene.sceneTitle);
+          setCurrentSceneId(newScene.id);
 
           toast.success(t("shortplayEntry.messages.success.sceneAdded") || "场景已添加");
           return true;
@@ -992,7 +992,7 @@ function ShortplayEntryPage() {
     try {
       // 找到对应的 sceneId
       const sceneToDelete = scenesData.find(
-        (scene: any) => scene.sceneName === sceneName
+        (scene: any) => scene.sceneTitle === sceneName
       );
 
       if (!sceneToDelete) {
@@ -1011,7 +1011,7 @@ function ShortplayEntryPage() {
 
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${STORYAI_API_BASE}/scene/${sceneToDelete.sceneId}`,
+        `${STORYAI_API_BASE}/scene/${sceneToDelete.id}`,
         {
           method: "DELETE",
           headers: {
@@ -1025,7 +1025,7 @@ function ShortplayEntryPage() {
         if (result.code === 0) {
           // 更新本地场次数据
           setScenesData((scenes) =>
-            scenes.filter((scene: any) => scene.sceneId !== sceneToDelete.sceneId)
+            scenes.filter((scene: any) => scene.id !== sceneToDelete.id)
           );
 
           // 更新场次选项
@@ -1036,11 +1036,11 @@ function ShortplayEntryPage() {
           // 如果删除的是当前选中的场景，切换到第一个场景
           if (selectedScene === sceneName) {
             const remainingScenes = scenesData.filter(
-              (scene: any) => scene.sceneName !== sceneName
+              (scene: any) => scene.sceneTitle !== sceneName
             );
             if (remainingScenes.length > 0) {
-              setSelectedScene(remainingScenes[0].sceneName);
-              setCurrentSceneId(remainingScenes[0].sceneId);
+              setSelectedScene(remainingScenes[0].sceneTitle);
+              setCurrentSceneId(remainingScenes[0].id);
             } else {
               setSelectedScene("");
               setCurrentSceneId("");
@@ -1258,9 +1258,9 @@ function ShortplayEntryPage() {
 
       // 获取当前选中场次的sceneId
       const currentSceneData = scenesData.find(
-        (scene: any) => scene.sceneName === selectedScene
+        (scene: any) => scene.sceneTitle === selectedScene
       );
-      const sceneId = currentSceneData?.sceneId;
+      const sceneId = currentSceneData?.id;
 
       if (isNewItem && !sceneId) {
         toast.error("请先选择场次");
@@ -2017,9 +2017,9 @@ function ShortplayEntryPage() {
   const handleApplyBgm = async (bgm: any) => {
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneName === selectedScene
+      (scene: any) => scene.sceneTitle === selectedScene
     );
-    const sceneId = currentSceneData?.sceneId;
+    const sceneId = currentSceneData?.id;
 
     if (!sceneId) {
       toast.error("请先选择场次");
@@ -2180,9 +2180,9 @@ function ShortplayEntryPage() {
 
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneName === selectedScene
+      (scene: any) => scene.sceneTitle === selectedScene
     );
-    const sceneId = currentSceneData?.sceneId;
+    const sceneId = currentSceneData?.id;
 
     if (!sceneId) {
       toast.error("请先选择场次");
@@ -2443,9 +2443,9 @@ function ShortplayEntryPage() {
   const loadVideoChatHistory = async () => {
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneName === selectedScene
+      (scene: any) => scene.sceneTitle === selectedScene
     );
-    const sceneId = currentSceneData?.sceneId;
+    const sceneId = currentSceneData?.id;
 
     if (!sceneId) {
       setIsLoadingVideoHistory(false); // 确保loading状态被重置
@@ -2501,9 +2501,9 @@ function ShortplayEntryPage() {
 
     // 获取当前选中场次的sceneId
     const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneName === selectedScene
+      (scene: any) => scene.sceneTitle === selectedScene
     );
-    const sceneId = currentSceneData?.sceneId;
+    const sceneId = currentSceneData?.id;
 
     if (!sceneId) {
       toast.error("请先选择场次");
@@ -2773,29 +2773,31 @@ function ShortplayEntryPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = `${STORYAI_API_BASE}/series/detail?seriesId=${targetSeriesId}`;
+      // 先获取series详情，获取seriesId并存储到localStorage
+      const seriesDetailUrl = `${STORYAI_API_BASE}/series/detail?seriesId=${targetSeriesId}`;
 
-      const response = await fetch(url, {
+      const seriesResponse = await fetch(seriesDetailUrl, {
         method: "GET",
         headers: {
           "X-Prompt-Manager-Token": token || "",
         },
       });
-      if (response.ok) {
-        const result = await response.json();
 
-        if (result.code === 0 && result.data) {
+      if (seriesResponse.ok) {
+        const seriesResult = await seriesResponse.json();
+
+        if (seriesResult.code === 0 && seriesResult.data) {
           const {
             seriesContent,
-            scenes,
             seriesId: returnedSeriesId,
-          } = result.data;
+          } = seriesResult.data;
 
           // 设置seriesId
-          if (returnedSeriesId) {
-            setSeriesId(returnedSeriesId);
-          } else {
-            setSeriesId(targetSeriesId);
+          const finalSeriesId = returnedSeriesId || targetSeriesId;
+          if (finalSeriesId) {
+            setSeriesId(finalSeriesId);
+            // 存储seriesId到localStorage供后续使用
+            localStorage.setItem("currentSeriesId", finalSeriesId);
           }
 
           // 设置历史内容
@@ -2803,23 +2805,39 @@ function ShortplayEntryPage() {
             setGeneratedContent(seriesContent);
           }
 
-          // 设置场景数据
-          if (scenes && scenes.length > 0) {
-            setScenesData(scenes);
-            const sceneOptions = scenes.map((scene: any) => scene.sceneName);
-            setSceneOptions(sceneOptions);
-            setSelectedScene(sceneOptions[0] || "");
-            isCurrentSceneIdInitialized.current = false;
+          // 使用localStorage中的seriesId获取场景列表
+          const storedSeriesId = localStorage.getItem("currentSeriesId") || finalSeriesId;
+          const sceneUrl = `${STORYAI_API_BASE}/scene/${storedSeriesId}`;
+          const sceneResponse = await fetch(sceneUrl, {
+            method: "GET",
+            headers: {
+              "X-Prompt-Manager-Token": token || "",
+            },
+          });
 
-            // 设置第一个场景为当前场景
-            const firstScene = scenes[0];
-            if (firstScene?.sceneId) {
-              setCurrentSceneId(firstScene.sceneId);
+          if (sceneResponse.ok) {
+            const sceneResult = await sceneResponse.json();
+
+            if (sceneResult.code === 0 && sceneResult.data) {
+              const scenes = sceneResult.data;
+
+              // 设置场景数据
+              if (scenes && scenes.length > 0) {
+                setScenesData(scenes);
+                const sceneOptions = scenes.map((scene: any) => scene.sceneTitle);
+                setSceneOptions(sceneOptions);
+                setSelectedScene(sceneOptions[0] || "");
+                isCurrentSceneIdInitialized.current = false;
+
+                // 设置第一个场景为当前场景
+                const firstScene = scenes[0];
+                if (firstScene?.id) {
+                  setCurrentSceneId(firstScene.id);
+                }
+              }
             }
           }
-        } else {
         }
-      } else {
       }
     } catch (error) {
     } finally {
@@ -2853,15 +2871,15 @@ function ShortplayEntryPage() {
         if (result.code === 0 && result.data) {
           const {
             seriesContent,
-            scenes,
             seriesId: returnedSeriesId,
           } = result.data;
 
           // 如果有seriesId则设置，否则mock值为9
-          if (returnedSeriesId) {
-            setSeriesId(returnedSeriesId);
-          } else {
-            setSeriesId("9");
+          const finalSeriesId = returnedSeriesId || "9";
+          if (finalSeriesId) {
+            setSeriesId(finalSeriesId);
+            // 存储seriesId到localStorage供后续使用
+            localStorage.setItem("currentSeriesId", finalSeriesId);
           }
 
           // 如果有历史内容，则显示
@@ -2869,14 +2887,30 @@ function ShortplayEntryPage() {
             setGeneratedContent(seriesContent);
           }
 
-          // 如果有场次数据，则更新下拉列表
-          if (scenes && scenes.length > 0) {
-            setScenesData(scenes);
-            const sceneOptions = scenes.map((scene: any) => scene.sceneName);
-            setSceneOptions(sceneOptions);
-            setSelectedScene(sceneOptions[0] || "");
-            // 重置初始化标志，使得新的场景列表会触发 currentSceneId 的初始化
-            isCurrentSceneIdInitialized.current = false;
+          // 使用localStorage中的seriesId获取场景列表
+          const storedSeriesId = localStorage.getItem("currentSeriesId") || finalSeriesId;
+          const sceneUrl = `${STORYAI_API_BASE}/scene/${storedSeriesId}`;
+          const sceneResponse = await fetch(sceneUrl, {
+            method: "GET",
+            headers: {
+              "X-Prompt-Manager-Token": token || "",
+            },
+          });
+
+          if (sceneResponse.ok) {
+            const sceneResult = await sceneResponse.json();
+            if (sceneResult.code === 0 && sceneResult.data) {
+              const scenes = sceneResult.data;
+              // 如果有场次数据，则更新下拉列表
+              if (scenes && scenes.length > 0) {
+                setScenesData(scenes);
+                const sceneOptions = scenes.map((scene: any) => scene.sceneTitle);
+                setSceneOptions(sceneOptions);
+                setSelectedScene(sceneOptions[0] || "");
+                // 重置初始化标志，使得新的场景列表会触发 currentSceneId 的初始化
+                isCurrentSceneIdInitialized.current = false;
+              }
+            }
           }
         }
       }
@@ -2900,7 +2934,7 @@ function ShortplayEntryPage() {
   // 当 scenesData 有数据但 currentSceneId 还未初始化时，初始化为第一个场景
   React.useEffect(() => {
     if (scenesData.length > 0 && !isCurrentSceneIdInitialized.current) {
-      setCurrentSceneId(scenesData[0].sceneId);
+      setCurrentSceneId(scenesData[0].id);
       isCurrentSceneIdInitialized.current = true;
     }
   }, [scenesData]);
@@ -2923,18 +2957,18 @@ function ShortplayEntryPage() {
     if (activeTab === "script") {
       // 加载剧本内容列表
       const currentSceneData = scenesData.find(
-        (scene: any) => scene.sceneName === selectedScene
+        (scene: any) => scene.sceneTitle === selectedScene
       );
-      if (currentSceneData?.sceneId) {
-        loadSceneContent(currentSceneData.sceneId);
+      if (currentSceneData?.id) {
+        loadSceneContent(currentSceneData.id);
       }
     } else if (activeTab === "audio") {
       // 加载音频内容列表（仅在切换Tab或场次时）
       const currentSceneData = scenesData.find(
-        (scene: any) => scene.sceneName === selectedScene
+        (scene: any) => scene.sceneTitle === selectedScene
       );
-      if (currentSceneData?.sceneId) {
-        loadAudioContent(currentSceneData.sceneId);
+      if (currentSceneData?.id) {
+        loadAudioContent(currentSceneData.id);
       }
 
       // 首次进入音频Tab时也加载资源
@@ -3133,7 +3167,7 @@ function ShortplayEntryPage() {
               if (scenes && scenes.length > 0) {
                 setScenesData(scenes);
                 const sceneOptions = scenes.map(
-                  (scene: any) => scene.sceneName
+                  (scene: any) => scene.sceneTitle
                 );
                 setSceneOptions(sceneOptions);
                 setSelectedScene(sceneOptions[0] || "");
@@ -4098,11 +4132,11 @@ function ShortplayEntryPage() {
                   // 处理从下拉列表选择场次的情况
                   setSelectedScene(value);
                   const selectedSceneData = scenesData.find(
-                    (scene: any) => scene.sceneName === value
+                    (scene: any) => scene.sceneTitle === value
                   );
-                  if (selectedSceneData?.sceneId) {
-                    setCurrentSceneId(selectedSceneData.sceneId);
-                    loadSceneContent(selectedSceneData.sceneId);
+                  if (selectedSceneData?.id) {
+                    setCurrentSceneId(selectedSceneData.id);
+                    loadSceneContent(selectedSceneData.id);
                     if (activeTab === "image") {
                       loadImageChatHistory();
                       loadStoryboardList();
@@ -4115,11 +4149,11 @@ function ShortplayEntryPage() {
                 onSubtitleEdit={async (value) => {
                   // 处理直接编辑场次名称的情况
                   const currentSceneData = scenesData.find(
-                    (scene: any) => scene.sceneName === selectedScene
+                    (scene: any) => scene.sceneTitle === selectedScene
                   );
-                  if (currentSceneData?.sceneId) {
+                  if (currentSceneData?.id) {
                     const success = await updateSceneName(
-                      currentSceneData.sceneId,
+                      currentSceneData.id,
                       value
                     );
                     if (success) {
@@ -4382,9 +4416,9 @@ function ShortplayEntryPage() {
                                 try {
                                   const currentSceneData = scenesData.find(
                                     (scene: any) =>
-                                      scene.sceneName === selectedScene
+                                      scene.sceneTitle === selectedScene
                                   );
-                                  const sceneId = currentSceneData?.sceneId;
+                                  const sceneId = currentSceneData?.id;
 
                                   if (!sceneId) {
                                     toast.error(
