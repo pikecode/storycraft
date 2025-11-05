@@ -73,7 +73,7 @@ export const createSeries = async (userInput: string, language: string = 'zh-CN'
   const languageMap: Record<string, string> = {
     'zh-CN': '中文',
     'en-US': '英文',
-    'ja-JP': '日本語',
+    'ja-JP': '日语',
     'ko-KR': '韩文',
   };
   const mappedLanguage = languageMap[language] || language;
