@@ -786,7 +786,7 @@ function ShortplayEntryPage() {
     setDeleteConfirmId(null); // 先关闭对话框
 
     // 如果是新创建的临时项（还没保存到服务器），直接从本地删除
-    if (id > 1000000000000) {
+    if (id < 0) {
       setSceneContent((items) => items.filter((item) => item.id !== id));
       return;
     }
@@ -838,7 +838,7 @@ function ShortplayEntryPage() {
     setDeleteAudioItemId(null); // 先关闭对话框
 
     // 如果是新创建的临时项（还没保存到服务器），直接从本地删除
-    if (id > 1000000000000) {
+    if (id < 0) {
       setAudioContent((items) => items.filter((item) => item.id !== id));
       return;
     }
@@ -1253,8 +1253,8 @@ function ShortplayEntryPage() {
     try {
       const token = localStorage.getItem("token");
 
-      // 检查是否是新创建的项目（临时ID通常是时间戳，会很大）
-      const isNewItem = editingSceneItemId > 1000000000000;
+      // 检查是否是新创建的项目（新增项使用负数ID）
+      const isNewItem = editingSceneItemId < 0;
 
       // 获取当前选中场次的sceneId
       const currentSceneData = scenesData.find(
@@ -1367,7 +1367,7 @@ function ShortplayEntryPage() {
   // 取消编辑场次内容项
   const handleCancelEditSceneItem = () => {
     // 如果是新创建的项目且取消编辑，则删除该项目
-    if (editingSceneItemId !== null && editingSceneItemId > 1000000000000) {
+    if (editingSceneItemId !== null && editingSceneItemId < 0) {
       setSceneContent((items) =>
         items.filter((item) => item.id !== editingSceneItemId)
       );
@@ -4136,14 +4136,7 @@ function ShortplayEntryPage() {
                   );
                   if (selectedSceneData?.id) {
                     setCurrentSceneId(selectedSceneData.id);
-                    loadSceneContent(selectedSceneData.id);
-                    if (activeTab === "image") {
-                      loadImageChatHistory();
-                      loadStoryboardList();
-                    } else if (activeTab === "video") {
-                      loadVideoChatHistory();
-                      loadStoryboardList();
-                    }
+                    // loadSceneContent 由 useEffect 自动触发，无需手动调用
                   }
                 }}
                 onSubtitleEdit={async (value) => {

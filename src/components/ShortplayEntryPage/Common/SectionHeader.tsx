@@ -150,11 +150,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
               ) : (
                 // 显示模式
                 <div className="flex items-center space-x-1 text-sm text-gray-600 select-none">
-                  <span
-                    className="cursor-pointer hover:text-gray-800 transition-colors"
-                    onClick={handleTextClick}
-                    title={t('shortplayEntry.scenes.editSceneName')}
-                  >
+                  <span>
                     {subtitle}
                   </span>
                   <Tooltip title={t('shortplayEntry.scenes.selectPresetScene')}>
@@ -197,7 +193,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                             onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
-                          <span onClick={(e) => handleOptionDoubleClick(index, option, e)}>
+                          <span>
                             {option}
                           </span>
                         )}
