@@ -262,7 +262,7 @@ export function SortableAudioItem({
             </div>
           )}
         </div>
-        <div className="flex items-center" style={{ overflow: 'hidden', minWidth: 0, maxWidth: '100px', marginLeft: '4px' }}>
+        <div className="flex items-center" style={{ flex: '1 1 auto', minWidth: 0, marginLeft: '4px' }}>
           <Tooltip
             title={
               <div style={{ maxHeight: '200px', overflowY: 'auto', maxWidth: '400px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
