@@ -622,7 +622,7 @@ export const zhCN = {
     scenes: {
       editSceneName: '点击编辑场次名称',
       selectPresetScene: '点击选择预设场次',
-      clickToSelectDoubleClickToEdit: '单击选择，双击编辑',
+      clickToSelectOrEdit: '单击选择或编辑',
     },
     examples: {
       series: {

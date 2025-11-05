@@ -181,7 +181,7 @@ export function SortableAudioItem({
       ) : (
         // 显示模式
         <div className="flex items-center justify-between"
-          onDoubleClick={() => onStartEditContent?.(item.id, item.content, item.speaker)}
+          onClick={() => onStartEditContent?.(item.id, item.content, item.speaker)}
         >
         <div className="flex items-center space-x-2 flex-shrink-0">
           {item.type === 'voice' ? (

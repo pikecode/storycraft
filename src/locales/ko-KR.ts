@@ -622,7 +622,7 @@ export const koKR = {
     scenes: {
       editSceneName: '장면 이름을 편집하려면 클릭',
       selectPresetScene: '사전 설정 장면을 선택하려면 클릭',
-      clickToSelectDoubleClickToEdit: '선택하려면 클릭, 편집하려면 더블 클릭',
+      clickToSelectOrEdit: '선택하거나 편집하려면 클릭',
     },
     examples: {
       series: {

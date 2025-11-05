@@ -174,7 +174,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                     <div
                       key={index}
                       className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors first:rounded-t-lg flex items-center justify-between group"
-                      title={t('shortplayEntry.scenes.clickToSelectDoubleClickToEdit')}
+                      title={t('shortplayEntry.scenes.clickToSelectOrEdit')}
                     >
                       <div
                         className="flex-1 cursor-pointer"
@@ -197,7 +197,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                             onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
-                          <span onDoubleClick={(e) => handleOptionDoubleClick(index, option, e)}>
+                          <span onClick={(e) => handleOptionDoubleClick(index, option, e)}>
                             {option}
                           </span>
                         )}

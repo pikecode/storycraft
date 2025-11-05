@@ -620,7 +620,7 @@ export const enUS = {
     scenes: {
       editSceneName: 'Click to edit scene name',
       selectPresetScene: 'Click to select preset scene',
-      clickToSelectDoubleClickToEdit: 'Click to select, double-click to edit',
+      clickToSelectOrEdit: 'Click to select or edit',
     },
     examples: {
       series: {

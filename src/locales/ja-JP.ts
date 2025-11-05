@@ -620,7 +620,7 @@ export const jaJP = {
     scenes: {
       editSceneName: 'クリックしてシーン名を編集',
       selectPresetScene: 'クリックしてプリセットシーンを選択',
-      clickToSelectDoubleClickToEdit: 'クリックして選択、ダブルクリックして編集',
+      clickToSelectOrEdit: 'クリックして選択または編集',
     },
     examples: {
       series: {

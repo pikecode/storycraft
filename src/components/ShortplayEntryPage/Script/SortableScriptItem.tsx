@@ -133,7 +133,7 @@ export function SortableScriptItem({
           </div>
 
           {/* 内容区域 */}
-          <div className="flex-1 cursor-pointer border border-gray-200 rounded p-2 min-h-[58px]" onDoubleClick={() => onEditSceneItem(item)}>
+          <div className="flex-1 cursor-pointer border border-gray-200 rounded p-2 min-h-[58px]" onClick={() => onEditSceneItem(item)}>
             <div className="text-sm line-clamp-2" style={{ color: item.type === 1 ? '#3E83F6' : '#1F2937' }}>
               {item.content}
             </div>
