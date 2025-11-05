@@ -643,6 +643,7 @@ export const zhCN = {
       addOption: '新增选项',
       save: '保存',
       cancel: '取消',
+      discard: '丢弃',
       delete: '删除',
       viewOriginal: '查看原图',
       playVideo: '播放视频',
@@ -681,6 +682,8 @@ export const zhCN = {
 
     // 成功消息
     messages: {
+      unsavedChanges: '存在未保存的更改',
+      unsavedChangesDetail: '当前有未保存的编辑内容，切换标签页会丢弃这些更改。确定要继续吗？',
       success: {
         storyboardDeleted: '分镜板删除成功！',
         deleted: '删除成功！',

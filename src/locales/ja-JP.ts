@@ -641,6 +641,7 @@ export const jaJP = {
       addOption: 'オプションを追加',
       save: '保存',
       cancel: 'キャンセル',
+      discard: '破棄',
       delete: '削除',
       viewOriginal: 'オリジナルを表示',
       playVideo: 'ビデオを再生',
@@ -679,6 +680,8 @@ export const jaJP = {
 
     // 成功メッセージ
     messages: {
+      unsavedChanges: '未保存の変更',
+      unsavedChangesDetail: '保存されていない編集があります。タブを切り替えるとこれらの変更が失われます。続行してもよろしいですか？',
       success: {
         storyboardDeleted: 'ストーリーボード削除成功！',
         deleted: '削除成功！',

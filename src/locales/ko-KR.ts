@@ -643,6 +643,7 @@ export const koKR = {
       addOption: '옵션 추가',
       save: '저장',
       cancel: '취소',
+      discard: '버리기',
       delete: '삭제',
       viewOriginal: '원본 보기',
       playVideo: '비디오 재생',
@@ -681,6 +682,8 @@ export const koKR = {
 
     // 성공 메시지
     messages: {
+      unsavedChanges: '저장되지 않은 변경사항',
+      unsavedChangesDetail: '저장되지 않은 편집이 있습니다. 탭을 전환하면 이러한 변경사항이 손실됩니다. 계속하시겠습니까?',
       success: {
         storyboardDeleted: '스토리보드가 성공적으로 삭제되었습니다!',
         deleted: '성공적으로 삭제되었습니다!',

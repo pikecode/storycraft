@@ -641,6 +641,7 @@ export const enUS = {
       addOption: 'Add Option',
       save: 'Save',
       cancel: 'Cancel',
+      discard: 'Discard',
       delete: 'Delete',
       viewOriginal: 'View Original',
       playVideo: 'Play Video',
@@ -679,6 +680,8 @@ export const enUS = {
 
     // Success messages
     messages: {
+      unsavedChanges: 'Unsaved Changes',
+      unsavedChangesDetail: 'You have unsaved edits. Switching tabs will discard these changes. Are you sure you want to continue?',
       success: {
         storyboardDeleted: 'Storyboard deleted successfully!',
         deleted: 'Deleted successfully!',

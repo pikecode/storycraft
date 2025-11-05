@@ -3226,11 +3226,29 @@ function ShortplayEntryPage() {
                 <div>
                   <Segmented
                     value={activeTab}
-                    onChange={(value) =>
-                      setActiveTab(
-                        value as "script" | "audio" | "image" | "video"
-                      )
-                    }
+                    onChange={(value) => {
+                      // 检查是否有未保存的编辑
+                      if (editingSceneItemId !== null) {
+                        Modal.confirm({
+                          title: t("shortplayEntry.messages.unsavedChanges"),
+                          content: t("shortplayEntry.messages.unsavedChangesDetail"),
+                          okText: t("shortplayEntry.buttons.discard"),
+                          cancelText: t("shortplayEntry.buttons.cancel"),
+                          okButtonProps: { danger: true },
+                          onOk() {
+                            // 取消编辑并切换tab
+                            handleCancelEditSceneItem();
+                            setActiveTab(
+                              value as "script" | "audio" | "image" | "video"
+                            );
+                          },
+                        });
+                      } else {
+                        setActiveTab(
+                          value as "script" | "audio" | "image" | "video"
+                        );
+                      }
+                    }}
                     options={[
                       {
                         label: t("shortplayEntry.tabs.script"),
