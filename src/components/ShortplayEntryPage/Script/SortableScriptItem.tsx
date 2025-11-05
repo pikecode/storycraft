@@ -94,15 +94,15 @@ export function SortableScriptItem({
             <div className="flex items-center justify-end space-x-2">
               <button
                 onClick={onSaveSceneItem}
-                className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="text-green-600 hover:text-green-800 p-1 border-0 bg-transparent outline-none cursor-pointer"
               >
-                保存
+                <Icon icon="ri:check-line" className="w-4 h-4" />
               </button>
               <button
                 onClick={onCancelEditSceneItem}
-                className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="text-red-600 hover:text-red-800 p-1 border-0 bg-transparent outline-none cursor-pointer"
               >
-                取消
+                <Icon icon="ri:close-line" className="w-4 h-4" />
               </button>
             </div>
           </div>
