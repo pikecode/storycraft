@@ -3054,6 +3054,15 @@ function ShortplayEntryPage() {
       // 从localStorage获取token
       const token = localStorage.getItem("token");
 
+      // 映射language值
+      const languageMap: Record<string, string> = {
+        'zh-CN': '中文',
+        'en-US': '英文',
+        'ja-JP': '日本語',
+        'ko-KR': '韩文',
+      };
+      const mappedLanguage = languageMap[language] || language;
+
       // 第一步：创建剧本生成任务
       const response = await fetch(`${STORYAI_API_BASE}/series/create`, {
         method: "POST",
@@ -3065,7 +3074,7 @@ function ShortplayEntryPage() {
           userId: userId,
           userInput: userInput.trim(),
           provider: selectedModel,
-          language: language,
+          language: mappedLanguage,
         }),
       });
 
