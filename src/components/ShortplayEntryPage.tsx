@@ -2173,18 +2173,21 @@ function ShortplayEntryPage() {
 
   // 图片生成API调用
   const handleImageGenerate = async () => {
-    if (!userInput.trim()) {
-      toast.error(t("shortplayEntry.input.description"));
-      return;
+    // 如果scenesData为空，尝试使用currentSceneId
+    let sceneId: string | number | undefined;
+
+    if (scenesData.length > 0 && selectedScene) {
+      // 获取当前选中场次的sceneId
+      const currentSceneData = scenesData.find(
+        (scene: any) => scene.sceneTitle === selectedScene
+      );
+      sceneId = currentSceneData?.id;
+    } else if (currentSceneId) {
+      // 如果没有selectedScene，使用currentSceneId
+      sceneId = currentSceneId;
     }
 
-    // 获取当前选中场次的sceneId
-    const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneTitle === selectedScene
-    );
-    const sceneId = currentSceneData?.id;
-
-    if (!sceneId) {
+    if (!sceneId && sceneId !== 0) {
       toast.error("请先选择场次");
       return;
     }
@@ -2494,18 +2497,21 @@ function ShortplayEntryPage() {
 
   // 视频生成API调用
   const handleVideoGenerate = async () => {
-    if (!userInput.trim()) {
-      toast.error(t("shortplayEntry.validation.enterGeneratedContent"));
-      return;
+    // 如果scenesData为空，尝试使用currentSceneId
+    let sceneId: string | number | undefined;
+
+    if (scenesData.length > 0 && selectedScene) {
+      // 获取当前选中场次的sceneId
+      const currentSceneData = scenesData.find(
+        (scene: any) => scene.sceneTitle === selectedScene
+      );
+      sceneId = currentSceneData?.id;
+    } else if (currentSceneId) {
+      // 如果没有selectedScene，使用currentSceneId
+      sceneId = currentSceneId;
     }
 
-    // 获取当前选中场次的sceneId
-    const currentSceneData = scenesData.find(
-      (scene: any) => scene.sceneTitle === selectedScene
-    );
-    const sceneId = currentSceneData?.id;
-
-    if (!sceneId) {
+    if (!sceneId && sceneId !== 0) {
       toast.error("请先选择场次");
       return;
     }

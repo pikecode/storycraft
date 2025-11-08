@@ -119,9 +119,9 @@ export function BottomInputArea({
             />
             <button
               onClick={onGenerate}
-              disabled={isGenerating || !userInput.trim()}
+              disabled={isGenerating}
               className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors flex items-center space-x-1 ${
-                isGenerating || !userInput.trim()
+                isGenerating
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
               }`}
@@ -186,9 +186,9 @@ export function BottomInputArea({
             />
             <button
               onClick={onGenerate}
-              disabled={isGenerating || !userInput.trim()}
+              disabled={isGenerating}
               className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
-                isGenerating || !userInput.trim()
+                isGenerating
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
               }`}
@@ -403,9 +403,9 @@ export function BottomInputArea({
             </label>
             <button
               onClick={onGenerate}
-              disabled={isGenerating || !userInput.trim()}
+              disabled={isGenerating}
               className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
-                isGenerating || !userInput.trim()
+                isGenerating
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
               }`}
@@ -662,9 +662,9 @@ export function BottomInputArea({
             </label>
             <button
               onClick={onGenerate}
-              disabled={isGenerating || !userInput.trim()}
+              disabled={isGenerating}
               className={`absolute bottom-2 right-2 px-3 py-1 text-white text-xs font-medium rounded transition-colors ${
-                isGenerating || !userInput.trim()
+                isGenerating
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
               }`}

@@ -64,20 +64,27 @@ export function AudioResourcePanel({
     <div className="space-y-4">
       {/* 配音选择区域 */}
       <div className="space-y-3">
-        <div className="relative w-16">
-          <select
-            value={audioType}
-            onChange={(e) => onAudioTypeChange(e.target.value as 'voice' | 'sound')}
-            className="w-full h-9 pr-8 text-sm rounded-lg bg-transparent focus:outline-none appearance-none"
-          >
-            <option value="voice">{t('shortplayEntry.audio.voice')}</option>
-            <option value="sound">{t('shortplayEntry.audio.sound')}</option>
-          </select>
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L6 6L11 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="radio"
+              value="voice"
+              checked={audioType === 'voice'}
+              onChange={(e) => onAudioTypeChange(e.target.value as 'voice' | 'sound')}
+              className="w-4 h-4 cursor-pointer"
+            />
+            <span className="text-sm text-gray-700">{t('shortplayEntry.audio.voice')}</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="radio"
+              value="sound"
+              checked={audioType === 'sound'}
+              onChange={(e) => onAudioTypeChange(e.target.value as 'voice' | 'sound')}
+              className="w-4 h-4 cursor-pointer"
+            />
+            <span className="text-sm text-gray-700">{t('shortplayEntry.audio.sound')}</span>
+          </label>
         </div>
 
         {audioType === 'voice' ? (
