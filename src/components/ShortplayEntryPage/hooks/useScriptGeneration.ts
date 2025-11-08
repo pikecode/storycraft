@@ -150,12 +150,12 @@ export const useScriptGeneration = () => {
               // 更新场次选项
               if (scenes && scenes.length > 0) {
                 setScenesData(scenes);
-                const sceneOptions = scenes.map((scene: any) => scene.sceneName);
+                const sceneOptions = scenes.map((scene: any) => scene.sceneTitle);
                 setSceneOptions(sceneOptions);
                 setSelectedScene(sceneOptions[0] || '');
                 // 自动加载第一个场次的内容
-                if (scenes[0]?.sceneId) {
-                  loadSceneContent(scenes[0].sceneId);
+                if (scenes[0]?.id) {
+                  loadSceneContent(scenes[0].id);
                 }
               }
 

@@ -90,11 +90,11 @@ export const useSceneManagement = () => {
           // 如果有场次数据，则更新下拉列表
           if (scenes && scenes.length > 0) {
             setScenesData(scenes);
-            const sceneOptions = scenes.map((scene: any) => scene.sceneName);
+            const sceneOptions = scenes.map((scene: any) => scene.sceneTitle);
             setSceneOptions(sceneOptions);
             setSelectedScene(sceneOptions[0] || '');
             // 返回第一个场次ID，以便主组件加载内容
-            return scenes[0]?.sceneId;
+            return scenes[0]?.id;
           }
         }
       }
@@ -112,8 +112,8 @@ export const useSceneManagement = () => {
    */
   const handleSceneChange = (sceneName: string) => {
     setSelectedScene(sceneName);
-    const currentSceneData = scenesData.find((scene: any) => scene.sceneName === sceneName);
-    return currentSceneData?.sceneId || null;
+    const currentSceneData = scenesData.find((scene: any) => scene.sceneTitle === sceneName);
+    return currentSceneData?.id || null;
   };
 
   /**
@@ -137,8 +137,8 @@ export const useSceneManagement = () => {
    * 获取当前场次的 sceneId
    */
   const getCurrentSceneId = () => {
-    const currentSceneData = scenesData.find((scene: any) => scene.sceneName === selectedScene);
-    return currentSceneData?.sceneId || null;
+    const currentSceneData = scenesData.find((scene: any) => scene.sceneTitle === selectedScene);
+    return currentSceneData?.id || null;
   };
 
   return {

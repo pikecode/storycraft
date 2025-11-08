@@ -43,6 +43,34 @@ export function BottomInputArea({
 }: BottomInputAreaProps) {
   const { t } = useI18n();
   const [imageGenerationMode, setImageGenerationMode] = React.useState('single');
+  const [progressWidth, setProgressWidth] = React.useState(0);
+
+  // 进度条动画效果
+  React.useEffect(() => {
+    if (isGenerating) {
+      // 重置进度
+      setProgressWidth(0);
+
+      // 模拟进度增长
+      const interval = setInterval(() => {
+        setProgressWidth(prev => {
+          // 逐渐增长到95%，不会到100%（因为实际完成时间不确定）
+          if (prev >= 95) {
+            return prev;
+          }
+          // 前期快速增长，后期减慢
+          const increment = prev < 50 ? 2 : prev < 80 ? 0.5 : 0.2;
+          return Math.min(prev + increment, 95);
+        });
+      }, 100);
+
+      return () => clearInterval(interval);
+    } else {
+      // 完成时设置为100%，然后快速重置
+      setProgressWidth(100);
+      setTimeout(() => setProgressWidth(0), 300);
+    }
+  }, [isGenerating]);
 
   // Use translated placeholder if not provided
   const finalPlaceholder = placeholder || t('shortplayEntry.input.placeholder');
@@ -98,12 +126,12 @@ export function BottomInputArea({
 
           {/* 生成状态显示 */}
           {isGenerating && generationStatus && (
-            <div className="mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <svg className="animate-spin w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+            <div className="mb-2">
+              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-300 ease-out"
+                  style={{ width: `${progressWidth}%` }}
+                ></div>
               </div>
             </div>
           )}
@@ -330,12 +358,12 @@ export function BottomInputArea({
 
           {/* 生成状态显示 */}
           {isGenerating && generationStatus && (
-            <div className="mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <svg className="animate-spin w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+            <div className="mb-2">
+              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-300 ease-out"
+                  style={{ width: `${progressWidth}%` }}
+                ></div>
               </div>
             </div>
           )}
@@ -577,12 +605,12 @@ export function BottomInputArea({
 
           {/* 生成状态显示 */}
           {isGenerating && generationStatus && (
-            <div className="mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <svg className="animate-spin w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+            <div className="mb-2">
+              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-300 ease-out"
+                  style={{ width: `${progressWidth}%` }}
+                ></div>
               </div>
             </div>
           )}

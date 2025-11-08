@@ -2281,8 +2281,9 @@ function ShortplayEntryPage() {
         setGenerationStatus("生成完成！");
         setUserInput(""); // 清空输入
 
-        // 刷新图片聊天记录列表
+        // 刷新图片聊天记录列表和分镜板列表
         await loadImageChatHistory();
+        await loadStoryboardList();
 
         toast.success(t("shortplayEntry.messages.success.imageGenerated"));
       } else {
@@ -2635,8 +2636,9 @@ function ShortplayEntryPage() {
               // 这里可以添加显示视频的逻辑
             }
 
-            // 视频生成完成后刷新视频聊天记录列表
+            // 视频生成完成后刷新视频聊天记录列表和分镜板列表
             await loadVideoChatHistory();
+            await loadStoryboardList();
 
             setIsGenerating(false);
             setIsVideoGenerating(false);
@@ -2986,7 +2988,9 @@ function ShortplayEntryPage() {
 
   // 当 scenesData 有数据但 currentSceneId 还未初始化时，初始化为第一个场景
   React.useEffect(() => {
+    console.log("🔄 [useEffect scenesData] 场次数据变化:", scenesData.length, "已初始化:", isCurrentSceneIdInitialized.current);
     if (scenesData.length > 0 && !isCurrentSceneIdInitialized.current) {
+      console.log("✅ [useEffect scenesData] 设置 currentSceneId:", scenesData[0].id);
       setCurrentSceneId(scenesData[0].id);
       isCurrentSceneIdInitialized.current = true;
     }
@@ -3234,16 +3238,45 @@ function ShortplayEntryPage() {
               setGenerationStatus("生成完成！");
               setGeneratedContent(seriesContent || "");
 
-              // 更新场次选项
-              if (scenes && scenes.length > 0) {
-                setScenesData(scenes);
-                const sceneOptions = scenes.map(
-                  (scene: any) => scene.sceneTitle
-                );
-                setSceneOptions(sceneOptions);
-                setSelectedScene(sceneOptions[0] || "");
-                // 重置初始化标志，使得新的场景列表会触发 currentSceneId 的初始化
-                isCurrentSceneIdInitialized.current = false;
+              // 使用 /scene/{seriesId} API 获取完整的场景列表数据
+              try {
+                const storedSeriesId = returnedSeriesId || seriesId;
+                const sceneUrl = `${STORYAI_API_BASE}/scene/${storedSeriesId}`;
+                const sceneResponse = await fetch(sceneUrl, {
+                  method: "GET",
+                  headers: {
+                    "X-Prompt-Manager-Token": token || "",
+                  },
+                });
+
+                if (sceneResponse.ok) {
+                  const sceneResult = await sceneResponse.json();
+                  console.log("✅ [剧本生成完成] 场景列表API响应:", sceneResult);
+
+                  if (sceneResult.code === 0 && sceneResult.data) {
+                    const scenesList = sceneResult.data;
+                    if (scenesList && scenesList.length > 0) {
+                      console.log("✅ [剧本生成完成] 场次数据:", scenesList);
+                      setScenesData(scenesList);
+                      const newSceneOptions = scenesList.map(
+                        (scene: any) => scene.sceneTitle
+                      );
+                      console.log("✅ [剧本生成完成] 场次选项:", newSceneOptions);
+                      setSceneOptions(newSceneOptions);
+                      setSelectedScene(newSceneOptions[0] || "");
+                      console.log("✅ [剧本生成完成] 已设置场次选项和选中场次");
+                      // 重置初始化标志，使得新的场景列表会触发 currentSceneId 的初始化
+                      isCurrentSceneIdInitialized.current = false;
+
+                      // 刷新第一个场次的内容
+                      if (scenesList[0]?.id) {
+                        await loadSceneContent(scenesList[0].id);
+                      }
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error("❌ [剧本生成完成] 获取场景列表失败:", error);
               }
 
               setUserInput(""); // 清空输入
