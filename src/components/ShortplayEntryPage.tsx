@@ -3856,7 +3856,7 @@ function ShortplayEntryPage() {
                                                         }}
                                                       />
                                                       {/* 悬停时显示的按钮覆盖层 */}
-                                                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 rounded-lg">
+                                                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 rounded-lg bg-black bg-opacity-50">
                                                         <button
                                                           onClick={() => {
                                                             setPreviewUrl(
@@ -3933,6 +3933,30 @@ function ShortplayEntryPage() {
                                               )}
                                             </div>
                                           )}
+
+                                        {/* 显示生成参数 */}
+                                        {message.params && (
+                                          <div className="mt-3 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-600 space-y-1">
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-medium text-gray-700">模型:</span>
+                                              <span className="text-gray-600">{message.params.llmName || '-'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-medium text-gray-700">画面风格:</span>
+                                              <span className="text-gray-600">{message.params.imageBackground || '-'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-medium text-gray-700">画面类型:</span>
+                                              <span className="text-gray-600">{message.params.imageStyle || '-'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-medium text-gray-700">时长:</span>
+                                              <span className="text-gray-600">
+                                                {message.params.durationMillis ? `${message.params.durationMillis / 1000}s` : '-'}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
                                     ) : null}
                                   </div>
@@ -4014,7 +4038,7 @@ function ShortplayEntryPage() {
                                                         }}
                                                       />
                                                       {/* 悬停时显示的按钮覆盖层 */}
-                                                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 rounded-lg">
+                                                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 rounded-lg bg-black bg-opacity-50">
                                                         <button
                                                           onClick={() => {
                                                             setPreviewUrl(
@@ -4091,6 +4115,26 @@ function ShortplayEntryPage() {
                                               )}
                                             </div>
                                           )}
+
+                                        {/* 显示生成参数 */}
+                                        {message.params && (
+                                          <div className="mt-3 px-3 py-2 bg-gray-50 rounded-lg text-xs text-gray-600 space-y-1">
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-medium text-gray-700">模型:</span>
+                                              <span className="text-gray-600">{message.params.llmName || '-'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-medium text-gray-700">分辨率:</span>
+                                              <span className="text-gray-600">{message.params.resolution || '-'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-medium text-gray-700">时长:</span>
+                                              <span className="text-gray-600">
+                                                {message.params.durationMillis ? `${message.params.durationMillis / 1000}s` : '-'}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
                                     ) : null}
                                   </div>
