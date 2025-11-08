@@ -45,6 +45,15 @@ import { formatMillisecondsToTime } from "./ShortplayEntryPage/utils/formatTime"
 // 一键创作API基础路径
 const STORYAI_API_BASE = "/storyai";
 
+// 处理 401 未授权错误的辅助函数
+const handleUnauthorized = () => {
+  // 清除本地存储的认证信息
+  localStorage.removeItem("token");
+  sessionStorage.removeItem("userId");
+  // 重定向到登录页面
+  window.location.href = "/login";
+};
+
 function ShortplayEntryPage() {
   const { t, language } = useI18n();
   const location = useLocation();
@@ -2550,11 +2559,7 @@ function ShortplayEntryPage() {
 
       // 检查是否未登录
       if (result.code === 401) {
-        // 清除本地存储的认证信息
-        localStorage.removeItem("token");
-        sessionStorage.removeItem("userId");
-        // 重定向到登录页面
-        window.location.href = "/login";
+        handleUnauthorized();
         return;
       }
 
@@ -2611,11 +2616,7 @@ function ShortplayEntryPage() {
 
         // 检查是否未登录
         if (result.code === 401) {
-          // 清除本地存储的认证信息
-          localStorage.removeItem("token");
-          sessionStorage.removeItem("userId");
-          // 重定向到登录页面
-          window.location.href = "/login";
+          handleUnauthorized();
           return;
         }
 
@@ -2812,6 +2813,12 @@ function ShortplayEntryPage() {
       if (seriesResponse.ok) {
         const seriesResult = await seriesResponse.json();
 
+        // 检查是否未登录
+        if (seriesResult.code === 401) {
+          handleUnauthorized();
+          return;
+        }
+
         if (seriesResult.code === 0 && seriesResult.data) {
           const {
             seriesContent,
@@ -2843,6 +2850,12 @@ function ShortplayEntryPage() {
 
           if (sceneResponse.ok) {
             const sceneResult = await sceneResponse.json();
+
+            // 检查是否未登录
+            if (sceneResult.code === 401) {
+              handleUnauthorized();
+              return;
+            }
 
             if (sceneResult.code === 0 && sceneResult.data) {
               const scenes = sceneResult.data;
@@ -2894,6 +2907,13 @@ function ShortplayEntryPage() {
 
       if (response.ok) {
         const result = await response.json();
+
+        // 检查是否未登录
+        if (result.code === 401) {
+          handleUnauthorized();
+          return;
+        }
+
         if (result.code === 0 && result.data) {
           const {
             seriesContent,
@@ -2925,6 +2945,13 @@ function ShortplayEntryPage() {
 
           if (sceneResponse.ok) {
             const sceneResult = await sceneResponse.json();
+
+            // 检查是否未登录
+            if (sceneResult.code === 401) {
+              handleUnauthorized();
+              return;
+            }
+
             if (sceneResult.code === 0 && sceneResult.data) {
               const scenes = sceneResult.data;
               // 如果有场次数据，则更新下拉列表
@@ -3063,11 +3090,17 @@ function ShortplayEntryPage() {
         }),
       });
 
+      const result = await response.json();
+
+      // 检查是否未登录
+      if (result.code === 401) {
+        handleUnauthorized();
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(`请求失败: ${response.status}`);
       }
-
-      const result = await response.json();
 
       if (result.code === 0) {
         // 生成成功，刷新音频列表
@@ -3138,11 +3171,17 @@ function ShortplayEntryPage() {
         }),
       });
 
+      const result = await response.json();
+
+      // 检查是否未登录
+      if (result.code === 401) {
+        handleUnauthorized();
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(`请求失败: ${response.status}`);
       }
-
-      const result = await response.json();
 
       if (result.code !== 0 || !result.data?.seriesId) {
         throw new Error(result.message || "创建任务失败");
@@ -3165,11 +3204,17 @@ function ShortplayEntryPage() {
             }
           );
 
+          const detailResult = await detailResponse.json();
+
+          // 检查是否未登录
+          if (detailResult.code === 401) {
+            handleUnauthorized();
+            return;
+          }
+
           if (!detailResponse.ok) {
             throw new Error(`获取详情失败: ${detailResponse.status}`);
           }
-
-          const detailResult = await detailResponse.json();
 
           if (detailResult.code === 0 && detailResult.data) {
             const {
