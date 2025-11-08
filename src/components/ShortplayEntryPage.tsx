@@ -2540,11 +2540,21 @@ function ShortplayEntryPage() {
         body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        throw new Error(`视频生成请求失败: ${response.status}`);
+      const result = await response.json();
+
+      // 检查是否未登录
+      if (result.code === 401) {
+        // 清除本地存储的认证信息
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("userId");
+        // 重定向到登录页面
+        window.location.href = "/login";
+        return;
       }
 
-      const result = await response.json();
+      if (!response.ok && result.code !== 0) {
+        throw new Error(`视频生成请求失败: ${response.status}`);
+      }
 
       if (result.code === 0 && result.data) {
         const fileId = result.data.toString();
@@ -2557,7 +2567,7 @@ function ShortplayEntryPage() {
 
         // 开始轮询进度
         await pollVideoProgress(fileId);
-      } else {
+      } else if (result.code !== 401) {
         throw new Error(result.message || "视频生成失败");
       }
     } catch (error) {
@@ -2591,11 +2601,21 @@ function ShortplayEntryPage() {
           body: JSON.stringify({ fileId: parseInt(fileId) }),
         });
 
-        if (!response.ok) {
-          throw new Error(`进度查询失败: ${response.status}`);
+        const result = await response.json();
+
+        // 检查是否未登录
+        if (result.code === 401) {
+          // 清除本地存储的认证信息
+          localStorage.removeItem("token");
+          sessionStorage.removeItem("userId");
+          // 重定向到登录页面
+          window.location.href = "/login";
+          return;
         }
 
-        const result = await response.json();
+        if (!response.ok && result.code !== 0) {
+          throw new Error(`进度查询失败: ${response.status}`);
+        }
 
         if (result.code === 0 && result.data) {
           const { status, playUrl, errorMessage } = result.data;
@@ -3288,9 +3308,9 @@ function ShortplayEntryPage() {
                         label: t("shortplayEntry.tabs.script"),
                         value: "script",
                       },
-                      { label: t("shortplayEntry.tabs.audio"), value: "audio" },
                       { label: t("shortplayEntry.tabs.image"), value: "image" },
                       { label: t("shortplayEntry.tabs.video"), value: "video" },
+                      { label: t("shortplayEntry.tabs.audio"), value: "audio" },
                     ]}
                     style={{
                       width: "100%",

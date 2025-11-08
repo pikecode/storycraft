@@ -255,7 +255,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
             </div>
           )}
         </div>
-        {(onAddClick || onApplyClick) && (
+        {(onAddClick || onApplyClick) && subtitleOptions && subtitleOptions.length > 0 && (
           <div className="flex items-center space-x-2">
             {onAddClick && (
               <button
