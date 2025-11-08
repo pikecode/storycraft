@@ -56,8 +56,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             try {
                 console.log('🔄 [AuthContext] 正在验证用户session...');
 
-                // 首先尝试从sessionStorage获取userId
+                // 首先尝试从sessionStorage获取userId和userName
                 const savedUserId = sessionStorage.getItem('userId');
+                const savedUserName = sessionStorage.getItem('userName');
 
                 if (!savedUserId) {
                     console.log('⚠️ [AuthContext] sessionStorage中没有userId，用户未登录');
@@ -83,8 +84,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
                     const authUserData = {
                         user_id: userData.user_id || parseInt(String(userData.userId)) || parseInt(String(savedUserId)) || 0,
-                        user_name: userData.user_name || userData.username || '用户',
-                        user_email: userData.user_email || '',
+                        user_name: userData.user_name || userData.username || userData.login_username || savedUserName || userId || '用户',
+                        user_email: userData.user_email || userData.email || '',
                         user_plan: userData.user_plan || 'free',
                         user_point: userData.user_point || '0',
                         subscription_expires_at: userData.subscription_expires_at,
@@ -196,8 +197,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 const userData = result.data;
                 const updatedUser: User = {
                     user_id: userData.user_id || 0,
-                    user_name: userData.user_name || '用户',
-                    user_email: userData.user_email || '',
+                    user_name: userData.user_name || userData.username || userData.login_username || '用户',
+                    user_email: userData.user_email || userData.email || '',
                     user_plan: userData.user_plan || 'free',
                     user_point: userData.user_point || '0',
                     subscription_expires_at: userData.subscription_expires_at,

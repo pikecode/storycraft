@@ -11,6 +11,34 @@ const TopBar: React.FC = () => {
     const { language, setLanguage, t } = useI18n();
     const [userMenuVisible, setUserMenuVisible] = useState(false);
 
+    // 获取显示的用户名
+    const getDisplayUserName = () => {
+        // 首先尝试从 sessionStorage 获取保存的用户名（最准确）
+        const savedUserName = sessionStorage.getItem('userName');
+        if (savedUserName && savedUserName !== '用户') {
+            return savedUserName;
+        }
+
+        if (!user) {
+            return '用户';
+        }
+
+        // 使用 user 对象中的用户名
+        if (user.user_name && user.user_name !== '用户') {
+            return user.user_name;
+        }
+        if (user.user_email) {
+            return user.user_email;
+        }
+        if (user.user_id) {
+            return `User ${user.user_id}`;
+        }
+        if (user.userId) {
+            return `User ${user.userId}`;
+        }
+        return '用户';
+    };
+
     // 获取会员状态显示文本
     const getMemberStatusText = () => {
         if (!isAuthenticated || !user) {
@@ -109,7 +137,9 @@ const TopBar: React.FC = () => {
                     <Dropdown overlay={userMenu} trigger={['click']} onVisibleChange={setUserMenuVisible}>
                         <div className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-100 cursor-pointer">
                             <Avatar size="small" icon={<UserOutlined />} />
-                            <span className="text-sm font-medium text-gray-700">{user.user_name}</span>
+                            <span className="text-sm font-medium text-gray-700">
+                                {getDisplayUserName()}
+                            </span>
                             <DownOutlined className="text-xs text-gray-500" />
                         </div>
                     </Dropdown>

@@ -260,9 +260,11 @@ const LoginPage: React.FC = () => {
                     userId: userId  // 重要：需要这个字段用于API调用
                 };
 
-                // 保存userId到sessionStorage（仅当前标签页有效）
+                // 保存userId和userName到sessionStorage（仅当前标签页有效）
                 sessionStorage.setItem('userId', String(userId));
+                sessionStorage.setItem('userName', response.data.username || username);
                 console.log('💾 [LoginPage] userId已保存到sessionStorage:', userId);
+                console.log('💾 [LoginPage] userName已保存到sessionStorage:', response.data.username || username);
 
                 // 设置userId到shortplayService（基于session，不持久化）
                 setCurrentUserId(userId);
