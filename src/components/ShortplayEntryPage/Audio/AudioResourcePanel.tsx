@@ -5,7 +5,8 @@ import { useI18n } from '../../../contexts/I18nContext';
 
 interface Voice {
   voiceId: string;
-  voiceName: string;
+  voiceName?: string;  // 保留用于兼容
+  displayName: string;
   sampleAudioUrl?: string;
   voiceSource?: 'CUSTOM' | 'SYSTEM';
 }
@@ -149,9 +150,9 @@ export function AudioResourcePanel({
                           ) : (
                             <div
                               className="text-sm text-gray-800 cursor-pointer hover:text-blue-600"
-                              onClick={() => onStartEditVoiceName(voice.voiceId, voice.voiceName)}
+                              onClick={() => onStartEditVoiceName(voice.voiceId, voice.displayName)}
                             >
-                              {voice.voiceName}
+                              {voice.displayName}
                             </div>
                           )}
                         </div>

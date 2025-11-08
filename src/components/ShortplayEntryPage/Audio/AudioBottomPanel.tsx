@@ -5,7 +5,8 @@ import { useI18n } from '../../../contexts/I18nContext';
 
 interface Voice {
   voiceId: string;
-  voiceName: string;
+  voiceName?: string;  // 保留用于兼容
+  displayName: string;
   sampleAudioUrl?: string;
   voiceSource?: 'CUSTOM' | 'SYSTEM';
 }

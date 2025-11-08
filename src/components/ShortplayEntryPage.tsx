@@ -1761,7 +1761,7 @@ function ShortplayEntryPage() {
   // 删除音色
   const handleDeleteVoice = async (voiceId: string) => {
     const voice = configuredVoices.find((v) => v.voiceId === voiceId);
-    const voiceName = voice?.voiceName || "该音色";
+    const voiceName = voice?.displayName || "该音色";
 
     Modal.confirm({
       title: "删除音色",
@@ -1860,7 +1860,7 @@ function ShortplayEntryPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${STORYAI_API_BASE}/voice/update`, {
+      const response = await fetch(`${STORYAI_API_BASE}/voice/rename`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1868,7 +1868,7 @@ function ShortplayEntryPage() {
         },
         body: JSON.stringify({
           voiceId: editingVoiceId,
-          voiceName: editingVoiceName.trim(),
+          aliasName: editingVoiceName.trim(),
         }),
       });
 
@@ -3491,51 +3491,9 @@ function ShortplayEntryPage() {
                                     />
                                   </div>
                                   <div className="flex-1">
-                                    {editingVoiceId === voice.voiceId ? (
-                                      <div className="flex items-center space-x-2">
-                                        <input
-                                          type="text"
-                                          value={editingVoiceName}
-                                          onChange={(e) =>
-                                            setEditingVoiceName(e.target.value)
-                                          }
-                                          onKeyDown={handleVoiceNameKeyDown}
-                                          className="text-sm border border-blue-500 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                          style={{ width: "120px" }}
-                                          autoFocus
-                                        />
-                                        <button
-                                          onClick={handleSaveVoiceName}
-                                          className="text-green-600 hover:text-green-800 p-0 border-0 bg-transparent outline-none"
-                                        >
-                                          <Icon
-                                            icon="ri:check-line"
-                                            className="w-4 h-4"
-                                          />
-                                        </button>
-                                        <button
-                                          onClick={handleCancelEditVoiceName}
-                                          className="text-red-600 hover:text-red-800 p-0 border-0 bg-transparent outline-none"
-                                        >
-                                          <Icon
-                                            icon="ri:close-line"
-                                            className="w-4 h-4"
-                                          />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <div
-                                        className="text-sm font-medium text-gray-800 cursor-pointer hover:text-blue-600"
-                                        onClick={() =>
-                                          handleStartEditVoiceName(
-                                            voice.voiceId,
-                                            voice.voiceName
-                                          )
-                                        }
-                                      >
-                                        {voice.voiceName}
-                                      </div>
-                                    )}
+                                    <div className="text-sm font-medium text-gray-800">
+                                      {voice.voiceName}
+                                    </div>
                                   </div>
                                   <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
                                     {voice.voiceSource === "CUSTOM" ? (
