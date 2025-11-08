@@ -810,6 +810,7 @@ export const enUS = {
       edit: 'Edit',
       inputSceneName: 'Please enter scene name',
       addScene: 'Add Scene',
+      noSceneYet: 'No scene yet',
     },
   },
 

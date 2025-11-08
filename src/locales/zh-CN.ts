@@ -812,6 +812,7 @@ export const zhCN = {
       edit: '编辑',
       inputSceneName: '请输入场景名称',
       addScene: '新增场景',
+      noSceneYet: '暂无场景',
     },
   },
 

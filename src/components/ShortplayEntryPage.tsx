@@ -949,17 +949,27 @@ function ShortplayEntryPage() {
   const handleAddScene = async (sceneName: string): Promise<boolean> => {
     try {
       const token = localStorage.getItem("token");
+
+      // 构建请求体，如果有 episodeId 则包含，否则不传
+      const episodeId = scenesData.length > 0 ? scenesData[0].episodeId : null;
+      const requestBody: any = {
+        seriesId: seriesId,
+        sceneTitle: sceneName,
+        sceneOrder: scenesData.length + 1,
+      };
+
+      // 只有当 episodeId 存在时才添加
+      if (episodeId) {
+        requestBody.episodeId = episodeId;
+      }
+
       const response = await fetch(`${STORYAI_API_BASE}/scene`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-Prompt-Manager-Token": token || "",
         },
-        body: JSON.stringify({
-          episodeId: scenesData.length > 0 ? scenesData[0].episodeId : seriesId,
-          sceneTitle: sceneName,
-          sceneOrder: scenesData.length + 1,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {

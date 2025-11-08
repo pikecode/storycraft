@@ -133,7 +133,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
             </g>
           </svg>
           <span className="text-base font-medium text-gray-900">{title}</span>
-          {subtitle && (
+          {(subtitle || (subtitleOptions && subtitleOptions.length === 0)) && (
             <div className="relative">
               {isEditing ? (
                 // 编辑模式
@@ -150,8 +150,8 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
               ) : (
                 // 显示模式
                 <div className="flex items-center space-x-1 text-sm text-gray-600 select-none">
-                  <span>
-                    {subtitle}
+                  <span className={subtitle ? '' : 'text-gray-400 italic'}>
+                    {subtitle || t('shortplayEntry.ui.noSceneYet')}
                   </span>
                   <Tooltip title={t('shortplayEntry.scenes.selectPresetScene')}>
                     <Icon
@@ -166,7 +166,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
               {/* 下拉选择器 */}
               {isDropdownOpen && subtitleOptions && !isEditing && (
                 <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-64">
-                  {subtitleOptions.map((option, index) => (
+                  {subtitleOptions.length > 0 && subtitleOptions.map((option, index) => (
                     <div
                       key={index}
                       className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors first:rounded-t-lg flex items-center justify-between group"
@@ -227,7 +227,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
 
                   {/* 新增选项区域 */}
                   {isAddingOption ? (
-                    <div className="px-3 py-2 border-t border-gray-200">
+                    <div className={`px-3 py-2 ${subtitleOptions.length > 0 ? 'border-t border-gray-200' : ''}`}>
                       <input
                         type="text"
                         value={newOptionValue}
@@ -240,7 +240,7 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                       />
                     </div>
                   ) : (
-                    <div className="px-3 py-2 border-t border-gray-200">
+                    <div className={`px-3 py-2 ${subtitleOptions.length > 0 ? 'border-t border-gray-200' : ''}`}>
                       <button
                         onClick={() => setIsAddingOption(true)}
                         className="w-full text-left text-sm text-blue-500 hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors whitespace-nowrap flex items-center gap-2"
