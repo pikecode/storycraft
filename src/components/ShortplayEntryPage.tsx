@@ -204,6 +204,75 @@ function ShortplayEntryPage() {
     }
   }, []);
 
+  // 页面初始化时，从 /series/detail 接口加载对话历史
+  React.useEffect(() => {
+    const initializeConversationFromAPI = async () => {
+      // 检查是否已有对话历史
+      if (conversationHistory.length > 0) {
+        return;
+      }
+
+      // 尝试获取seriesId
+      const storedSeriesId = localStorage.getItem("currentSeriesId");
+      if (!storedSeriesId) {
+        return; // 没有seriesId，不加载
+      }
+
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `${STORYAI_API_BASE}/series/detail?seriesId=${storedSeriesId}`,
+          {
+            method: "GET",
+            headers: {
+              "X-Prompt-Manager-Token": token || "",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.warn("Failed to load series detail for conversation");
+          return;
+        }
+
+        const result = await response.json();
+        if (result.code === 0 && result.data) {
+          const { seriesContent, userInput } = result.data;
+
+          console.log(
+            "📝 [页面初始化] 从API加载对话内容",
+            { userInput, seriesContentLength: seriesContent?.length }
+          );
+
+          // 如果有seriesContent和userInput，添加到对话历史
+          if (userInput && seriesContent) {
+            const newMessages: ConversationMessage[] = [
+              {
+                id: Date.now().toString(),
+                type: 'user',
+                content: userInput,
+                timestamp: Date.now(),
+              },
+              {
+                id: (Date.now() + 1).toString(),
+                type: 'assistant',
+                content: seriesContent,
+                timestamp: Date.now(),
+              },
+            ];
+
+            console.log('✅ [页面初始化] 添加初始对话消息:', newMessages.length);
+            setConversationHistory(newMessages);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading conversation from API:", error);
+      }
+    };
+
+    initializeConversationFromAPI();
+  }, []); // 只在组件挂载时执行一次
+
   // 保存对话历史到 localStorage
   React.useEffect(() => {
     if (conversationHistory.length > 0) {
@@ -3232,6 +3301,8 @@ function ShortplayEntryPage() {
 
       const seriesId = result.data.seriesId;
       setSeriesId(seriesId);
+      // 保存seriesId到localStorage，用于页面初始化时加载对话
+      localStorage.setItem("currentSeriesId", seriesId.toString());
       setGenerationStatus("剧本生成中，请稍候...");
 
       // 第二步：轮询获取生成结果
