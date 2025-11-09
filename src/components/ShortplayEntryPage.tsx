@@ -3274,22 +3274,34 @@ function ShortplayEntryPage() {
               setGenerationStatus("生成完成！");
               setGeneratedContent(seriesContent || "");
 
-              // 添加对话记录
-              const newMessages: ConversationMessage[] = [
-                {
-                  id: Date.now().toString(),
-                  type: 'user',
-                  content: userInput.trim(),
-                  timestamp: Date.now(),
-                },
-                {
-                  id: (Date.now() + 1).toString(),
-                  type: 'assistant',
-                  content: seriesContent || '',
-                  timestamp: Date.now(),
-                },
-              ];
-              setConversationHistory((prev) => [...prev, ...newMessages]);
+              // 添加对话记录 - 在清空userInput前保存内容
+              const userMessage = userInput.trim();
+              const aiMessage = seriesContent || '';
+
+              if (userMessage && aiMessage) {
+                const newMessages: ConversationMessage[] = [
+                  {
+                    id: Date.now().toString(),
+                    type: 'user',
+                    content: userMessage,
+                    timestamp: Date.now(),
+                  },
+                  {
+                    id: (Date.now() + 1).toString(),
+                    type: 'assistant',
+                    content: aiMessage,
+                    timestamp: Date.now(),
+                  },
+                ];
+                console.log('✅ [添加对话记录] 新消息:', newMessages);
+                setConversationHistory((prev) => {
+                  const updated = [...prev, ...newMessages];
+                  console.log('✅ [更新对话历史] 总消息数:', updated.length);
+                  return updated;
+                });
+              } else {
+                console.warn('⚠️ [对话记录] 用户消息或AI消息为空', { userMessage, aiMessage });
+              }
 
               // 使用 /scene/{seriesId} API 获取完整的场景列表数据
               try {
