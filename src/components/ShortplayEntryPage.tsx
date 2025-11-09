@@ -3389,12 +3389,14 @@ function ShortplayEntryPage() {
                             setActiveTab(
                               value as "script" | "audio" | "image" | "video"
                             );
+                            setUserInput("");
                           },
                         });
                       } else {
                         setActiveTab(
                           value as "script" | "audio" | "image" | "video"
                         );
+                        setUserInput("");
                       }
                     }}
                     options={[
@@ -3411,7 +3413,7 @@ function ShortplayEntryPage() {
                       border: "1px solid #3E83F6",
                       borderRadius: "29px",
                     }}
-                    className="[&.ant-segmented]:!border [&.ant-segmented]:!border-[#3E83F6]! [&.ant-segmented]:!rounded-[29px]! [&_.ant-segmented-item-selected]:!bg-[#3E83F6] [&_.ant-segmented-thumb]:!bg-[#3E83F6] [&_.ant-segmented-item]:!rounded-[28px] [&_.ant-segmented-thumb]:!transition-all [&_.ant-segmented-thumb]:!duration-300 [&_.ant-segmented-thumb]:!ease-in-out [&_.ant-segmented-item:not(.ant-segmented-item-selected):hover]:!bg-transparent [&_.ant-segmented-item:not(.ant-segmented-item-selected):hover]:!text-inherit [&_.ant-segmented-item-selected:hover]:!bg-[#3E83F6] [&_.ant-segmented-item-selected:hover]:!text-white"
+                    className="[&.ant-segmented]:!border [&.ant-segmented]:!border-[#3E83F6]! [&.ant-segmented]:!rounded-[29px]! [&_.ant-segmented-item-selected]:!bg-[#3E83F6] [&_.ant-segmented-thumb]:!bg-[#3E83F6] [&_.ant-segmented-item]:!rounded-[28px] [&_.ant-segmented-thumb]:!transition-all [&_.ant-segmented-thumb]:!duration-300 [&_.ant-segmented-thumb]:!ease-in-out [&_.ant-segmented-item:not(.ant-segmented-item-selected):hover]:!bg-transparent [&_.ant-segmented-item:not(.ant-segmented-item-selected):hover]:!text-white [&_.ant-segmented-item-selected:hover]:!bg-[#3E83F6] [&_.ant-segmented-item-selected:hover]:!text-white"
                   />
                 </div>
               </div>

@@ -66,7 +66,7 @@ export function AudioResourcePanel({
       {/* 配音选择区域 */}
       <div className="space-y-3">
         <div className="flex items-center space-x-4">
-          <label className="flex items-center space-x-2 cursor-pointer">
+          <label className="flex items-center space-x-2 cursor-pointer" style={{ marginTop: '8px' }}>
             <input
               type="radio"
               value="voice"
@@ -76,7 +76,7 @@ export function AudioResourcePanel({
             />
             <span className="text-sm text-gray-700">{t('shortplayEntry.audio.voice')}</span>
           </label>
-          <label className="flex items-center space-x-2 cursor-pointer">
+          <label className="flex items-center space-x-2 cursor-pointer" style={{ marginTop: '8px' }}>
             <input
               type="radio"
               value="sound"
