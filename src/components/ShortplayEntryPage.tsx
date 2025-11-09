@@ -3281,6 +3281,10 @@ function ShortplayEntryPage() {
               const userMessage = savedUserInput;
               const aiMessage = seriesContent || '';
 
+              console.log('📝 [对话记录检查] userMessage:', userMessage);
+              console.log('📝 [对话记录检查] aiMessage长度:', aiMessage.length);
+              console.log('📝 [对话记录检查] aiMessage前100字:', aiMessage.substring(0, 100));
+
               if (userMessage && aiMessage) {
                 const newMessages: ConversationMessage[] = [
                   {
@@ -3300,6 +3304,7 @@ function ShortplayEntryPage() {
                 setConversationHistory((prev) => {
                   const updated = [...prev, ...newMessages];
                   console.log('✅ [更新对话历史] 总消息数:', updated.length);
+                  console.log('✅ [更新对话历史] 完整历史:', updated);
                   return updated;
                 });
               } else {
