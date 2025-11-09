@@ -3497,23 +3497,6 @@ function ShortplayEntryPage() {
                                       {voice.voiceName}
                                     </div>
                                   </div>
-                                  <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
-                                    {voice.voiceSource === "CUSTOM" ? (
-                                      <img
-                                        src="/img/avatar.png"
-                                        alt="定制音色"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full bg-orange-500 flex items-center justify-center">
-                                        <span className="text-xs text-white font-medium">
-                                          {t(
-                                            "shortplayEntry.status.systemVoice"
-                                          )}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
                                   <div className="flex space-x-2">
                                     <button
                                       className="px-1 py-0.5 text-sm border border-blue-500 text-blue-500 rounded hover:bg-blue-50"
