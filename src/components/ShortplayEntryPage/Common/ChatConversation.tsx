@@ -45,10 +45,10 @@ export function ChatConversation({ messages, isLoading = false }: ChatConversati
             className={`rounded-lg px-4 py-3 ${
               message.type === 'user'
                 ? 'bg-blue-500 text-white rounded-br-none max-w-[80%]'
-                : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                : 'bg-gray-100 text-gray-800 rounded-bl-none max-w-[90%]'
             }`}
           >
-            <div className="text-sm whitespace-pre-wrap break-words">
+            <div className="text-sm whitespace-pre-wrap break-words overflow-auto max-h-[500px]">
               {message.content}
             </div>
             {message.timestamp && (
