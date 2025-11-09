@@ -191,7 +191,25 @@ function ShortplayEntryPage() {
       } catch (error) {
       }
     }
+
+    // 恢复对话历史
+    const savedConversation = localStorage.getItem("conversationHistory");
+    if (savedConversation) {
+      try {
+        const conversation = JSON.parse(savedConversation);
+        setConversationHistory(conversation);
+      } catch (error) {
+        console.error("Failed to restore conversation history:", error);
+      }
+    }
   }, []);
+
+  // 保存对话历史到 localStorage
+  React.useEffect(() => {
+    if (conversationHistory.length > 0) {
+      localStorage.setItem("conversationHistory", JSON.stringify(conversationHistory));
+    }
+  }, [conversationHistory]);
 
   React.useEffect(() => {
     Object.values(audioRefMap.current).forEach((audio) => {

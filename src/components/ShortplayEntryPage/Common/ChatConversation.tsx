@@ -35,16 +35,16 @@ export function ChatConversation({ messages, isLoading = false }: ChatConversati
   }
 
   return (
-    <div className="flex flex-col space-y-3">
+    <div className="flex flex-col space-y-4">
       {messages.map((message) => (
         <div
           key={message.id}
           className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
         >
           <div
-            className={`max-w-[80%] rounded-lg px-4 py-3 ${
+            className={`rounded-lg px-4 py-3 ${
               message.type === 'user'
-                ? 'bg-blue-500 text-white rounded-br-none'
+                ? 'bg-blue-500 text-white rounded-br-none max-w-[80%]'
                 : 'bg-gray-100 text-gray-800 rounded-bl-none'
             }`}
           >
@@ -53,7 +53,7 @@ export function ChatConversation({ messages, isLoading = false }: ChatConversati
             </div>
             {message.timestamp && (
               <div
-                className={`text-xs mt-1 ${
+                className={`text-xs mt-2 ${
                   message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
                 }`}
               >
