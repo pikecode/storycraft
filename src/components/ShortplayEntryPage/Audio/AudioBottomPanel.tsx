@@ -79,7 +79,7 @@ export function AudioBottomPanel({
   generationStatus,
 }: AudioBottomPanelProps) {
   const { t } = useI18n();
-  const finalPlaceholder = '简单描述你想要的音乐风格';
+  const finalPlaceholder = t('shortplayEntry.input.audioPlaceholder');
 
   return (
     <div>

@@ -4168,7 +4168,6 @@ function ShortplayEntryPage() {
                           ? handleVideoGenerate
                           : handleGenerate
                       }
-                      placeholder={t("shortplayEntry.input.placeholder")}
                       generationStatus={generationStatus}
                       audioType={audioType}
                       voiceType={voiceType}

@@ -569,6 +569,10 @@ export const enUS = {
     },
     input: {
       placeholder: 'Simply describe the interactive drama you want',
+      scriptPlaceholder: 'Simply describe the interactive drama you want',
+      audioPlaceholder: 'Simply describe the voice style you want',
+      imagePlaceholder: 'Simply describe the visual style you want',
+      videoPlaceholder: 'Simply describe the visual style you want',
       description: 'Please enter your desired interactive drama description',
       authTokenError: 'No valid authentication token found, please log in again',
       generateSuccess: 'Generation successful',

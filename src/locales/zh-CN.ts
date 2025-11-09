@@ -571,6 +571,10 @@ export const zhCN = {
     },
     input: {
       placeholder: '简单描述你想要的互动剧',
+      scriptPlaceholder: '简单描述你想要的互动剧',
+      audioPlaceholder: '简单描述你想要的声音风格',
+      imagePlaceholder: '简单描述你想要的画面风格',
+      videoPlaceholder: '简单描述你想要的画面风格',
       description: '请输入您想要的互动剧描述',
       authTokenError: '未找到有效的身份验证令牌，请重新登录',
       generateSuccess: '生成成功',

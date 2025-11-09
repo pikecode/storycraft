@@ -72,8 +72,27 @@ export function BottomInputArea({
     }
   }, [isGenerating]);
 
-  // Use translated placeholder if not provided
-  const finalPlaceholder = placeholder || t('shortplayEntry.input.placeholder');
+  // 根据不同的tab设置不同的placeholder文案
+  const getTabPlaceholder = () => {
+    if (placeholder) {
+      return placeholder;
+    }
+
+    switch (activeTab) {
+      case 'script':
+        return t('shortplayEntry.input.scriptPlaceholder');
+      case 'audio':
+        return t('shortplayEntry.input.audioPlaceholder');
+      case 'image':
+        return t('shortplayEntry.input.imagePlaceholder');
+      case 'video':
+        return t('shortplayEntry.input.videoPlaceholder');
+      default:
+        return t('shortplayEntry.input.placeholder');
+    }
+  };
+
+  const finalPlaceholder = getTabPlaceholder();
 
   // 计算可用的视频生成模型
   const getAvailableVideoModels = () => {
