@@ -4,7 +4,7 @@ import { Tooltip } from 'antd';
 import { useI18n } from '../../../contexts/I18nContext';
 import { SectionHeaderProps } from '../types';
 
-export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onSubtitleEdit, onOptionsChange, onAddClick, onApplyClick, isLoading, onAddSubtitleOption, onDeleteSubtitleOption }: SectionHeaderProps) {
+export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChange, onSubtitleEdit, onOptionsChange, onAddClick, onApplyClick, isLoading, isContentLoading, onAddSubtitleOption, onDeleteSubtitleOption }: SectionHeaderProps) {
   const { t } = useI18n();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -149,8 +149,11 @@ export function SectionHeader({ title, subtitle, subtitleOptions, onSubtitleChan
                 />
               ) : (
                 // 显示模式
-                <div className="flex items-center space-x-1 text-sm text-gray-600 select-none">
-                  <span className={subtitle ? '' : 'text-gray-400 italic'}>
+                <div className="flex items-center space-x-2 text-sm text-gray-600 select-none" onClick={subtitleOptions ? handleArrowClick : undefined} style={{cursor: subtitleOptions ? 'pointer' : 'default'}}>
+                  {isContentLoading && (
+                    <Icon icon="ri:loader-4-line" className="w-4 h-4 text-blue-500 animate-spin" />
+                  )}
+                  <span className={`${subtitle ? '' : 'text-gray-400 italic'} hover:text-blue-500`}>
                     {subtitle || t('shortplayEntry.ui.noSceneYet')}
                   </span>
                   <Tooltip title={t('shortplayEntry.scenes.selectPresetScene')}>

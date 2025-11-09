@@ -108,6 +108,7 @@ function ShortplayEntryPage() {
   const [sceneOptions, setSceneOptions] = useState<string[]>([]);
   const [scenesData, setScenesData] = useState<any[]>([]); // 存储完整的场次数据
   const [sceneContent, setSceneContent] = useState<any[]>([]); // 存储当前场次的内容数据
+  const [isLoadingSceneContent, setIsLoadingSceneContent] = useState(false); // 场景内容加载状态
   const [showTypeSelector, setShowTypeSelector] = useState(false); // 显示类型选择弹窗
   const [popoverPosition, setPopoverPosition] = useState<{
     top: number;
@@ -2748,6 +2749,7 @@ function ShortplayEntryPage() {
     }
   };
   const loadSceneContent = async (sceneId: number) => {
+    setIsLoadingSceneContent(true);
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
@@ -2767,6 +2769,8 @@ function ShortplayEntryPage() {
         }
       }
     } catch (error) {
+    } finally {
+      setIsLoadingSceneContent(false);
     }
   };
 
@@ -4333,6 +4337,7 @@ function ShortplayEntryPage() {
                   }
                 }}
                 isLoading={isLoadingPreviewVideo}
+                isContentLoading={isLoadingSceneContent}
               />
             </div>
 
