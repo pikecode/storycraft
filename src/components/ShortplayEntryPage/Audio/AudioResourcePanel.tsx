@@ -108,7 +108,7 @@ export function AudioResourcePanel({
               </div>
 
               {/* 列表容器 - 在下面 */}
-              <div className="space-y-2.5 overflow-auto" style={{ maxHeight: '200px' }}>
+              <div className="space-y-2.5">
                 {isLoadingVoices ? (
                   <div className="flex items-center justify-center text-gray-500">
                     <Icon icon="ri:loader-4-line" className="w-4 h-4 animate-spin mr-2" />
