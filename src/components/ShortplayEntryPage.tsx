@@ -29,6 +29,7 @@ import { SortableScriptItem } from "./ShortplayEntryPage/Script/SortableScriptIt
 import { BottomInputArea } from "./ShortplayEntryPage/Common/BottomInputArea";
 import { TimeRangeInput } from "./ShortplayEntryPage/Common/TimeRangeInput";
 import { SectionHeader } from "./ShortplayEntryPage/Common/SectionHeader";
+import { ChatConversation, type ConversationMessage } from "./ShortplayEntryPage/Common/ChatConversation";
 import { SortableImageItem } from "./ShortplayEntryPage/Image/SortableImageItem";
 import { ImageItemComponent } from "./ShortplayEntryPage/Image/ImageItemComponent";
 import { SortableVideoItem } from "./ShortplayEntryPage/Video/SortableVideoItem";
@@ -85,6 +86,9 @@ function ShortplayEntryPage() {
   const [generationStatus, setGenerationStatus] = useState<string>(""); // 生成状态文本
   const [isGeneratingPreview, setIsGeneratingPreview] =
     useState<boolean>(false); // 预览生成状态
+
+  // 对话历史状态
+  const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([]);
 
   // 底部输入区域的额外状态
   const [voiceType, setVoiceType] = useState<string>("male");
@@ -3252,6 +3256,23 @@ function ShortplayEntryPage() {
               setGenerationStatus("生成完成！");
               setGeneratedContent(seriesContent || "");
 
+              // 添加对话记录
+              const newMessages: ConversationMessage[] = [
+                {
+                  id: Date.now().toString(),
+                  type: 'user',
+                  content: userInput.trim(),
+                  timestamp: Date.now(),
+                },
+                {
+                  id: (Date.now() + 1).toString(),
+                  type: 'assistant',
+                  content: seriesContent || '',
+                  timestamp: Date.now(),
+                },
+              ];
+              setConversationHistory((prev) => [...prev, ...newMessages]);
+
               // 使用 /scene/{seriesId} API 获取完整的场景列表数据
               try {
                 const storedSeriesId = returnedSeriesId || seriesId;
@@ -3460,14 +3481,10 @@ function ShortplayEntryPage() {
                   style={{ padding: "10px 10px 40px 10px" }}
                 >
                   {activeTab === "script" && (
-                    <div className="space-y-4">
-                      {/* 生成的内容显示 */}
-                      {generatedContent ? (
-                        <div className="text-sm text-gray-700 whitespace-pre-wrap">
-                          {generatedContent}
-                        </div>
-                      ) : null}
-                    </div>
+                    <ChatConversation
+                      messages={conversationHistory}
+                      isLoading={isGenerating}
+                    />
                   )}
 
                   {activeTab === "audio" && (
