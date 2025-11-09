@@ -3172,6 +3172,9 @@ function ShortplayEntryPage() {
       return;
     }
 
+    // 保存用户输入，用于后续对话记录
+    const savedUserInput = userInput.trim();
+
     setIsGenerating(true);
     setGenerationStatus("正在创建剧本任务...");
 
@@ -3205,7 +3208,7 @@ function ShortplayEntryPage() {
         },
         body: JSON.stringify({
           userId: userId,
-          userInput: userInput.trim(),
+          userInput: savedUserInput,
           provider: selectedModel,
           language: mappedLanguage,
         }),
@@ -3274,8 +3277,8 @@ function ShortplayEntryPage() {
               setGenerationStatus("生成完成！");
               setGeneratedContent(seriesContent || "");
 
-              // 添加对话记录 - 在清空userInput前保存内容
-              const userMessage = userInput.trim();
+              // 添加对话记录 - 使用保存的用户输入
+              const userMessage = savedUserInput;
               const aiMessage = seriesContent || '';
 
               if (userMessage && aiMessage) {
