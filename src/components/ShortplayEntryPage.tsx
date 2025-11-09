@@ -3467,7 +3467,7 @@ function ShortplayEntryPage() {
 
   return (
     <>
-      <div className="flex flex-col h-screen w-screen bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
+      <div className="flex flex-col h-full w-full bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
         <div className="flex flex-grow overflow-hidden">
           {/* 左侧面板 - 一键创作 (均分) */}
           <div className="flex-1 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
