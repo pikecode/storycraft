@@ -557,6 +557,9 @@ export const enUS = {
       image: 'Image',
       video: 'Video',
     },
+    chat: {
+      noMessages: 'No messages yet',
+    },
     generation: {
       generating: 'Generating...',
       oneClickGenerate: 'One-click Generate',

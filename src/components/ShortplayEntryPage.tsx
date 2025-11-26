@@ -42,17 +42,15 @@ import type { ScriptCardProps } from "./ShortplayEntryPage/types";
 
 // 导入工具函数
 import { formatMillisecondsToTime } from "./ShortplayEntryPage/utils/formatTime";
+import { apiInterceptor } from '../services/apiInterceptor';
 
 // 一键创作API基础路径
 const STORYAI_API_BASE = "/storyai";
 
 // 处理 401 未授权错误的辅助函数
 const handleUnauthorized = () => {
-  // 清除本地存储的认证信息
-  localStorage.removeItem("token");
-  sessionStorage.removeItem("userId");
-  // 重定向到登录页面
-  window.location.href = "/login";
+  console.error('🔴 [ShortplayEntryPage] 检测到401未授权错误，触发统一处理');
+  apiInterceptor.triggerUnauthorized();
 };
 
 function ShortplayEntryPage() {

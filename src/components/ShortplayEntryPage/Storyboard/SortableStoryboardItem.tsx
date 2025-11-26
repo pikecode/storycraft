@@ -8,6 +8,7 @@ import { formatMillisecondsToTime } from '../utils/formatTime';
 import { TimeRangeInput } from '../Common/TimeRangeInput';
 import { useI18n } from '../../../contexts/I18nContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import { apiInterceptor } from '../../../services/apiInterceptor';
 
 const STORYAI_API_BASE = '/storyai';
 
@@ -56,6 +57,14 @@ export function SortableStoryboardItem({
       }
 
       const result = await response.json();
+
+      // 检查401未授权错误
+      if (result.code === 401) {
+        console.error('🔴 [SortableStoryboardItem] 检测到401未授权错误，触发统一处理');
+        toast.error('用户未登录，请重新登陆');
+        apiInterceptor.triggerUnauthorized();
+        throw new Error('用户未登录');
+      }
 
       if (result.code === 0) {
         toast.success('分镜板重新生成成功！');

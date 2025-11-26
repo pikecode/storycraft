@@ -559,6 +559,9 @@ export const zhCN = {
       image: '图片',
       video: '视频',
     },
+    chat: {
+      noMessages: '暂无对话',
+    },
     generation: {
       generating: '生成中...',
       oneClickGenerate: '一键生成',

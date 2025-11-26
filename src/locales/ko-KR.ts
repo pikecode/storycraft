@@ -559,6 +559,9 @@ export const koKR = {
       image: '이미지',
       video: '비디오',
     },
+    chat: {
+      noMessages: '아직 대화가 없습니다',
+    },
     generation: {
       generating: '생성 중...',
       oneClickGenerate: '한 번의 클릭으로 생성',

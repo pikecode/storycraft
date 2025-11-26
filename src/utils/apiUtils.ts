@@ -1,4 +1,5 @@
 import config from '../config';
+import { apiInterceptor } from '../services/apiInterceptor';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -113,6 +114,17 @@ export async function callPromptApi<T = any>(
     }
 
     const result = await response.json();
+
+    // 检查401未授权错误
+    if (result.code === 401 || result.code === '401') {
+      console.error('🔴 [apiUtils] 检测到401未授权错误，触发统一处理');
+      apiInterceptor.triggerUnauthorized();
+      throw new ApiError('用户未登录', {
+        code: 'UNAUTHORIZED',
+        status: 401
+      });
+    }
+
     return result;
   } catch (error) {
     console.error('Prompt API调用失败:', error);

@@ -557,6 +557,9 @@ export const jaJP = {
       image: '画像',
       video: '動画',
     },
+    chat: {
+      noMessages: '会話がまだありません',
+    },
     generation: {
       generating: '生成中...',
       oneClickGenerate: 'ワンクリック生成',

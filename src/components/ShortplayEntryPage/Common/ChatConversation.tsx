@@ -18,6 +18,19 @@ export function ChatConversation({ messages, isLoading = false }: ChatConversati
   const { t } = useI18n();
   const endRef = React.useRef<HTMLDivElement>(null);
 
+  // 格式化内容，移除Markdown星号标记
+  const formatContent = (content: string): string => {
+    return content
+      // 替换四个星号（台词/内容）
+      .replace(/^\*{4}\s*/gm, '    ')
+      // 替换三个星号（时间和描述）
+      .replace(/^\*{3}\s*/gm, '  ')
+      // 替换两个星号（场景）
+      .replace(/^\*{2}\s*/gm, '')
+      // 替换单个星号（集数）
+      .replace(/^\*\s*/gm, '');
+  };
+
   // 自动滚动到最新消息
   React.useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,7 +62,7 @@ export function ChatConversation({ messages, isLoading = false }: ChatConversati
             }`}
           >
             <div className="text-sm whitespace-pre-wrap break-words overflow-auto max-h-[500px]">
-              {message.content}
+              {formatContent(message.content)}
             </div>
             {message.timestamp && (
               <div

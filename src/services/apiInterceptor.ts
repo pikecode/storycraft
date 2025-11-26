@@ -1,15 +1,18 @@
 /**
  * API拦截器服务
  * 用于统一处理HTTP请求和响应，特别是token过期的情况
+ * 支持新的后端错误码规范 (code + errorCode + message)
  */
 
 import { message } from 'antd';
+import { BackendResponse, ErrorHandler, isAuthError } from '../utils/errorHandler';
 
 export interface ApiResponse<T = any> {
     success: boolean;
     data?: T;
     error?: string;
     code?: number;
+    errorCode?: string | null;
 }
 
 export interface ApiError {
@@ -133,10 +136,10 @@ class ApiInterceptor {
     }
 
     /**
-     * 处理API响应
+     * 处理API响应（支持新的后端响应格式）
      */
     public async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
-        let responseData: any = null;
+        let responseData: BackendResponse<T> | any = null;
 
         try {
             const contentType = response.headers.get('content-type');
@@ -148,6 +151,60 @@ class ApiInterceptor {
         } catch (error) {
             console.error('解析响应数据失败:', error);
         }
+
+        // 检查是否为新格式的响应 (包含 errorCode 字段)
+        const isNewFormat = responseData && 'errorCode' in responseData;
+
+        if (isNewFormat) {
+            const { code, message: msg, data, errorCode } = responseData as BackendResponse<T>;
+
+            // 成功响应 (code === 200 或 code === 0)
+            if (code === 200 || code === 0) {
+                return {
+                    success: true,
+                    data: data,
+                    code: code,
+                    errorCode: null
+                };
+            }
+
+            // 检查是否为认证错误 (AUTH_301, AUTH_302, AUTH_303)
+            if (errorCode && isAuthError(errorCode)) {
+                console.log('🔴 [ApiInterceptor] 检测到认证错误:', errorCode);
+
+                if (this.onUnauthorized) {
+                    this.onUnauthorized();
+                }
+
+                return {
+                    success: false,
+                    error: msg || '认证失败',
+                    code: code,
+                    errorCode: errorCode
+                };
+            }
+
+            // 其他错误，通过 ErrorHandler 处理
+            const errorHandler = new ErrorHandler({
+                showToast: true,
+                onAuthError: () => {
+                    if (this.onUnauthorized) {
+                        this.onUnauthorized();
+                    }
+                }
+            });
+
+            errorHandler.handleError(responseData as BackendResponse<T>);
+
+            return {
+                success: false,
+                error: msg || '请求失败',
+                code: code,
+                errorCode: errorCode
+            };
+        }
+
+        // === 旧格式兼容处理 ===
 
         // 首先检查是否为未授权错误（用户未登陆）
         if (this.isUnauthorizedError(responseData)) {
@@ -168,14 +225,13 @@ class ApiInterceptor {
         // 检查是否为token过期错误
         if (!response.ok && this.isTokenExpiredError(response, responseData)) {
             console.log('检测到token过期，尝试刷新token');
-            
+
             // 先尝试刷新token
             if (this.onTokenRefresh) {
                 try {
                     const refreshSuccess = await this.onTokenRefresh();
                     if (refreshSuccess) {
                         console.log('Token刷新成功，重试请求');
-                        // 这里可以重试原始请求，但需要调用方处理
                         return {
                             success: false,
                             error: 'Token已刷新，请重试',
@@ -186,11 +242,11 @@ class ApiInterceptor {
                     console.log('Token刷新失败:', error);
                 }
             }
-            
+
             // 如果刷新失败或没有刷新机制，触发登出
             console.log('Token刷新失败，触发自动登出');
             message.warning('登录已过期，请重新登录');
-            
+
             if (this.onTokenExpired) {
                 this.onTokenExpired();
             }

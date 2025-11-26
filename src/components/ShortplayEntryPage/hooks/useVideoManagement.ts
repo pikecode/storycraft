@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import { apiInterceptor } from '../../../services/apiInterceptor';
 
 // API 基础路径
 const STORYAI_API_BASE = '/storyai';
@@ -15,9 +16,9 @@ const handleApiResponse = async (response: Response) => {
 
   // 检查是否为401未授权错误
   if (data.code === 401) {
-    console.log('检测到401未授权错误，触发重定向到登陆页面');
+    console.error('🔴 [useVideoManagement] 检测到401未授权错误，触发统一处理');
     toast.error('用户未登录，请重新登陆');
-    window.location.href = '/#/app/login';
+    apiInterceptor.triggerUnauthorized();
     throw new Error('用户未登录');
   }
 
