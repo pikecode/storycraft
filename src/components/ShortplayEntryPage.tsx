@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react";
 import { Button, Select, Segmented, Modal } from "antd";
 import toast from "react-hot-toast";
 import { useI18n } from "../contexts/I18nContext";
+import { formatApiError } from "../utils/errorMessageFormatter";
 import {
   DndContext,
   closestCenter,
@@ -210,23 +211,29 @@ function ShortplayEntryPage() {
         return;
       }
 
-      // 尝试获取seriesId
+      // 优先使用 currentSeriesId，否则使用 userId
       const storedSeriesId = localStorage.getItem("currentSeriesId");
-      if (!storedSeriesId) {
-        return; // 没有seriesId，不加载
+      const userId = getUserId();
+
+      // 如果都没有，则不加载
+      if (!storedSeriesId && !userId) {
+        return;
       }
 
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(
-          `${STORYAI_API_BASE}/series/detail?seriesId=${storedSeriesId}`,
-          {
-            method: "GET",
-            headers: {
-              "X-Prompt-Manager-Token": token || "",
-            },
-          }
-        );
+
+        // 构建 API 请求 URL
+        const apiUrl = storedSeriesId
+          ? `${STORYAI_API_BASE}/series/detail?seriesId=${storedSeriesId}`
+          : `${STORYAI_API_BASE}/series/detail?userId=${userId}`;
+
+        const response = await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            "X-Prompt-Manager-Token": token || "",
+          },
+        });
 
         if (!response.ok) {
           console.warn("Failed to load series detail for conversation");
@@ -239,7 +246,11 @@ function ShortplayEntryPage() {
 
           console.log(
             "📝 [页面初始化] 从API加载对话内容",
-            { userInput, seriesContentLength: seriesContent?.length }
+            {
+              source: storedSeriesId ? 'seriesId' : 'userId',
+              userInput,
+              seriesContentLength: seriesContent?.length
+            }
           );
 
           // 如果有seriesContent和userInput，添加到对话历史
@@ -2387,14 +2398,13 @@ function ShortplayEntryPage() {
 
         toast.success(t("shortplayEntry.messages.success.imageGenerated"));
       } else {
+        // 直接抛出原始错误信息，让 catch 块通过 formatApiError 处理
         throw new Error(result.message || "图片生成失败");
       }
     } catch (error) {
-      toast.error(
-        t("shortplayEntry.messages.error.imageGenerationFailed", {
-          error: (error as Error).message,
-        })
-      );
+      // 使用 formatApiError 转换错误信息
+      const friendlyMessage = formatApiError(error as Error, 'image');
+      toast.error(friendlyMessage);
     } finally {
       setIsGenerating(false);
       setGenerationStatus("");
@@ -2746,7 +2756,13 @@ function ShortplayEntryPage() {
             setUserInput(""); // 清空输入
             return;
           } else if (status === "FAILED" || errorMessage) {
-            throw new Error(errorMessage || "视频生成失败");
+            // 直接显示 API 返回的错误信息
+            toast.error(errorMessage || "视频生成失败");
+            setIsGenerating(false);
+            setIsVideoGenerating(false);
+            setVideoGenerationFileId(null);
+            setGenerationStatus("");
+            return;
           } else {
             // 继续轮询
             setGenerationStatus(`视频生成中... (${pollCount}/${maxPolls})`);
@@ -2761,11 +2777,9 @@ function ShortplayEntryPage() {
           throw new Error(result.message || "进度查询失败");
         }
       } catch (error) {
-        toast.error(
-          t("shortplayEntry.messages.error.videoGenerationFailed", {
-            error: (error as Error).message,
-          })
-        );
+        // 使用 formatApiError 转换长错误信息为友好提示
+        const friendlyMessage = formatApiError(error as Error, 'video');
+        toast.error(friendlyMessage);
         setIsGenerating(false);
         setIsVideoGenerating(false);
         setVideoGenerationFileId(null);

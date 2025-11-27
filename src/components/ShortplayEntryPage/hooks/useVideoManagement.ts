@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { apiInterceptor } from '../../../services/apiInterceptor';
+import { formatApiError } from '../../../utils/errorMessageFormatter';
 
 // API 基础路径
 const STORYAI_API_BASE = '/storyai';
@@ -138,7 +139,7 @@ export const useVideoManagement = () => {
       }
     } catch (error) {
       console.error('视频预览失败:', error);
-      toast.error('视频预览失败：' + (error as Error).message);
+      toast.error(formatApiError(error as Error, 'video'));
     } finally {
       setIsGeneratingPreview(false);
     }
@@ -205,7 +206,6 @@ export const useVideoManagement = () => {
         const fileId = result.data.toString();
         setVideoGenerationFileId(fileId);
 
-        toast.success('视频生成任务已开始！');
         setGenerationStatus('视频生成中，请稍候...');
 
         // 开始轮询进度
@@ -215,7 +215,7 @@ export const useVideoManagement = () => {
       }
     } catch (error) {
       console.error('视频生成失败:', error);
-      toast.error('视频生成失败：' + (error as Error).message);
+      toast.error(formatApiError(error as Error, 'video'));
       setGenerationStatus('');
       setIsGenerating(false);
       setIsVideoGenerating(false);
@@ -270,8 +270,14 @@ export const useVideoManagement = () => {
             // 刷新视频聊天记录
             await loadVideoChatHistory(sceneId);
           } else if (status === 'FAILED') {
-            // 生成失败
-            throw new Error(result.data.errorMessage || '视频生成失败');
+            // 生成失败 - 直接显示 API 返回的错误信息
+            const errorMsg = result.data.errorMessage || '视频生成失败';
+            toast.error(errorMsg);
+            setGenerationStatus('');
+            setIsGenerating(false);
+            setIsVideoGenerating(false);
+            setVideoGenerationFileId(null);
+            return;
           } else if (status === 'PROCESSING' || status === 'PENDING') {
             // 继续轮询
             if (pollCount < maxPolls) {
@@ -285,7 +291,7 @@ export const useVideoManagement = () => {
         }
       } catch (error) {
         console.error('轮询视频进度失败:', error);
-        toast.error('视频生成失败：' + (error as Error).message);
+        toast.error(formatApiError(error as Error, 'video'));
         setGenerationStatus('');
         setIsGenerating(false);
         setIsVideoGenerating(false);
@@ -353,7 +359,7 @@ export const useVideoManagement = () => {
       return uploadedFiles;
     } catch (error) {
       console.error('上传文件失败:', error);
-      toast.error('上传失败：' + (error as Error).message);
+      toast.error(formatApiError(error as Error, 'other'));
       return [];
     }
   };

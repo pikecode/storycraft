@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../contexts/AuthContext';
 import { apiInterceptor } from '../../../services/apiInterceptor';
+import { formatApiError } from '../../../utils/errorMessageFormatter';
 
 // API 基础路径
 const STORYAI_API_BASE = '/storyai';
@@ -135,7 +136,7 @@ export const useAudioManagement = () => {
       }
     } catch (error) {
       console.error('应用音色失败:', error);
-      toast.error('应用音色失败：' + (error as Error).message);
+      toast.error(formatApiError(error as Error, 'audio'));
     }
   };
 
@@ -181,7 +182,7 @@ export const useAudioManagement = () => {
       }
     } catch (error) {
       console.error('更新音色名称失败:', error);
-      toast.error('更新音色名称失败：' + (error as Error).message);
+      toast.error(formatApiError(error as Error, 'audio'));
     } finally {
       setEditingVoiceId(null);
       setEditingVoiceName('');
@@ -245,7 +246,7 @@ export const useAudioManagement = () => {
       }
     } catch (error) {
       console.error('音色绑定失败:', error);
-      toast.error('音色绑定失败：' + (error as Error).message);
+      toast.error(formatApiError(error as Error, 'audio'));
     }
   };
 
@@ -288,7 +289,7 @@ export const useAudioManagement = () => {
       }
     } catch (error) {
       console.error('播放音频失败:', error);
-      toast.error('播放音频失败：' + (error as Error).message);
+      toast.error(formatApiError(error as Error, 'audio'));
     }
   };
 
@@ -408,7 +409,7 @@ export const useAudioManagement = () => {
       }
     } catch (error) {
       console.error('应用音效失败:', error);
-      toast.error('应用音效失败：' + (error as Error).message);
+      toast.error(formatApiError(error as Error, 'audio'));
     }
   };
 

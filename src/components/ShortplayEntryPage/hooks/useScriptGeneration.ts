@@ -5,6 +5,7 @@ import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { apiInterceptor } from '../../../services/apiInterceptor';
 import { useAuth } from '../../../contexts/AuthContext';
+import { formatApiError } from '../../../utils/errorMessageFormatter';
 
 // API 基础路径
 const STORYAI_API_BASE = '/storyai';
@@ -251,7 +252,7 @@ export const useScriptGeneration = () => {
       }
     } catch (error) {
       console.error('图片生成失败:', error);
-      toast.error('图片生成失败：' + (error as Error).message);
+      toast.error(formatApiError(error as Error, 'image'));
       return userInput;
     } finally {
       setIsGenerating(false);

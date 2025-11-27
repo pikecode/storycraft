@@ -4,6 +4,7 @@
  */
 
 import { apiInterceptor } from './apiInterceptor';
+import { formatApiError } from '../utils/errorMessageFormatter';
 
 const STORYAI_API_BASE = '/storyai';
 
@@ -46,7 +47,6 @@ const handleApiResponse = async (response: Response): Promise<any> => {
 
   // 检查响应体中的code字段（后端自定义的错误码）
   if (data.code === 401) {
-    console.error('🔴 [shortplayService] API返回401未登录错误，触发登出和重定向');
     // 调用apiInterceptor的公开方法来触发未授权处理
     apiInterceptor.triggerUnauthorized();
     throw new Error('用户未登录，已重定向到登录页面');
@@ -54,7 +54,12 @@ const handleApiResponse = async (response: Response): Promise<any> => {
 
   // 其他非0的code也应该作为错误处理
   if (data.code !== 0 && data.code !== undefined) {
-    throw new Error(data.message || `API Error: ${data.code}`);
+    // 直接抛出原始错误信息，让上层的 hook 或组件通过 formatApiError 进行格式化
+    const error = new Error(data.message || '操作失败，请稍后重试');
+    (error as any).code = data.code;
+    (error as any).errorCode = data.errorCode;
+
+    throw error;
   }
 
   return data;

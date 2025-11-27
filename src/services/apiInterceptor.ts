@@ -26,6 +26,7 @@ class ApiInterceptor {
     private onTokenExpired: (() => void) | null = null;
     private onTokenRefresh: (() => Promise<boolean>) | null = null;
     private onUnauthorized: (() => void) | null = null;
+    private isRedirecting: boolean = false; // 防止重复跳转
 
     public static getInstance(): ApiInterceptor {
         if (!ApiInterceptor.instance) {
@@ -59,16 +60,51 @@ class ApiInterceptor {
      * 触发未授权错误（当用户未登录时调用）
      */
     public triggerUnauthorized(): void {
-        console.log('🔴 [ApiInterceptor] 触发未授权错误');
-        if (this.onUnauthorized) {
-            this.onUnauthorized();
-        } else {
-            // 如果没有设置回调，直接重定向
-            console.warn('⚠️ [ApiInterceptor] 未授权回调未设置，直接重定向到登录页面');
+        // 防止重复触发跳转
+        if (this.isRedirecting) {
+            console.log('⏭️ [ApiInterceptor] 已经在跳转中，跳过重复处理');
+            return;
+        }
+
+        this.isRedirecting = true;
+        console.log('🔴 [ApiInterceptor] 触发未授权错误，准备跳转到登录页');
+
+        // 保存当前路径，登录后可以返回
+        try {
+            const currentPath = window.location.hash.replace('#', '') || '/app/home';
+            if (currentPath !== '/app/login') {
+                sessionStorage.setItem('redirectAfterLogin', currentPath);
+                console.log('💾 [ApiInterceptor] 已保存当前路径:', currentPath);
+            }
+        } catch (e) {
+            console.error('❌ [ApiInterceptor] 保存路径失败:', e);
+        }
+
+        // 清除认证信息
+        try {
+            sessionStorage.removeItem('userId');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/#/app/login';
+            console.log('🧹 [ApiInterceptor] 已清除认证信息');
+        } catch (e) {
+            console.error('❌ [ApiInterceptor] 清除认证信息失败:', e);
         }
+
+        // 先调用回调（如果有），让 AuthContext 更新状态
+        if (this.onUnauthorized) {
+            try {
+                console.log('📞 [ApiInterceptor] 调用未授权回调');
+                this.onUnauthorized();
+            } catch (e) {
+                console.error('❌ [ApiInterceptor] 回调执行失败:', e);
+            }
+        }
+
+        // 无论回调是否成功，都强制跳转到登录页
+        console.log('🚀 [ApiInterceptor] 强制跳转到登录页面');
+        setTimeout(() => {
+            window.location.href = '/#/app/login';
+        }, 100); // 延迟100ms，确保回调和状态清理完成
     }
 
     /**

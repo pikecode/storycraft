@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import type { ChatHistoryItem } from '../types/shortplay';
 import * as shortplayService from '../services/shortplayService';
 import { extractFilesFromChatHistory } from '../utils/shortplayUtils';
+import { formatApiError } from '../utils/errorMessageFormatter';
 
 export const useImageManagement = () => {
   // 图片聊天记录数据
@@ -83,7 +84,8 @@ export const useImageManagement = () => {
       }
     } catch (error) {
       console.error('图片生成失败:', error);
-      toast.error('图片生成失败：' + (error as Error).message);
+      const friendlyMessage = formatApiError(error as Error, 'image');
+      toast.error(friendlyMessage);
       return false;
     } finally {
       setIsGenerating(false);
